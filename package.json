@@ -1,0 +1,27 @@
+{
+  "name": "game",
+  "version": "0.0.1",
+  "description": "Draft of simple MMO game",
+  "homepage": "https://github.com/yazmeyaa/game_draft#readme",
+  "bugs": {
+    "url": "https://github.com/yazmeyaa/game_draft/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yazmeyaa/game_draft.git"
+  },
+  "license": "MIT",
+  "author": "[yazmeyaa] (evgenijantonenkov456@gmail.com)",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "ts-node index.ts"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "bitmap-index": "^1.0.9",
+    "ts-sparse-set": "^1.0.5"
+  }
+}
