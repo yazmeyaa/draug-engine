@@ -5,6 +5,12 @@
     // "rootDir": "./src",
     // "outDir": "./dist",
 
+    // Path Aliases
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "commonjs",
@@ -41,7 +47,7 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
   },
-  "include": ["packages"],
+  "include": [".", "packages"],
   "ts-node": {
     "compilerOptions": {
       "module": "commonjs"

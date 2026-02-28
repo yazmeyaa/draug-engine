@@ -16,8 +16,6 @@ export class EntityMaskNotFoundError extends Error {
 
 export class EntitiesManager {
     private id: number = 0;
-    private bitmasks = new Map<number, Bitmap>();
-
     private nextId(): number {
         return ++this.id;
     }
@@ -30,29 +28,10 @@ export class EntitiesManager {
             const store = world.components.getComponentStorage(comp);
             if(!store)
                 throw new UnregisteredComponentStorageError(comp);
+            store.addComponent(id);
             mask.set(store.id);
         }
-        this.bitmasks.set(id, mask);
 
         return id;
-    }
-
-    public getMask(id: number): Bitmap {
-        const mask = this.bitmasks.get(id);
-        if(!mask) 
-            throw new EntityMaskNotFoundError(id);
-        return mask;
-    }
-
-    public query(required: Bitmap): number[] {
-        const result: number[] = [];
-
-        for (const [id, mask] of this.bitmasks) {
-            if (mask.containsAll(required)) {
-                result.push(id);
-            }
-        }
-
-        return result;
     }
 };

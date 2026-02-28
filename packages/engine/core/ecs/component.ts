@@ -1,6 +1,7 @@
 import { Bitmap } from "bitmap-index";
 import { SparseSet } from "ts-sparse-set";
 import { ObjectPool } from "../../../core/memory/pool";
+import { UnregisteredComponentStorageError } from "./entity";
 
 export class ComponentStorage
     // Can store only pointer-type objects
@@ -53,6 +54,17 @@ export class ComponentStorage
         return res;
     }
 
+    public get(id: number): T | null {
+        return this.set_.get(id);
+    }
+
+    public tryGet(id: number): T {
+        const x = this.set_.get(id);
+        if(!x) 
+            throw new Error("Requesting non-existing item.");
+        return x;
+    }
+
     public writeComponentsToBuf(ids: ReadonlyArray<number>, out: T[]): number {
         let len = 0;
         for(const id of ids) {
@@ -64,6 +76,18 @@ export class ComponentStorage
 
     public hasComponent(id: number): boolean {
         return this.bits_.contains(id);
+    }
+
+    public entityIds(): number[] {
+        return Array.from(this.bits_);
+    }
+
+    public entitiesCount(): number {
+        return this.bits_.count();
+    }
+
+    public forEachEntity(cb: (id: number) => void): void {
+        this.bits_.range(x => cb(x));
     }
 };
 
@@ -84,12 +108,12 @@ export class ComponentsManager {
         return ++this.currId_;
     }
 
-    public registerComponent<T extends object>(component: ClassType<T>, opts: RegisterComponentOptions<T>): ComponentStorage<T> {
+    public registerComponent<T extends object>(component: ClassType<T>, opts?: RegisterComponentOptions<T>): ComponentStorage<T> {
         if(this.stores_.has(component))
             throw new ComponentAlreadyRegisteredError(component)
 
         const defaultFactoryStorage = (...args: any[]) => new component(...args);
-        const factory = opts.factory ?? defaultFactoryStorage;
+        const factory = opts?.factory ?? defaultFactoryStorage;
         const store = new ComponentStorage(1024, factory)
         store._internalSetId(this.nextId());
 
@@ -97,9 +121,10 @@ export class ComponentsManager {
         return store;
     }
 
-    public getComponentStorage<T extends object>(component: ClassType<T>): ComponentStorage<T> | null {
+    public getComponentStorage<T extends object>(component: ClassType<T>): ComponentStorage<T> {
         const store = this.stores_.get(component);
-        if(store === undefined) return null;
+        if(store === undefined) 
+            throw new UnregisteredComponentStorageError(component);
 
         return store;
     } 

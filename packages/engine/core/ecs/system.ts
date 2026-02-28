@@ -6,8 +6,13 @@ import { ClassType } from "../../../types/class";
 
 export type SystemCtor<T extends System = System> = ClassType<T>;
 
+export type SystemComputeContext = {
+    entities: number[];
+    world: World;
+};
+
 export abstract class System {
-    public abstract readonly requiredComponents: ClassType<any>[];
+    public abstract readonly requiredComponents: ClassType<object>[];
     public readonly computeAfter?: Set<SystemCtor> = new Set();
     public readonly name: string;
 
@@ -16,7 +21,7 @@ export abstract class System {
         deps.forEach(d => this.computeAfter?.add(d));
     }
 
-    public abstract compute(world: World, entities: number[]): void;
+    public abstract compute(ctx: SystemComputeContext): void;
 };
 
 
@@ -24,7 +29,6 @@ export class SystemsManager {
     private systems_ = new Map<SystemCtor, System>();
     private executionOrder_: System[] = [];
     private built = false;
-    private systemsMask_ = new Map<SystemCtor, Bitmap>();
 
     public register<T extends System>(sys: T, world: World): void {
         if (this.built) throw new Error("Cannot register after build");
@@ -33,21 +37,6 @@ export class SystemsManager {
             throw new Error("Duplicate system");
 
         this.systems_.set(ctor, sys);
-        const bm = this.buildSystemComponentMask(sys, world);
-        this.systemsMask_.set(ctor, bm);
-    }
-
-    private buildSystemComponentMask(system: System, world: World): Bitmap {
-        const bm = new Bitmap();
-        system.requiredComponents.forEach(x => {
-            const store = world.components.getComponentStorage(x);
-            if(!store) 
-                throw new UnregisteredComponentStorageError(x);
-            const id = store.id;
-            bm.set(id);
-        })
-
-        return bm;
     }
 
     public build(): void {
@@ -57,7 +46,7 @@ export class SystemsManager {
 
     public get<T extends System>(ctor: SystemCtor<T>): T {
         const s = this.systems_.get(ctor);
-    
+
         if (!s)
             throw new Error("System not registered");
         return s as T;
@@ -66,11 +55,11 @@ export class SystemsManager {
     public update(world: World) {
         if (!this.built)
             throw new Error("Systems not built");
-        
+
         for (const s of this.executionOrder_) {
-            const mask = this.systemsMask_.get(s.constructor as SystemCtor)!;
-            const entities = world.entities.query(mask);
-            s.compute(world, entities);
+            const entities = world.query({ components: s.requiredComponents })
+            const ctx = { entities, world } satisfies SystemComputeContext;
+            s.compute(ctx);
         }
     }
 

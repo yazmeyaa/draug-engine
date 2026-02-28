@@ -14,10 +14,11 @@
   "author": "[yazmeyaa] (evgenijantonenkov456@gmail.com)",
   "main": "src/index.js",
   "scripts": {
-    "dev": "ts-node index.ts"
+    "dev": "ts-node -r tsconfig-paths/register index.ts"
   },
   "devDependencies": {
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
