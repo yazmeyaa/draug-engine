@@ -1,7 +1,5 @@
-import { Bitmap } from "bitmap-index";
 import { DAGNode, VisitedState } from "../../../core/graph/dag";
 import type { World } from "./world";
-import { UnregisteredComponentStorageError } from "./entity";
 import { ClassType } from "../../../types/class";
 
 export type SystemCtor<T extends System = System> = ClassType<T>;
