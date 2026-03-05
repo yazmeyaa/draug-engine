@@ -1,6 +1,8 @@
 import { Bitmap } from "bitmap-index";
-import type { World } from "./world";
+import { World } from "./world";
 import { ClassType } from "../../../types/class";
+import { Position } from "@/packages/game/components/position";
+import { Velocity } from "@/packages/game/components/velocity";
 
 export class UnregisteredComponentStorageError extends Error {
     constructor(component: ClassType<any>) {
@@ -15,23 +17,38 @@ export class EntityMaskNotFoundError extends Error {
 }
 
 export class EntitiesManager {
-    private id: number = 0;
+    private id_: number = 0;
     private nextId(): number {
-        return ++this.id;
+        return ++this.id_;
     }
 
     public createEntity(world: World, components: ClassType<any>[]): number {
         const id = this.nextId();
-        const mask = new Bitmap(1024);
 
-        for(const comp of components) {
+        for (const comp of components) {
             const store = world.components.getComponentStorage(comp);
-            if(!store)
+            if (!store)
                 throw new UnregisteredComponentStorageError(comp);
             store.addComponent(id);
-            mask.set(store.id);
         }
 
         return id;
     }
 };
+
+export class EntityRef {
+    constructor(
+        private world: World,
+        private id: number
+    ) { }
+
+    public with<
+        T extends ClassType<object>[],
+        Result extends { [K in keyof T]: InstanceType<T[K]> }
+    >(...components: T): Result {
+        return components.map(c => {
+            const s = this.world.components.getComponentStorage(c);
+            return s.tryGet(this.id);
+        }) as Result;
+    };
+}

@@ -3,8 +3,12 @@ import { ClassType } from "@/packages/types/class";
 import { Position } from "../components/position";
 import { AttractorObject } from "../components/attrcator";
 import { Velocity } from "../components/velocity";
+import { EntityRef } from "@/packages/engine/core/ecs/entity";
 
 export class AttractionSystem extends System {
+    constructor() {
+        super(AttractionSystem.name);
+    }
     public requiredComponents: ClassType<object>[] = [Position, Velocity];
     private attractionForce = 0.2;
     private damping = 0.98;
@@ -16,13 +20,8 @@ export class AttractionSystem extends System {
         const attractorEntities = world.query({ components: [AttractorObject, Position] });
         if (attractorEntities.length === 0) return;
 
-        const posStore = world.components.getComponentStorage(Position);
-        const velStore = world.components.getComponentStorage(Velocity);
-        const attractorStore = world.components.getComponentStorage(AttractorObject);
-
         for (const id of entities) {
-            const pos = posStore.get(id)!;
-            const vel = velStore.get(id)!;
+            const [pos, vel] = new EntityRef(world, id).with(Position, Velocity)
 
             let ax = 0;
             let ay = 0;
@@ -30,8 +29,7 @@ export class AttractionSystem extends System {
             for (const aid of attractorEntities) {
                 if (aid === id) continue;
 
-                const aPos = posStore.get(aid)!;
-                const attractor = attractorStore.get(aid)!;
+                const [aPos, attractor] = new EntityRef(world, aid).with(Position, AttractorObject);
 
                 const dx = aPos.x - pos.x;
                 const dy = aPos.y - pos.y;

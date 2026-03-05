@@ -26,10 +26,10 @@ export abstract class System {
 export class SystemsManager {
     private systems_ = new Map<SystemCtor, System>();
     private executionOrder_: System[] = [];
-    private built = false;
+    private built_ = false;
 
     public register<T extends System>(sys: T, world: World): void {
-        if (this.built) throw new Error("Cannot register after build");
+        if (this.built_) throw new Error("Cannot register after build");
         const ctor = sys.constructor as SystemCtor<T>
         if (this.systems_.has(ctor))
             throw new Error("Duplicate system");
@@ -39,7 +39,7 @@ export class SystemsManager {
 
     public build(): void {
         this.buildSystemsArray();
-        this.built = true;
+        this.built_ = true;
     }
 
     public get<T extends System>(ctor: SystemCtor<T>): T {
@@ -51,7 +51,7 @@ export class SystemsManager {
     }
 
     public update(world: World) {
-        if (!this.built)
+        if (!this.built_)
             throw new Error("Systems not built");
 
         for (const s of this.executionOrder_) {

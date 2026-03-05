@@ -56,4 +56,8 @@ export class World {
 
         return result;
     }
+
+    public update(dt: number): void {
+        this.systems.update(this);
+    }
 };

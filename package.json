@@ -14,15 +14,23 @@
   "author": "[yazmeyaa] (evgenijantonenkov456@gmail.com)",
   "main": "src/index.js",
   "scripts": {
-    "dev": "ts-node -r tsconfig-paths/register index.ts"
+    "dev": "ts-node -r tsconfig-paths/register index.ts",
+    "build:client": "vite build --config apps/browser-client/vite.config.ts",
+    "build:server": "node scripts/build-server.mjs",
+    "dev:client": "vite --config apps/browser-client/vite.config.ts",
+    "dev:server": "ts-node -r tsconfig-paths/register apps/room-server/node.ts"
   },
   "devDependencies": {
+    "@types/node": "^25.3.3",
+    "esbuild": "^0.24.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^6.0.0"
   },
   "dependencies": {
     "bitmap-index": "^1.0.9",
+    "ts-proto": "^2.11.4",
     "ts-sparse-set": "^1.0.5"
   }
 }
