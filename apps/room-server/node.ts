@@ -28,21 +28,21 @@ const vStore = world.components.registerComponent(Velocity);
 world.components.registerComponent(AttractorObject);
 world.components.registerComponent(Renderable);
 
-const msSys = new MovementSystem("movement");
-const aSys = new AttractionSystem("attraction");
-const renderingSystem = new RenderingSystem(RenderingSystem.name, [MovementSystem]);
+const msSys = new MovementSystem();
+const aSys = new AttractionSystem();
+const renderingSystem = new RenderingSystem();
 world.systems.register(msSys, world);
 world.systems.register(aSys, world);
 world.systems.register(renderingSystem, world);
 world.systems.build();  
 
-const attractorId = world.entities.createEntity(world, [Position, AttractorObject]);
+const attractorId = world.entities.createEntity(world, []);
 const aPos = pStore.tryGet(attractorId);
 aPos.x = 100;
 aPos.y = 20;
 
 for (let i = 0; i < 5; i++) {
-    const id = world.entities.createEntity(world, [Position, Velocity, Renderable]);
+    const id = world.entities.createEntity(world, []);
     const pos = pStore.tryGet(id);
     pos.x = i * 10;
     pos.y = i * 5;
