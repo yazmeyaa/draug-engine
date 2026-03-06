@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package game.network;
-
-message MoveMessage {
-    float dx = 1;
-    float dy = 2;
-}

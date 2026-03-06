@@ -61,7 +61,7 @@ export class ComponentStorage
     public tryGet(id: number): T {
         const x = this.set_.get(id);
         if(!x) 
-            throw new Error("Requesting non-existing item.");
+            throw new Error(`Requesting non-existing item with ID ${id}.`);
         return x;
     }
 

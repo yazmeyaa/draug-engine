@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package proto.game.network.client;
+
+// Set of client-only commands.
+message ClientMessage {
+  oneof payload {
+    ClientMovementDirection change_movement_direction = 1;
+  }
+}
+
+// Client change own movement direction.
+// dx, dy is in range [-1, 1].
+message ClientMovementDirection {
+  float dx        = 2;
+  float dy        = 3;
+}

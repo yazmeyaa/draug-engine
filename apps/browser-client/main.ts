@@ -7,6 +7,7 @@ import { Velocity } from "@/packages/game/components/velocity";
 import { MovementSystem } from "@/packages/game/systems/movement";
 import { Camera, RenderingSystem } from "@/packages/game/systems/rendering";
 import { AttractionSystem } from "@/packages/game/systems/world-attraction";
+import { ClientMessage, ClientMovementDirection } from "@/packages/game/network/generated/client";
 
 const world = new World();
 const pStore = world.components.registerComponent(Position);
@@ -155,3 +156,44 @@ const game = new BrowserGame(world, (world) => {
   `;
 });
 game.start();
+
+// WebSocket connection and test code
+const ws = new WebSocket("ws://localhost:8090");
+
+ws.onopen = () => {
+  console.log("Connected to server");
+  
+  // Test: send changeMovementDirection message every 2 seconds
+  const testInterval = setInterval(() => {
+    const dx = (Math.random() - 0.5) * 2; // random value in [-1, 1]
+    const dy = (Math.random() - 0.5) * 2; // random value in [-1, 1]
+    
+    const movementMsg = ClientMovementDirection.create({ dx, dy, entityId: "0" });
+
+    const clientMsg: ClientMessage = ClientMessage.create({
+      payload: {
+        $case: "changeMovementDirection",
+        changeMovementDirection: movementMsg,
+      },
+    });
+
+    const encoded = ClientMessage.encode(clientMsg).finish();
+    ws.send(encoded);
+    
+    console.log(`Sent changeMovementDirection: dx=${dx.toFixed(2)}, dy=${dy.toFixed(2)}`);
+  }, 2000);
+  
+  ws.onclose = () => {
+    console.log("Disconnected from server");
+    clearInterval(testInterval);
+  };
+};
+
+ws.onerror = (error) => {
+  console.error("WebSocket error:", error);
+};
+
+ws.onmessage = (event) => {
+  console.log("Message from server:", event.data);
+};
+

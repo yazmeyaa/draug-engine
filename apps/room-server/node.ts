@@ -8,9 +8,12 @@ import { Velocity } from "@/packages/game/components/velocity";
 import { MovementSystem } from "@/packages/game/systems/movement";
 import { Camera, RenderingSystem } from "@/packages/game/systems/rendering";
 import { AttractionSystem } from "@/packages/game/systems/world-attraction";
+import { WebsocketServer } from "./server";
+import { ClientMessage, MessageFns } from "@/packages/game/network/generated/client";
+import { RawData } from "ws";
 
 export class NodeGame {
-    constructor(private world: World, private onWorldUpdate?: (world: World) => void) {}
+    constructor(private world: World, private onWorldUpdate?: (world: World) => void) { }
 
     start() {
         const clock = new Clock();
@@ -34,15 +37,15 @@ const renderingSystem = new RenderingSystem();
 world.systems.register(msSys, world);
 world.systems.register(aSys, world);
 world.systems.register(renderingSystem, world);
-world.systems.build();  
+world.systems.build();
 
-const attractorId = world.entities.createEntity(world, []);
+const attractorId = world.entities.createEntity(world, [Position, Velocity, AttractorObject, Renderable]);
 const aPos = pStore.tryGet(attractorId);
 aPos.x = 100;
 aPos.y = 20;
 
 for (let i = 0; i < 5; i++) {
-    const id = world.entities.createEntity(world, []);
+    const id = world.entities.createEntity(world, [Position, Velocity, AttractorObject, Renderable]);
     const pos = pStore.tryGet(id);
     pos.x = i * 10;
     pos.y = i * 5;
@@ -78,10 +81,47 @@ const game = new NodeGame(world, (world) => {
     console.log("---\n")
 
     const snapshot = renderingSystem.getSnapshot(world, camera);
-    for(const entry of snapshot) {
+    for (const entry of snapshot) {
         console.log(`Rendering item: entityID=${entry.entityId}, x=${entry.x.toFixed(3)}, y=${entry.y.toFixed(3)}`)
-    } 
+    }
 
     console.log("---");
 });
-game.start();
+
+function decodeWsMessage<T extends object>(data: RawData, decoder: MessageFns<T>): T {
+    if (Array.isArray(data)) {
+        const buffer = Buffer.concat(data);
+        return decoder.decode(buffer);
+    }
+
+    if (data instanceof ArrayBuffer) {
+        return decoder.decode(new Uint8Array(data));
+    }
+
+    return decoder.decode(data);
+
+}
+
+class GameUserData {
+    constructor(
+        public readonly playerEntityID: number,
+    ) { };
+}
+
+const wss = new WebsocketServer<GameUserData>({
+    getUserData() {
+        return new GameUserData(Math.floor(Math.random() * 10_000));
+    },
+    onClientMessage: (ctx) => {
+        const { message } = ctx;
+        const msg = decodeWsMessage(message, ClientMessage);
+        switch (msg.payload?.$case) {
+            case 'changeMovementDirection':
+                const { dx, dy } = msg.payload.changeMovementDirection;
+                const { playerEntityID } = ctx.userData
+                console.log(`Client changed direction! etityID=${playerEntityID} dx=${dx.toFixed(2)}, dy=${dy.toFixed(2)}.`)
+        }
+    },
+    websocket: {port: 8090}
+})
+// game.start();
