@@ -1,16 +1,11 @@
 import { World } from "@/packages/engine/core/ecs/world";
 import { Clock } from "@/packages/engine/runtime/clock";
 import { GameLoop } from "@/packages/engine/runtime/game-loop";
-import { AttractorObject } from "@/packages/game/components/attrcator";
-import { Position } from "@/packages/game/components/position";
-import { Renderable } from "@/packages/game/components/renderable";
-import { Velocity } from "@/packages/game/components/velocity";
-import { MovementSystem } from "@/packages/game/systems/movement";
-import { Camera, RenderingSystem } from "@/packages/game/systems/rendering";
-import { AttractionSystem } from "@/packages/game/systems/world-attraction";
-import { WebsocketServer } from "./server";
 import { ClientMessage, MessageFns } from "@/packages/game/network/generated/client";
 import { RawData } from "ws";
+import { WebsocketServer } from "./server";
+import { createServerSideWorld } from "@/packages/game/create-world";
+import { MotionUpdate, MovementDirectionChange, PositionChange, ServerMessage } from "@/packages/game/network/generated/server";
 
 export class NodeGame {
     constructor(private world: World, private onWorldUpdate?: (world: World) => void) { }
@@ -25,68 +20,7 @@ export class NodeGame {
     }
 }
 
-const world = new World();
-const pStore = world.components.registerComponent(Position);
-const vStore = world.components.registerComponent(Velocity);
-world.components.registerComponent(AttractorObject);
-world.components.registerComponent(Renderable);
-
-const msSys = new MovementSystem();
-const aSys = new AttractionSystem();
-const renderingSystem = new RenderingSystem();
-world.systems.register(msSys, world);
-world.systems.register(aSys, world);
-world.systems.register(renderingSystem, world);
-world.systems.build();
-
-const attractorId = world.entities.createEntity(world, [Position, Velocity, AttractorObject, Renderable]);
-const aPos = pStore.tryGet(attractorId);
-aPos.x = 100;
-aPos.y = 20;
-
-for (let i = 0; i < 5; i++) {
-    const id = world.entities.createEntity(world, [Position, Velocity, AttractorObject, Renderable]);
-    const pos = pStore.tryGet(id);
-    pos.x = i * 10;
-    pos.y = i * 5;
-    const vel = vStore.tryGet(id);
-    vel.vx = 0;
-    vel.vy = 0;
-}
-
-let step = 0;
-const camera = {
-    x: 0,
-    y: 0,
-    zoom: 1.2,
-    width: 1920,
-    height: 1080
-} satisfies Camera;
-
-const game = new NodeGame(world, (world) => {
-    step += 1;
-    console.clear();
-    console.log(`Step ${step}`);
-    const aPos = pStore.tryGet(attractorId);
-    console.log(`Attractor position: x=${aPos.x.toFixed(2)}, y=${aPos.y.toFixed(2)}`)
-    const ids = world.query({ components: [Position, Velocity] })
-    for (const id of ids) {
-        const pos = pStore.tryGet(id);
-        const vel = vStore.tryGet(id);
-        console.log(`Entity ${id}: x=${pos.x.toFixed(2)}, y=${pos.y.toFixed(2)}, vx=${vel.vx.toFixed(2)}, vy=${vel.vy.toFixed(2)}`);
-    }
-
-    console.log("\n---")
-    console.log(`Camera info\n\nCenterX=${camera.x.toFixed(3)}\nCenterY=${camera.y.toFixed(3)}\nWidth=${camera.width}\nHeight=${camera.height}\nZoom=${camera.zoom}`)
-    console.log("---\n")
-
-    const snapshot = renderingSystem.getSnapshot(world, camera);
-    for (const entry of snapshot) {
-        console.log(`Rendering item: entityID=${entry.entityId}, x=${entry.x.toFixed(3)}, y=${entry.y.toFixed(3)}`)
-    }
-
-    console.log("---");
-});
+const world = createServerSideWorld()
 
 function decodeWsMessage<T extends object>(data: RawData, decoder: MessageFns<T>): T {
     if (Array.isArray(data)) {
@@ -108,20 +42,63 @@ class GameUserData {
     ) { };
 }
 
+type UpdEntry = {
+    pos?: PositionChange;
+    mov?: MovementDirectionChange;
+};
+const updates: Map<EntityID, UpdEntry> = new Map();
+
 const wss = new WebsocketServer<GameUserData>({
     getUserData() {
         return new GameUserData(Math.floor(Math.random() * 10_000));
+    },
+    onClientDisconnect(ctx) {
+        const {playerEntityID} = ctx.userData
+        updates.delete(playerEntityID);
     },
     onClientMessage: (ctx) => {
         const { message } = ctx;
         const msg = decodeWsMessage(message, ClientMessage);
         switch (msg.payload?.$case) {
-            case 'changeMovementDirection':
-                const { dx, dy } = msg.payload.changeMovementDirection;
-                const { playerEntityID } = ctx.userData
-                console.log(`Client changed direction! etityID=${playerEntityID} dx=${dx.toFixed(2)}, dy=${dy.toFixed(2)}.`)
+            case 'clientInputUpdate':
+                const { clientMovementDirection, clientChangeColor } = msg.payload.clientInputUpdate;
+                if (clientMovementDirection !== undefined) {
+                    const { dx, dy } = clientMovementDirection;
+                    const { playerEntityID: entityId } = ctx.userData;
+                    console.log(`Client changed direction! etityID=${entityId} dx=${dx.toFixed(2)}, dy=${dy.toFixed(2)}.`);
+                    if (!updates.has(entityId)) {
+                        updates.set(entityId, {});
+                    }
+                    const update = updates.get(entityId)!
+                    update.mov = { entityId, dx, dy }
+                }
+
+                if (clientChangeColor !== undefined) {
+                    const { r, g, b } = clientChangeColor;
+                    const { playerEntityID } = ctx.userData;
+                    console.log(`Client changed own color! etityID=${playerEntityID} r=${r.toFixed(2)}, g=${g.toFixed(2)} b=${b.toFixed(2)}.`);
+                }
         }
     },
-    websocket: {port: 8090}
+    websocket: { port: 8090 }
 })
-// game.start();
+type EntityID = number;
+const game = new NodeGame(world, (w) => {
+    const motionUpdates = MotionUpdate.create({})
+    updates.forEach(u => {
+        if(u.mov) {
+            motionUpdates.movementDirectionChange.push(u.mov);
+        }
+    })
+    const upd = ServerMessage.create({payload: {
+        $case: 'motionUpdates',
+        motionUpdates: motionUpdates,
+    }})
+
+
+    const buf = ServerMessage.encode(upd).finish();
+    wss.broadcast(Buffer.from(buf), console.error)
+    updates.clear();
+})
+world.systems.build();
+game.start();

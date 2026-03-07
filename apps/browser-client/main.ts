@@ -1,42 +1,14 @@
 import { BrowserGame } from "./browser";
-import { World } from "@/packages/engine/core/ecs/world";
 import { AttractorObject } from "@/packages/game/components/attrcator";
 import { Position } from "@/packages/game/components/position";
-import { Renderable } from "@/packages/game/components/renderable";
 import { Velocity } from "@/packages/game/components/velocity";
-import { MovementSystem } from "@/packages/game/systems/movement";
 import { Camera, RenderingSystem } from "@/packages/game/systems/rendering";
-import { AttractionSystem } from "@/packages/game/systems/world-attraction";
-import { ClientMessage, ClientMovementDirection } from "@/packages/game/network/generated/client";
+import { ClientInputUpdate, ClientMessage, ClientMovementDirection } from "@/packages/game/network/generated/client";
+import { ServerMessage } from "@/packages/game/network/generated/server";
+import { createClientSideWorld } from "@/packages/game/create-world";
 
-const world = new World();
-const pStore = world.components.registerComponent(Position);
-const vStore = world.components.registerComponent(Velocity);
-world.components.registerComponent(Renderable);
-world.components.registerComponent(AttractorObject, { factory: () => ({ mass: 40 }) });
-
-const msSys = new MovementSystem();
-const aSys = new AttractionSystem();
-const renderingSystem = new RenderingSystem();
-world.systems.register(msSys, world);
-world.systems.register(aSys, world);
-world.systems.register(renderingSystem, world);
+const world = createClientSideWorld();
 world.systems.build();
-
-const attractorId = world.entities.createEntity(world, [Position, Velocity, Renderable, AttractorObject]);
-const aPos = pStore.tryGet(attractorId);
-aPos.x = 100;
-aPos.y = 20;
-
-for (let i = 0; i < 100; i++) {
-  const id = world.entities.createEntity(world, [Position, Velocity, Renderable, AttractorObject]);
-  const pos = pStore.tryGet(id);
-  pos.x = 400 - Math.random() * 800;
-  pos.y = 300 - Math.random() * 600;
-  const vel = vStore.tryGet(id);
-  vel.vx = (Math.random() - 0.5) * 100;
-  vel.vy = (Math.random() - 0.5) * 100;
-}
 
 
 let step = 0;
@@ -80,6 +52,41 @@ const RADIUS_ATTRACTOR = 12;
 
 const debugPanel = document.getElementById("debug-panel")!;
 
+// Track keyboard and movement state
+const keysPressed: { [key: string]: boolean } = {};
+let lastDx = 0;
+let lastDy = 0;
+let ws: WebSocket;
+
+function calculateMovement(): { dx: number; dy: number } {
+  let dx = 0;
+  let dy = 0;
+  
+  if (keysPressed["ArrowRight"]) dx += 1;
+  if (keysPressed["ArrowLeft"]) dx -= 1;
+  if (keysPressed["ArrowUp"]) dy -= 1;
+  if (keysPressed["ArrowDown"]) dy += 1;
+  
+  return { dx, dy };
+}
+
+function sendMovement(dx: number, dy: number) {
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  
+  const movementMsg = ClientMovementDirection.create({ dx, dy });
+  const inputMessage = ClientInputUpdate.create({ clientMovementDirection: movementMsg });
+
+  const clientMsg: ClientMessage = ClientMessage.create({
+    payload: {
+      $case: "clientInputUpdate",
+      clientInputUpdate: inputMessage,
+    },
+  });
+
+  const encoded = ClientMessage.encode(clientMsg).finish();
+  ws.send(encoded);
+}
+
 const game = new BrowserGame(world, (world) => {
   step += 1;
   frameCount++;
@@ -94,9 +101,19 @@ const game = new BrowserGame(world, (world) => {
   }
   
   world.systems.update(world);
+  
+  // Check for movement changes on each world update
+  const { dx, dy } = calculateMovement();
+  if (dx !== lastDx || dy !== lastDy) {
+    sendMovement(dx, dy);
+    lastDx = dx;
+    lastDy = dy;
+  }
 
-  const aPos = pStore.tryGet(attractorId);
   const ids = world.query({ components: [Position, Velocity] });
+  const renderingSystem = world.systems.get(RenderingSystem)
+  const pStore = world.components.getComponentStorage(Position);
+  const vStore = world.components.getComponentStorage(Velocity);
   const snapshot = renderingSystem.getSnapshot(world, camera);
   const attractorIds = world.query({ components: [Position, AttractorObject] });
 
@@ -136,10 +153,6 @@ const game = new BrowserGame(world, (world) => {
       <div class="row"><span class="key">FPS</span><span class="val">${fps}</span></div>
     </section>
     <section>
-      <h3>Attractor</h3>
-      <div class="row"><span class="key">Position</span><span class="val">x=${aPos.x.toFixed(2)} y=${aPos.y.toFixed(2)}</span></div>
-    </section>
-    <section>
       <h3>Entities</h3>
       ${entitiesHtml || "<div class=\"key\">—</div>"}
     </section>
@@ -157,36 +170,25 @@ const game = new BrowserGame(world, (world) => {
 });
 game.start();
 
-// WebSocket connection and test code
-const ws = new WebSocket("ws://localhost:8090");
+// WebSocket connection and keyboard input
+ws = new WebSocket("ws://localhost:8090");
+ws.binaryType = 'arraybuffer'
+
+// Listen for keyboard events
+window.addEventListener("keydown", (e) => {
+  keysPressed[e.key] = true;
+});
+
+window.addEventListener("keyup", (e) => {
+  keysPressed[e.key] = false;
+});
 
 ws.onopen = () => {
   console.log("Connected to server");
-  
-  // Test: send changeMovementDirection message every 2 seconds
-  const testInterval = setInterval(() => {
-    const dx = (Math.random() - 0.5) * 2; // random value in [-1, 1]
-    const dy = (Math.random() - 0.5) * 2; // random value in [-1, 1]
-    
-    const movementMsg = ClientMovementDirection.create({ dx, dy, entityId: "0" });
+};
 
-    const clientMsg: ClientMessage = ClientMessage.create({
-      payload: {
-        $case: "changeMovementDirection",
-        changeMovementDirection: movementMsg,
-      },
-    });
-
-    const encoded = ClientMessage.encode(clientMsg).finish();
-    ws.send(encoded);
-    
-    console.log(`Sent changeMovementDirection: dx=${dx.toFixed(2)}, dy=${dy.toFixed(2)}`);
-  }, 2000);
-  
-  ws.onclose = () => {
-    console.log("Disconnected from server");
-    clearInterval(testInterval);
-  };
+ws.onclose = () => {
+  console.log("Disconnected from server");
 };
 
 ws.onerror = (error) => {
@@ -194,6 +196,14 @@ ws.onerror = (error) => {
 };
 
 ws.onmessage = (event) => {
-  console.log("Message from server:", event.data);
+  const data = ServerMessage.decode(new Uint8Array(event.data));
+  switch(data.payload?.$case) {
+    case 'motionUpdates': 
+      if(data.payload.motionUpdates.movementDirectionChange.length > 0)
+        console.log(data.payload.motionUpdates.movementDirectionChange.map(x => `Entity ${x.entityId}: dx=${x.dx}, dy=${x.dy}`).join(''))
+      break;
+    default:
+      console.error('No data in payload!')
+  }
 };
 

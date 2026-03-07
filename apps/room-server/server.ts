@@ -105,6 +105,7 @@ export class WebsocketServer<UserData = unknown> {
         for (const c of this.clients) {
             if (c.ws.readyState !== WebSocket.OPEN)
                 continue;
+
             c.ws.send(message, (err) => {
                 if (err) {
                     onError?.(err);

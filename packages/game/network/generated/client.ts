@@ -11,7 +11,13 @@ export const protobufPackage = "proto.game.network.client";
 
 /** Set of client-only commands. */
 export interface ClientMessage {
-  payload: { $case: "changeMovementDirection"; changeMovementDirection: ClientMovementDirection } | undefined;
+  payload: { $case: "clientInputUpdate"; clientInputUpdate: ClientInputUpdate } | undefined;
+}
+
+/** Client input updates */
+export interface ClientInputUpdate {
+  clientMovementDirection?: ClientMovementDirection | undefined;
+  clientChangeColor?: ClientChangeColor | undefined;
 }
 
 /**
@@ -19,9 +25,15 @@ export interface ClientMessage {
  * dx, dy is in range [-1, 1].
  */
 export interface ClientMovementDirection {
-  entityId: string;
   dx: number;
   dy: number;
+}
+
+/** Client changes own color */
+export interface ClientChangeColor {
+  r: number;
+  g: number;
+  b: number;
 }
 
 function createBaseClientMessage(): ClientMessage {
@@ -31,8 +43,8 @@ function createBaseClientMessage(): ClientMessage {
 export const ClientMessage: MessageFns<ClientMessage> = {
   encode(message: ClientMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     switch (message.payload?.$case) {
-      case "changeMovementDirection":
-        ClientMovementDirection.encode(message.payload.changeMovementDirection, writer.uint32(10).fork()).join();
+      case "clientInputUpdate":
+        ClientInputUpdate.encode(message.payload.clientInputUpdate, writer.uint32(10).fork()).join();
         break;
     }
     return writer;
@@ -51,8 +63,8 @@ export const ClientMessage: MessageFns<ClientMessage> = {
           }
 
           message.payload = {
-            $case: "changeMovementDirection",
-            changeMovementDirection: ClientMovementDirection.decode(reader, reader.uint32()),
+            $case: "clientInputUpdate",
+            clientInputUpdate: ClientInputUpdate.decode(reader, reader.uint32()),
           };
           continue;
         }
@@ -67,24 +79,18 @@ export const ClientMessage: MessageFns<ClientMessage> = {
 
   fromJSON(object: any): ClientMessage {
     return {
-      payload: isSet(object.changeMovementDirection)
-        ? {
-          $case: "changeMovementDirection",
-          changeMovementDirection: ClientMovementDirection.fromJSON(object.changeMovementDirection),
-        }
-        : isSet(object.change_movement_direction)
-        ? {
-          $case: "changeMovementDirection",
-          changeMovementDirection: ClientMovementDirection.fromJSON(object.change_movement_direction),
-        }
+      payload: isSet(object.clientInputUpdate)
+        ? { $case: "clientInputUpdate", clientInputUpdate: ClientInputUpdate.fromJSON(object.clientInputUpdate) }
+        : isSet(object.client_input_update)
+        ? { $case: "clientInputUpdate", clientInputUpdate: ClientInputUpdate.fromJSON(object.client_input_update) }
         : undefined,
     };
   },
 
   toJSON(message: ClientMessage): unknown {
     const obj: any = {};
-    if (message.payload?.$case === "changeMovementDirection") {
-      obj.changeMovementDirection = ClientMovementDirection.toJSON(message.payload.changeMovementDirection);
+    if (message.payload?.$case === "clientInputUpdate") {
+      obj.clientInputUpdate = ClientInputUpdate.toJSON(message.payload.clientInputUpdate);
     }
     return obj;
   },
@@ -95,11 +101,11 @@ export const ClientMessage: MessageFns<ClientMessage> = {
   fromPartial<I extends Exact<DeepPartial<ClientMessage>, I>>(object: I): ClientMessage {
     const message = createBaseClientMessage();
     switch (object.payload?.$case) {
-      case "changeMovementDirection": {
-        if (object.payload?.changeMovementDirection !== undefined && object.payload?.changeMovementDirection !== null) {
+      case "clientInputUpdate": {
+        if (object.payload?.clientInputUpdate !== undefined && object.payload?.clientInputUpdate !== null) {
           message.payload = {
-            $case: "changeMovementDirection",
-            changeMovementDirection: ClientMovementDirection.fromPartial(object.payload.changeMovementDirection),
+            $case: "clientInputUpdate",
+            clientInputUpdate: ClientInputUpdate.fromPartial(object.payload.clientInputUpdate),
           };
         }
         break;
@@ -109,15 +115,101 @@ export const ClientMessage: MessageFns<ClientMessage> = {
   },
 };
 
+function createBaseClientInputUpdate(): ClientInputUpdate {
+  return { clientMovementDirection: undefined, clientChangeColor: undefined };
+}
+
+export const ClientInputUpdate: MessageFns<ClientInputUpdate> = {
+  encode(message: ClientInputUpdate, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.clientMovementDirection !== undefined) {
+      ClientMovementDirection.encode(message.clientMovementDirection, writer.uint32(10).fork()).join();
+    }
+    if (message.clientChangeColor !== undefined) {
+      ClientChangeColor.encode(message.clientChangeColor, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ClientInputUpdate {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseClientInputUpdate();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.clientMovementDirection = ClientMovementDirection.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.clientChangeColor = ClientChangeColor.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ClientInputUpdate {
+    return {
+      clientMovementDirection: isSet(object.clientMovementDirection)
+        ? ClientMovementDirection.fromJSON(object.clientMovementDirection)
+        : isSet(object.client_movement_direction)
+        ? ClientMovementDirection.fromJSON(object.client_movement_direction)
+        : undefined,
+      clientChangeColor: isSet(object.clientChangeColor)
+        ? ClientChangeColor.fromJSON(object.clientChangeColor)
+        : isSet(object.client_change_color)
+        ? ClientChangeColor.fromJSON(object.client_change_color)
+        : undefined,
+    };
+  },
+
+  toJSON(message: ClientInputUpdate): unknown {
+    const obj: any = {};
+    if (message.clientMovementDirection !== undefined) {
+      obj.clientMovementDirection = ClientMovementDirection.toJSON(message.clientMovementDirection);
+    }
+    if (message.clientChangeColor !== undefined) {
+      obj.clientChangeColor = ClientChangeColor.toJSON(message.clientChangeColor);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ClientInputUpdate>, I>>(base?: I): ClientInputUpdate {
+    return ClientInputUpdate.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ClientInputUpdate>, I>>(object: I): ClientInputUpdate {
+    const message = createBaseClientInputUpdate();
+    message.clientMovementDirection =
+      (object.clientMovementDirection !== undefined && object.clientMovementDirection !== null)
+        ? ClientMovementDirection.fromPartial(object.clientMovementDirection)
+        : undefined;
+    message.clientChangeColor = (object.clientChangeColor !== undefined && object.clientChangeColor !== null)
+      ? ClientChangeColor.fromPartial(object.clientChangeColor)
+      : undefined;
+    return message;
+  },
+};
+
 function createBaseClientMovementDirection(): ClientMovementDirection {
-  return { entityId: "0", dx: 0, dy: 0 };
+  return { dx: 0, dy: 0 };
 }
 
 export const ClientMovementDirection: MessageFns<ClientMovementDirection> = {
   encode(message: ClientMovementDirection, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.entityId !== "0") {
-      writer.uint32(8).int64(message.entityId);
-    }
     if (message.dx !== 0) {
       writer.uint32(21).float(message.dx);
     }
@@ -134,14 +226,6 @@ export const ClientMovementDirection: MessageFns<ClientMovementDirection> = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 8) {
-            break;
-          }
-
-          message.entityId = reader.int64().toString();
-          continue;
-        }
         case 2: {
           if (tag !== 21) {
             break;
@@ -169,11 +253,6 @@ export const ClientMovementDirection: MessageFns<ClientMovementDirection> = {
 
   fromJSON(object: any): ClientMovementDirection {
     return {
-      entityId: isSet(object.entityId)
-        ? globalThis.String(object.entityId)
-        : isSet(object.entity_id)
-        ? globalThis.String(object.entity_id)
-        : "0",
       dx: isSet(object.dx) ? globalThis.Number(object.dx) : 0,
       dy: isSet(object.dy) ? globalThis.Number(object.dy) : 0,
     };
@@ -181,9 +260,6 @@ export const ClientMovementDirection: MessageFns<ClientMovementDirection> = {
 
   toJSON(message: ClientMovementDirection): unknown {
     const obj: any = {};
-    if (message.entityId !== "0") {
-      obj.entityId = message.entityId;
-    }
     if (message.dx !== 0) {
       obj.dx = message.dx;
     }
@@ -198,9 +274,100 @@ export const ClientMovementDirection: MessageFns<ClientMovementDirection> = {
   },
   fromPartial<I extends Exact<DeepPartial<ClientMovementDirection>, I>>(object: I): ClientMovementDirection {
     const message = createBaseClientMovementDirection();
-    message.entityId = object.entityId ?? "0";
     message.dx = object.dx ?? 0;
     message.dy = object.dy ?? 0;
+    return message;
+  },
+};
+
+function createBaseClientChangeColor(): ClientChangeColor {
+  return { r: 0, g: 0, b: 0 };
+}
+
+export const ClientChangeColor: MessageFns<ClientChangeColor> = {
+  encode(message: ClientChangeColor, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.r !== 0) {
+      writer.uint32(8).int32(message.r);
+    }
+    if (message.g !== 0) {
+      writer.uint32(16).int32(message.g);
+    }
+    if (message.b !== 0) {
+      writer.uint32(24).int32(message.b);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ClientChangeColor {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseClientChangeColor();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.r = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.g = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.b = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ClientChangeColor {
+    return {
+      r: isSet(object.r) ? globalThis.Number(object.r) : 0,
+      g: isSet(object.g) ? globalThis.Number(object.g) : 0,
+      b: isSet(object.b) ? globalThis.Number(object.b) : 0,
+    };
+  },
+
+  toJSON(message: ClientChangeColor): unknown {
+    const obj: any = {};
+    if (message.r !== 0) {
+      obj.r = Math.round(message.r);
+    }
+    if (message.g !== 0) {
+      obj.g = Math.round(message.g);
+    }
+    if (message.b !== 0) {
+      obj.b = Math.round(message.b);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<ClientChangeColor>, I>>(base?: I): ClientChangeColor {
+    return ClientChangeColor.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ClientChangeColor>, I>>(object: I): ClientChangeColor {
+    const message = createBaseClientChangeColor();
+    message.r = object.r ?? 0;
+    message.g = object.g ?? 0;
+    message.b = object.b ?? 0;
     return message;
   },
 };

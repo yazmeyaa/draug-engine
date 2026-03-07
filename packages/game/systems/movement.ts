@@ -6,6 +6,7 @@ import { Velocity } from "@/packages/game/components/velocity";
 
 export class MovementSystem extends System {
     public requiredComponents: ClassType<object>[] = [Position, Velocity];
+    public queryComponents: ClassType<object>[] = [Position, Velocity];
     constructor() {
         super(MovementSystem.name)
     }

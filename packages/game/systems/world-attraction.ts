@@ -9,7 +9,8 @@ export class AttractionSystem extends System {
     constructor() {
         super(AttractionSystem.name);
     }
-    public requiredComponents: ClassType<object>[] = [Position, Velocity];
+    public queryComponents: ClassType<object>[] = [Position, Velocity];
+    public requiredComponents: ClassType<object>[] = [Position, Velocity, AttractorObject];
     private attractionForce = 0.2;
     private damping = 0.98;
     private maxSpeed = 5;

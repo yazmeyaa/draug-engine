@@ -10,6 +10,7 @@ export type SystemComputeContext = {
 };
 
 export abstract class System {
+    public abstract readonly queryComponents: ClassType<object>[];
     public abstract readonly requiredComponents: ClassType<object>[];
     public readonly computeAfter?: Set<SystemCtor> = new Set();
     public readonly name: string;
@@ -27,6 +28,10 @@ export class SystemsManager {
     private systems_ = new Map<SystemCtor, System>();
     private executionOrder_: System[] = [];
     private built_ = false;
+    private requiredComponents_: Set<ClassType<object>> = new Set();
+    public get requiredComponents(): ClassType<object>[] {
+        return Array.from(this.requiredComponents_);
+    }
 
     public register<T extends System>(sys: T, world: World): void {
         if (this.built_) throw new Error("Cannot register after build");
@@ -35,6 +40,8 @@ export class SystemsManager {
             throw new Error("Duplicate system");
 
         this.systems_.set(ctor, sys);
+        for(const c of sys.requiredComponents) 
+            this.requiredComponents_.add(c);
     }
 
     public build(): void {
@@ -55,7 +62,7 @@ export class SystemsManager {
             throw new Error("Systems not built");
 
         for (const s of this.executionOrder_) {
-            const entities = world.query({ components: s.requiredComponents })
+            const entities = world.query({ components: s.queryComponents })
             const ctx = { entities, world } satisfies SystemComputeContext;
             s.compute(ctx);
         }

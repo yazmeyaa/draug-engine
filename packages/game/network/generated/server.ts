@@ -7,41 +7,35 @@
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 
-export const protobufPackage = "proto.game.network";
+export const protobufPackage = "proto.game.network.server";
 
-/** Set of server-only commands. */
+/** Server message */
 export interface ServerMessage {
-  payload:
-    | { $case: "positions"; positions: PositionBatch }
-    | { $case: "movements"; movements: MovementDirectionBatch }
-    | undefined;
+  payload: { $case: "motionUpdates"; motionUpdates: MotionUpdate } | undefined;
+}
+
+/** Tick update messages */
+export interface MotionUpdate {
+  tick: string;
+  movementDirectionChange: MovementDirectionChange[];
+  positionChange: PositionChange[];
 }
 
 /**
  * Entity change own movement direction.
  * dx, dy is in range [-1, 1].
  */
-export interface MovementDirection {
-  entityId: string;
+export interface MovementDirectionChange {
+  entityId: number;
   dx: number;
   dy: number;
 }
 
-/** Batch of ChangeMovementDirection messages. */
-export interface MovementDirectionBatch {
-  changeMovementDirection: MovementDirection[];
-}
-
 /** Some Entity change their position */
 export interface PositionChange {
-  entityId: string;
+  entityId: number;
   x: number;
   y: number;
-}
-
-/** Batch of ChangePosition messages. */
-export interface PositionBatch {
-  changePosition: PositionChange[];
 }
 
 function createBaseServerMessage(): ServerMessage {
@@ -51,11 +45,8 @@ function createBaseServerMessage(): ServerMessage {
 export const ServerMessage: MessageFns<ServerMessage> = {
   encode(message: ServerMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     switch (message.payload?.$case) {
-      case "positions":
-        PositionBatch.encode(message.payload.positions, writer.uint32(10).fork()).join();
-        break;
-      case "movements":
-        MovementDirectionBatch.encode(message.payload.movements, writer.uint32(18).fork()).join();
+      case "motionUpdates":
+        MotionUpdate.encode(message.payload.motionUpdates, writer.uint32(10).fork()).join();
         break;
     }
     return writer;
@@ -73,15 +64,7 @@ export const ServerMessage: MessageFns<ServerMessage> = {
             break;
           }
 
-          message.payload = { $case: "positions", positions: PositionBatch.decode(reader, reader.uint32()) };
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.payload = { $case: "movements", movements: MovementDirectionBatch.decode(reader, reader.uint32()) };
+          message.payload = { $case: "motionUpdates", motionUpdates: MotionUpdate.decode(reader, reader.uint32()) };
           continue;
         }
       }
@@ -95,20 +78,18 @@ export const ServerMessage: MessageFns<ServerMessage> = {
 
   fromJSON(object: any): ServerMessage {
     return {
-      payload: isSet(object.positions)
-        ? { $case: "positions", positions: PositionBatch.fromJSON(object.positions) }
-        : isSet(object.movements)
-        ? { $case: "movements", movements: MovementDirectionBatch.fromJSON(object.movements) }
+      payload: isSet(object.motionUpdates)
+        ? { $case: "motionUpdates", motionUpdates: MotionUpdate.fromJSON(object.motionUpdates) }
+        : isSet(object.motion_updates)
+        ? { $case: "motionUpdates", motionUpdates: MotionUpdate.fromJSON(object.motion_updates) }
         : undefined,
     };
   },
 
   toJSON(message: ServerMessage): unknown {
     const obj: any = {};
-    if (message.payload?.$case === "positions") {
-      obj.positions = PositionBatch.toJSON(message.payload.positions);
-    } else if (message.payload?.$case === "movements") {
-      obj.movements = MovementDirectionBatch.toJSON(message.payload.movements);
+    if (message.payload?.$case === "motionUpdates") {
+      obj.motionUpdates = MotionUpdate.toJSON(message.payload.motionUpdates);
     }
     return obj;
   },
@@ -119,17 +100,11 @@ export const ServerMessage: MessageFns<ServerMessage> = {
   fromPartial<I extends Exact<DeepPartial<ServerMessage>, I>>(object: I): ServerMessage {
     const message = createBaseServerMessage();
     switch (object.payload?.$case) {
-      case "positions": {
-        if (object.payload?.positions !== undefined && object.payload?.positions !== null) {
-          message.payload = { $case: "positions", positions: PositionBatch.fromPartial(object.payload.positions) };
-        }
-        break;
-      }
-      case "movements": {
-        if (object.payload?.movements !== undefined && object.payload?.movements !== null) {
+      case "motionUpdates": {
+        if (object.payload?.motionUpdates !== undefined && object.payload?.motionUpdates !== null) {
           message.payload = {
-            $case: "movements",
-            movements: MovementDirectionBatch.fromPartial(object.payload.movements),
+            $case: "motionUpdates",
+            motionUpdates: MotionUpdate.fromPartial(object.payload.motionUpdates),
           };
         }
         break;
@@ -139,14 +114,115 @@ export const ServerMessage: MessageFns<ServerMessage> = {
   },
 };
 
-function createBaseMovementDirection(): MovementDirection {
-  return { entityId: "0", dx: 0, dy: 0 };
+function createBaseMotionUpdate(): MotionUpdate {
+  return { tick: "0", movementDirectionChange: [], positionChange: [] };
 }
 
-export const MovementDirection: MessageFns<MovementDirection> = {
-  encode(message: MovementDirection, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.entityId !== "0") {
-      writer.uint32(8).int64(message.entityId);
+export const MotionUpdate: MessageFns<MotionUpdate> = {
+  encode(message: MotionUpdate, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.tick !== "0") {
+      writer.uint32(8).int64(message.tick);
+    }
+    for (const v of message.movementDirectionChange) {
+      MovementDirectionChange.encode(v!, writer.uint32(18).fork()).join();
+    }
+    for (const v of message.positionChange) {
+      PositionChange.encode(v!, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MotionUpdate {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMotionUpdate();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.tick = reader.int64().toString();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.movementDirectionChange.push(MovementDirectionChange.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.positionChange.push(PositionChange.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MotionUpdate {
+    return {
+      tick: isSet(object.tick) ? globalThis.String(object.tick) : "0",
+      movementDirectionChange: globalThis.Array.isArray(object?.movementDirectionChange)
+        ? object.movementDirectionChange.map((e: any) => MovementDirectionChange.fromJSON(e))
+        : globalThis.Array.isArray(object?.movement_direction_change)
+        ? object.movement_direction_change.map((e: any) => MovementDirectionChange.fromJSON(e))
+        : [],
+      positionChange: globalThis.Array.isArray(object?.positionChange)
+        ? object.positionChange.map((e: any) => PositionChange.fromJSON(e))
+        : globalThis.Array.isArray(object?.position_change)
+        ? object.position_change.map((e: any) => PositionChange.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: MotionUpdate): unknown {
+    const obj: any = {};
+    if (message.tick !== "0") {
+      obj.tick = message.tick;
+    }
+    if (message.movementDirectionChange?.length) {
+      obj.movementDirectionChange = message.movementDirectionChange.map((e) => MovementDirectionChange.toJSON(e));
+    }
+    if (message.positionChange?.length) {
+      obj.positionChange = message.positionChange.map((e) => PositionChange.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MotionUpdate>, I>>(base?: I): MotionUpdate {
+    return MotionUpdate.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MotionUpdate>, I>>(object: I): MotionUpdate {
+    const message = createBaseMotionUpdate();
+    message.tick = object.tick ?? "0";
+    message.movementDirectionChange =
+      object.movementDirectionChange?.map((e) => MovementDirectionChange.fromPartial(e)) || [];
+    message.positionChange = object.positionChange?.map((e) => PositionChange.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseMovementDirectionChange(): MovementDirectionChange {
+  return { entityId: 0, dx: 0, dy: 0 };
+}
+
+export const MovementDirectionChange: MessageFns<MovementDirectionChange> = {
+  encode(message: MovementDirectionChange, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.entityId !== 0) {
+      writer.uint32(8).int32(message.entityId);
     }
     if (message.dx !== 0) {
       writer.uint32(21).float(message.dx);
@@ -157,10 +233,10 @@ export const MovementDirection: MessageFns<MovementDirection> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): MovementDirection {
+  decode(input: BinaryReader | Uint8Array, length?: number): MovementDirectionChange {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseMovementDirection();
+    const message = createBaseMovementDirectionChange();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -169,7 +245,7 @@ export const MovementDirection: MessageFns<MovementDirection> = {
             break;
           }
 
-          message.entityId = reader.int64().toString();
+          message.entityId = reader.int32();
           continue;
         }
         case 2: {
@@ -197,22 +273,22 @@ export const MovementDirection: MessageFns<MovementDirection> = {
     return message;
   },
 
-  fromJSON(object: any): MovementDirection {
+  fromJSON(object: any): MovementDirectionChange {
     return {
       entityId: isSet(object.entityId)
-        ? globalThis.String(object.entityId)
+        ? globalThis.Number(object.entityId)
         : isSet(object.entity_id)
-        ? globalThis.String(object.entity_id)
-        : "0",
+        ? globalThis.Number(object.entity_id)
+        : 0,
       dx: isSet(object.dx) ? globalThis.Number(object.dx) : 0,
       dy: isSet(object.dy) ? globalThis.Number(object.dy) : 0,
     };
   },
 
-  toJSON(message: MovementDirection): unknown {
+  toJSON(message: MovementDirectionChange): unknown {
     const obj: any = {};
-    if (message.entityId !== "0") {
-      obj.entityId = message.entityId;
+    if (message.entityId !== 0) {
+      obj.entityId = Math.round(message.entityId);
     }
     if (message.dx !== 0) {
       obj.dx = message.dx;
@@ -223,91 +299,26 @@ export const MovementDirection: MessageFns<MovementDirection> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<MovementDirection>, I>>(base?: I): MovementDirection {
-    return MovementDirection.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<MovementDirectionChange>, I>>(base?: I): MovementDirectionChange {
+    return MovementDirectionChange.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<MovementDirection>, I>>(object: I): MovementDirection {
-    const message = createBaseMovementDirection();
-    message.entityId = object.entityId ?? "0";
+  fromPartial<I extends Exact<DeepPartial<MovementDirectionChange>, I>>(object: I): MovementDirectionChange {
+    const message = createBaseMovementDirectionChange();
+    message.entityId = object.entityId ?? 0;
     message.dx = object.dx ?? 0;
     message.dy = object.dy ?? 0;
     return message;
   },
 };
 
-function createBaseMovementDirectionBatch(): MovementDirectionBatch {
-  return { changeMovementDirection: [] };
-}
-
-export const MovementDirectionBatch: MessageFns<MovementDirectionBatch> = {
-  encode(message: MovementDirectionBatch, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    for (const v of message.changeMovementDirection) {
-      MovementDirection.encode(v!, writer.uint32(10).fork()).join();
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): MovementDirectionBatch {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseMovementDirectionBatch();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.changeMovementDirection.push(MovementDirection.decode(reader, reader.uint32()));
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): MovementDirectionBatch {
-    return {
-      changeMovementDirection: globalThis.Array.isArray(object?.changeMovementDirection)
-        ? object.changeMovementDirection.map((e: any) => MovementDirection.fromJSON(e))
-        : globalThis.Array.isArray(object?.change_movement_direction)
-        ? object.change_movement_direction.map((e: any) => MovementDirection.fromJSON(e))
-        : [],
-    };
-  },
-
-  toJSON(message: MovementDirectionBatch): unknown {
-    const obj: any = {};
-    if (message.changeMovementDirection?.length) {
-      obj.changeMovementDirection = message.changeMovementDirection.map((e) => MovementDirection.toJSON(e));
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<MovementDirectionBatch>, I>>(base?: I): MovementDirectionBatch {
-    return MovementDirectionBatch.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<MovementDirectionBatch>, I>>(object: I): MovementDirectionBatch {
-    const message = createBaseMovementDirectionBatch();
-    message.changeMovementDirection = object.changeMovementDirection?.map((e) => MovementDirection.fromPartial(e)) ||
-      [];
-    return message;
-  },
-};
-
 function createBasePositionChange(): PositionChange {
-  return { entityId: "0", x: 0, y: 0 };
+  return { entityId: 0, x: 0, y: 0 };
 }
 
 export const PositionChange: MessageFns<PositionChange> = {
   encode(message: PositionChange, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.entityId !== "0") {
-      writer.uint32(8).int64(message.entityId);
+    if (message.entityId !== 0) {
+      writer.uint32(8).int32(message.entityId);
     }
     if (message.x !== 0) {
       writer.uint32(21).float(message.x);
@@ -330,7 +341,7 @@ export const PositionChange: MessageFns<PositionChange> = {
             break;
           }
 
-          message.entityId = reader.int64().toString();
+          message.entityId = reader.int32();
           continue;
         }
         case 2: {
@@ -361,10 +372,10 @@ export const PositionChange: MessageFns<PositionChange> = {
   fromJSON(object: any): PositionChange {
     return {
       entityId: isSet(object.entityId)
-        ? globalThis.String(object.entityId)
+        ? globalThis.Number(object.entityId)
         : isSet(object.entity_id)
-        ? globalThis.String(object.entity_id)
-        : "0",
+        ? globalThis.Number(object.entity_id)
+        : 0,
       x: isSet(object.x) ? globalThis.Number(object.x) : 0,
       y: isSet(object.y) ? globalThis.Number(object.y) : 0,
     };
@@ -372,8 +383,8 @@ export const PositionChange: MessageFns<PositionChange> = {
 
   toJSON(message: PositionChange): unknown {
     const obj: any = {};
-    if (message.entityId !== "0") {
-      obj.entityId = message.entityId;
+    if (message.entityId !== 0) {
+      obj.entityId = Math.round(message.entityId);
     }
     if (message.x !== 0) {
       obj.x = message.x;
@@ -389,73 +400,9 @@ export const PositionChange: MessageFns<PositionChange> = {
   },
   fromPartial<I extends Exact<DeepPartial<PositionChange>, I>>(object: I): PositionChange {
     const message = createBasePositionChange();
-    message.entityId = object.entityId ?? "0";
+    message.entityId = object.entityId ?? 0;
     message.x = object.x ?? 0;
     message.y = object.y ?? 0;
-    return message;
-  },
-};
-
-function createBasePositionBatch(): PositionBatch {
-  return { changePosition: [] };
-}
-
-export const PositionBatch: MessageFns<PositionBatch> = {
-  encode(message: PositionBatch, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    for (const v of message.changePosition) {
-      PositionChange.encode(v!, writer.uint32(10).fork()).join();
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): PositionBatch {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePositionBatch();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.changePosition.push(PositionChange.decode(reader, reader.uint32()));
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): PositionBatch {
-    return {
-      changePosition: globalThis.Array.isArray(object?.changePosition)
-        ? object.changePosition.map((e: any) => PositionChange.fromJSON(e))
-        : globalThis.Array.isArray(object?.change_position)
-        ? object.change_position.map((e: any) => PositionChange.fromJSON(e))
-        : [],
-    };
-  },
-
-  toJSON(message: PositionBatch): unknown {
-    const obj: any = {};
-    if (message.changePosition?.length) {
-      obj.changePosition = message.changePosition.map((e) => PositionChange.toJSON(e));
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<PositionBatch>, I>>(base?: I): PositionBatch {
-    return PositionBatch.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<PositionBatch>, I>>(object: I): PositionBatch {
-    const message = createBasePositionBatch();
-    message.changePosition = object.changePosition?.map((e) => PositionChange.fromPartial(e)) || [];
     return message;
   },
 };
