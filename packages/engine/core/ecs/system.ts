@@ -13,10 +13,8 @@ export abstract class System {
     public abstract readonly queryComponents: ClassType<object>[];
     public abstract readonly requiredComponents: ClassType<object>[];
     public readonly computeAfter?: Set<SystemCtor> = new Set();
-    public readonly name: string;
 
-    constructor(name: string, deps: SystemCtor[] = []) {
-        this.name = name;
+    constructor(...deps: SystemCtor[]) {
         deps.forEach(d => this.computeAfter?.add(d));
     }
 

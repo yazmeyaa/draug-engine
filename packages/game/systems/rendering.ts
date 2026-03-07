@@ -23,7 +23,7 @@ export type Camera = {
 
 export class RenderingSystem extends System {
     constructor() {
-        super(RenderingSystem.name, [MovementSystem])
+        super(MovementSystem)
     }
     public requiredComponents: ClassType<object>[] = [Renderable, Position];
     public queryComponents: ClassType<object>[] = [Renderable, Position];

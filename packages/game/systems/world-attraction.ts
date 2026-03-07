@@ -7,7 +7,7 @@ import { EntityRef } from "@/packages/engine/core/ecs/entity";
 
 export class AttractionSystem extends System {
     constructor() {
-        super(AttractionSystem.name);
+        super();
     }
     public queryComponents: ClassType<object>[] = [Position, Velocity];
     public requiredComponents: ClassType<object>[] = [Position, Velocity, AttractorObject];

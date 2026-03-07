@@ -5,10 +5,12 @@ import { Position } from "@/packages/game/components/position";
 import { Velocity } from "@/packages/game/components/velocity";
 
 export class MovementSystem extends System {
+    // Компоненты, которые необходимы для работы системы
     public requiredComponents: ClassType<object>[] = [Position, Velocity];
+    // Объекты которые имеют эти компоненты будут инжектированы в контекст compute
     public queryComponents: ClassType<object>[] = [Position, Velocity];
     constructor() {
-        super(MovementSystem.name)
+        super()
     }
 
     public compute(ctx: SystemComputeContext): void {
