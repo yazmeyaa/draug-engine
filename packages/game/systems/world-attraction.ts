@@ -1,5 +1,5 @@
 import { System, SystemComputeContext } from "@/packages/engine/core/ecs/system";
-import { ClassType } from "@/packages/types/class";
+import { ComponentType } from "@/packages/types/class";
 import { Position } from "../components/position";
 import { AttractorObject } from "../components/attrcator";
 import { Velocity } from "../components/velocity";
@@ -9,8 +9,8 @@ export class AttractionSystem extends System {
     constructor() {
         super();
     }
-    public queryComponents: ClassType<object>[] = [Position, Velocity];
-    public requiredComponents: ClassType<object>[] = [Position, Velocity, AttractorObject];
+    public queryComponents: ComponentType[] = [Position, Velocity];
+    public requiredComponents: ComponentType[] = [Position, Velocity, AttractorObject];
     private attractionForce = 0.2;
     private damping = 0.98;
     private maxSpeed = 5;

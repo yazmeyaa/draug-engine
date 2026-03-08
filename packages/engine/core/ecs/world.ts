@@ -1,10 +1,11 @@
-import { ClassType } from "@/packages/types/class";
+import { ClassType, ComponentType } from "@/packages/types/class";
 import { ComponentsManager, ComponentStorage } from "./component";
-import { EntitiesManager } from "./entity";
+import { EntitiesManager, EntityID } from "./entity";
 import { SystemsManager } from "./system";
+import { ECS_DEFAULTS } from "./constant";
 
 export type QueryParameters = {
-    components?: ClassType<object>[];
+    components?: ComponentType[];
     excludeEntitiesIds?: number[];
 }
 
@@ -12,6 +13,10 @@ export class World {
     public readonly entities = new EntitiesManager();
     public readonly components = new ComponentsManager();
     public readonly systems = new SystemsManager();
+
+    constructor(maxEntityCount: number = ECS_DEFAULTS.MAX_ENTITY_COUNT) {
+        this.components = new ComponentsManager(maxEntityCount);
+    }
 
     public query(params: QueryParameters): number[] {
         const { components, excludeEntitiesIds } = params;
@@ -57,7 +62,17 @@ export class World {
         return result;
     }
 
+    public addComponent<T extends object>(id: EntityID, component: ClassType<T>, initFn?: (obj: T) => void): void {
+        const storage = this.components.getComponentStorage(component);
+        storage.addComponent(id, (o) => {
+            if (initFn) {
+                initFn(o);
+            }
+            return o;
+        });
+    };
+
     public update(dt: number): void {
-        this.systems.update(this);
+        this.systems.update(this, dt);
     }
 };

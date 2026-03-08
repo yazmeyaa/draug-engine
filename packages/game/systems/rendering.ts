@@ -1,5 +1,5 @@
 import { System, SystemComputeContext } from "@/packages/engine/core/ecs/system";
-import { ClassType } from "@/packages/types/class";
+import { ComponentType } from "@/packages/types/class";
 import { Position } from "@/packages/game/components/position";
 import { Renderable } from "@/packages/game/components/renderable";
 import { World } from "@/packages/engine/core/ecs/world";
@@ -25,8 +25,8 @@ export class RenderingSystem extends System {
     constructor() {
         super(MovementSystem)
     }
-    public requiredComponents: ClassType<object>[] = [Renderable, Position];
-    public queryComponents: ClassType<object>[] = [Renderable, Position];
+    public requiredComponents: ComponentType[] = [Renderable, Position];
+    public queryComponents: ComponentType[] = [Renderable, Position];
     public compute(_ctx: SystemComputeContext): void { }
 
     public getSnapshot(world: World, camera: Camera): RenderingSnapshot {

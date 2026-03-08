@@ -2,17 +2,39 @@ syntax = "proto3";
 
 package proto.game.network.server;
 
+// ECS Archetype identificator
+enum EntityType {
+  PLAYER = 0;
+}
+
 // Server message
 message ServerMessage {
   oneof payload {
-    MotionUpdate motion_updates = 1;
+    MotionUpdate motidon_updates = 1;
   }
 }
 
 // Player connected to the server
 message PlayerConnected {
   int32 entity_id = 1;
-};
+}
+
+// Position
+message Position {
+  float x = 1;
+  float y = 2;
+}
+
+// Player just spawned in the world
+message SpawnedPlayer {
+  EntityType entity_type = 1;
+  Position position = 2;
+}
+
+// Player disconnected from the server
+message PlayerDisconnected {
+  int32 entity_id = 1;
+}
 
 // Tick update messages
 message MotionUpdate {
@@ -32,6 +54,5 @@ message MovementDirectionChange {
 // Some Entity change their position
 message PositionChange {
   int32 entity_id = 1;
-  float x         = 2;
-  float y         = 3;
+  Position position = 2;
 }

@@ -2,16 +2,18 @@ import { Bitmap } from "bitmap-index";
 import { SparseSet } from "ts-sparse-set";
 import { ObjectPool } from "../../../core/memory/pool";
 import { UnregisteredComponentStorageError } from "./entity";
+import { ECS_DEFAULTS } from "./constant";
+import { ComponentType } from "@/packages/types/class";
 
 export class ComponentStorage
     // Can store only pointer-type objects
     <T extends object> {
-        private bits_: Bitmap;
-        private set_: SparseSet<T>;
-        private pool_: ObjectPool<T>;
-        private id_: number = 0;
+    private bits_: Bitmap;
+    private set_: SparseSet<T>;
+    private pool_: ObjectPool<T>;
+    private id_: number = 0;
 
-    constructor(cap = 1024, factory: () => T) {
+    constructor(cap = ECS_DEFAULTS.MAX_ENTITY_COUNT, factory: () => T) {
         this.set_ = new SparseSet(cap);
         this.bits_ = new Bitmap(cap);
         this.pool_ = new ObjectPool(factory, cap);
@@ -35,7 +37,7 @@ export class ComponentStorage
 
     public removeComponent(id: number): void {
         const obj = this.set_.get(id);
-        if(!obj) return;
+        if (!obj) return;
         this.bits_.remove(id);
         this.pool_.release(obj);
         this.set_.remove(id);
@@ -45,12 +47,12 @@ export class ComponentStorage
         const res: T[] = new Array(ids.length);
         let idx = 0;
 
-        for(const id of ids) {
+        for (const id of ids) {
             const obj = this.set_.get(id);
-            if(obj !== null) res[idx++] = obj;
+            if (obj !== null) res[idx++] = obj;
         }
         res.length = idx;
-        
+
         return res;
     }
 
@@ -60,16 +62,16 @@ export class ComponentStorage
 
     public tryGet(id: number): T {
         const x = this.set_.get(id);
-        if(!x) 
+        if (!x)
             throw new Error(`Requesting non-existing item with ID ${id}.`);
         return x;
     }
 
     public writeComponentsToBuf(ids: ReadonlyArray<number>, out: T[]): number {
         let len = 0;
-        for(const id of ids) {
+        for (const id of ids) {
             const obj = this.set_.get(id);
-            if(obj !== null) out[len++] = obj;
+            if (obj !== null) out[len++] = obj;
         }
         return len;
     }
@@ -94,38 +96,41 @@ export class ComponentStorage
 type RegisterComponentOptions<T extends object> = {
     factory?: () => T;
 };
-type ClassType<T> = new (...args: any[]) => T;
 export class ComponentAlreadyRegisteredError extends Error {
-    constructor(component: ClassType<any>) {
+    constructor(component: ComponentType) {
         super(`Component ${component.name} already registered!`)
     }
 }
 
 export class ComponentsManager {
-    private readonly stores_ = new Map<ClassType<any>, ComponentStorage<any>>();
+    private readonly stores_ = new Map<ComponentType, ComponentStorage<any>>();
     private currId_ = 0;
     private nextId(): number {
         return ++this.currId_;
     }
 
-    public registerComponent<T extends object>(component: ClassType<T>, opts?: RegisterComponentOptions<T>): ComponentStorage<T> {
-        if(this.stores_.has(component))
+    constructor(
+        private maxEntityCount: number = ECS_DEFAULTS.MAX_ENTITY_COUNT
+    ) {}
+
+    public registerComponent<T extends object>(component: ComponentType<T>, opts?: RegisterComponentOptions<T>): ComponentStorage<T> {
+        if (this.stores_.has(component))
             throw new ComponentAlreadyRegisteredError(component)
 
         const defaultFactoryStorage = (...args: any[]) => new component(...args);
         const factory = opts?.factory ?? defaultFactoryStorage;
-        const store = new ComponentStorage(1024, factory)
+        const store = new ComponentStorage(this.maxEntityCount, factory)
         store._internalSetId(this.nextId());
 
         this.stores_.set(component, store);
         return store;
     }
 
-    public getComponentStorage<T extends object>(component: ClassType<T>): ComponentStorage<T> {
+    public getComponentStorage<T extends object>(component: ComponentType<T>): ComponentStorage<T> {
         const store = this.stores_.get(component);
-        if(store === undefined) 
+        if (store === undefined)
             throw new UnregisteredComponentStorageError(component);
 
         return store;
-    } 
+    }
 }

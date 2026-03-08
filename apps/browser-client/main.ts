@@ -6,6 +6,7 @@ import { Camera, RenderingSystem } from "@/packages/game/systems/rendering";
 import { ClientInputUpdate, ClientMessage, ClientMovementDirection } from "@/packages/game/network/generated/client";
 import { ServerMessage } from "@/packages/game/network/generated/server";
 import { createClientSideWorld } from "@/packages/game/create-world";
+import { createPlayer } from "@/packages/game/archetypes/players";
 
 const world = createClientSideWorld();
 world.systems.build();
@@ -61,18 +62,18 @@ let ws: WebSocket;
 function calculateMovement(): { dx: number; dy: number } {
   let dx = 0;
   let dy = 0;
-  
+
   if (keysPressed["ArrowRight"]) dx += 1;
   if (keysPressed["ArrowLeft"]) dx -= 1;
   if (keysPressed["ArrowUp"]) dy -= 1;
   if (keysPressed["ArrowDown"]) dy += 1;
-  
+
   return { dx, dy };
 }
 
 function sendMovement(dx: number, dy: number) {
   if (!ws || ws.readyState !== WebSocket.OPEN) return;
-  
+
   const movementMsg = ClientMovementDirection.create({ dx, dy });
   const inputMessage = ClientInputUpdate.create({ clientMovementDirection: movementMsg });
 
@@ -90,18 +91,18 @@ function sendMovement(dx: number, dy: number) {
 const game = new BrowserGame(world, (world) => {
   step += 1;
   frameCount++;
-  
+
   const currentTime = performance.now();
   const deltaTime = currentTime - lastTime;
-  
+
   if (deltaTime >= 1000) {
     fps = Math.round((frameCount * 1000) / deltaTime);
     frameCount = 0;
     lastTime = currentTime;
   }
-  
-  world.systems.update(world);
-  
+
+  world.update(deltaTime);
+
   // Check for movement changes on each world update
   const { dx, dy } = calculateMovement();
   if (dx !== lastDx || dy !== lastDy) {
@@ -197,9 +198,9 @@ ws.onerror = (error) => {
 
 ws.onmessage = (event) => {
   const data = ServerMessage.decode(new Uint8Array(event.data));
-  switch(data.payload?.$case) {
-    case 'motionUpdates': 
-      if(data.payload.motionUpdates.movementDirectionChange.length > 0)
+  switch (data.payload?.$case) {
+    case 'motionUpdates':
+      if (data.payload.motionUpdates.movementDirectionChange.length > 0)
         console.log(data.payload.motionUpdates.movementDirectionChange.map(x => `Entity ${x.entityId}: dx=${x.dx}, dy=${x.dy}`).join(''))
       break;
     default:
@@ -207,3 +208,12 @@ ws.onmessage = (event) => {
   }
 };
 
+createPlayer(world, {
+  position: {
+    x: 1,
+    y: 2,
+  },
+  isLocal: true,
+  needsRendering: true,
+  renderable: { layer: 1, spriteId: '1' },
+})

@@ -1,17 +1,18 @@
 import { DAGNode, VisitedState } from "../../../core/graph/dag";
 import type { World } from "./world";
-import { ClassType } from "../../../types/class";
+import { ClassType, ComponentType } from "../../../types/class";
 
 export type SystemCtor<T extends System = System> = ClassType<T>;
 
 export type SystemComputeContext = {
     entities: number[];
     world: World;
+    dt: number;
 };
 
 export abstract class System {
-    public abstract readonly queryComponents: ClassType<object>[];
-    public abstract readonly requiredComponents: ClassType<object>[];
+    public abstract readonly queryComponents: ComponentType[];
+    public abstract readonly requiredComponents: ComponentType[];
     public readonly computeAfter?: Set<SystemCtor> = new Set();
 
     constructor(...deps: SystemCtor[]) {
@@ -26,12 +27,12 @@ export class SystemsManager {
     private systems_ = new Map<SystemCtor, System>();
     private executionOrder_: System[] = [];
     private built_ = false;
-    private requiredComponents_: Set<ClassType<object>> = new Set();
-    public get requiredComponents(): ClassType<object>[] {
+    private requiredComponents_: Set<ComponentType> = new Set();
+    public get requiredComponents(): ComponentType[] {
         return Array.from(this.requiredComponents_);
     }
 
-    public register<T extends System>(sys: T, world: World): void {
+    public register<T extends System>(sys: T): void {
         if (this.built_) throw new Error("Cannot register after build");
         const ctor = sys.constructor as SystemCtor<T>
         if (this.systems_.has(ctor))
@@ -55,13 +56,13 @@ export class SystemsManager {
         return s as T;
     }
 
-    public update(world: World) {
+    public update(world: World, dt: number) {
         if (!this.built_)
             throw new Error("Systems not built");
 
         for (const s of this.executionOrder_) {
             const entities = world.query({ components: s.queryComponents })
-            const ctx = { entities, world } satisfies SystemComputeContext;
+            const ctx = { entities, world, dt} satisfies SystemComputeContext;
             s.compute(ctx);
         }
     }
