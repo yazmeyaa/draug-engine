@@ -12,7 +12,6 @@ export type PlayerInitialData = {
     renderable?: Renderable;
     networkId?: number;
     isLocal?: boolean;
-    needsRendering?: boolean;
 };
 export function createPlayer(world: World, initData: PlayerInitialData): EntityRef {
     const id = world.entities.getId();
@@ -34,8 +33,11 @@ export function createPlayer(world: World, initData: PlayerInitialData): EntityR
         })
     }
 
-    if (initData.needsRendering) {
-        world.addComponent(id, Renderable);
+    if (initData.renderable) {
+        world.addComponent(id, Renderable, (obj) => {
+            obj.layer = initData.renderable!.layer;
+            obj.spriteId = initData.renderable!.spriteId;
+        });
     }
 
     return ref;

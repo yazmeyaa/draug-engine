@@ -214,6 +214,8 @@ createPlayer(world, {
     y: 2,
   },
   isLocal: true,
-  needsRendering: true,
-  renderable: { layer: 1, spriteId: '1' },
-})
+  renderable: {
+    layer: 1,
+    spriteId: '1',
+  },
+})  

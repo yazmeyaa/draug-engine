@@ -54,6 +54,7 @@ const wss = new WebsocketServer<GameUserData>({
     },
     onClientDisconnect(ctx) {
         const {playerEntityID} = ctx.userData
+        console.log(`Player disconnected! ${ctx.reason.toString()}`)
         updates.delete(playerEntityID);
     },
     onClientMessage: (ctx) => {
