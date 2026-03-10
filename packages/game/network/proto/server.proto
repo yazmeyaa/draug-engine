@@ -14,25 +14,22 @@ message ServerMessage {
   }
 }
 
-// Player connected to the server
-message PlayerConnected {
-  int32 entity_id = 1;
-}
-
 // Position
 message Position {
   float x = 1;
   float y = 2;
 }
 
-// Player just spawned in the world
-message SpawnedPlayer {
+// Entity just spawned in the world
+message EntitySpawned {
   EntityType entity_type = 1;
-  Position position = 2;
+  int32      entity_id   = 2;
+
+  optional Position position = 3;
 }
 
-// Player disconnected from the server
-message PlayerDisconnected {
+// Entity despawned
+message DespawnEntity {
   int32 entity_id = 1;
 }
 
@@ -53,6 +50,6 @@ message MovementDirectionChange {
 
 // Some Entity change their position
 message PositionChange {
-  int32 entity_id = 1;
-  Position position = 2;
+  int32    entity_id = 1;
+  Position position  = 2;
 }
