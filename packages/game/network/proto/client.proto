@@ -6,6 +6,8 @@ package proto.game.network.client;
 message ClientMessage {
   oneof payload {
     ClientInputUpdate client_input_update = 1;
+    ClientMovementDirection client_movement_direction = 2;
+    ClientChangeColor client_change_color = 3;
   }
 }
 

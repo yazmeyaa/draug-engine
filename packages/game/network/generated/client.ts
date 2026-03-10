@@ -11,7 +11,11 @@ export const protobufPackage = "proto.game.network.client";
 
 /** Set of client-only commands. */
 export interface ClientMessage {
-  payload: { $case: "clientInputUpdate"; clientInputUpdate: ClientInputUpdate } | undefined;
+  payload:
+    | { $case: "clientInputUpdate"; clientInputUpdate: ClientInputUpdate }
+    | { $case: "clientMovementDirection"; clientMovementDirection: ClientMovementDirection }
+    | { $case: "clientChangeColor"; clientChangeColor: ClientChangeColor }
+    | undefined;
 }
 
 /** Client input updates */
@@ -46,6 +50,12 @@ export const ClientMessage: MessageFns<ClientMessage> = {
       case "clientInputUpdate":
         ClientInputUpdate.encode(message.payload.clientInputUpdate, writer.uint32(10).fork()).join();
         break;
+      case "clientMovementDirection":
+        ClientMovementDirection.encode(message.payload.clientMovementDirection, writer.uint32(18).fork()).join();
+        break;
+      case "clientChangeColor":
+        ClientChangeColor.encode(message.payload.clientChangeColor, writer.uint32(26).fork()).join();
+        break;
     }
     return writer;
   },
@@ -68,6 +78,28 @@ export const ClientMessage: MessageFns<ClientMessage> = {
           };
           continue;
         }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.payload = {
+            $case: "clientMovementDirection",
+            clientMovementDirection: ClientMovementDirection.decode(reader, reader.uint32()),
+          };
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.payload = {
+            $case: "clientChangeColor",
+            clientChangeColor: ClientChangeColor.decode(reader, reader.uint32()),
+          };
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -83,6 +115,20 @@ export const ClientMessage: MessageFns<ClientMessage> = {
         ? { $case: "clientInputUpdate", clientInputUpdate: ClientInputUpdate.fromJSON(object.clientInputUpdate) }
         : isSet(object.client_input_update)
         ? { $case: "clientInputUpdate", clientInputUpdate: ClientInputUpdate.fromJSON(object.client_input_update) }
+        : isSet(object.clientMovementDirection)
+        ? {
+          $case: "clientMovementDirection",
+          clientMovementDirection: ClientMovementDirection.fromJSON(object.clientMovementDirection),
+        }
+        : isSet(object.client_movement_direction)
+        ? {
+          $case: "clientMovementDirection",
+          clientMovementDirection: ClientMovementDirection.fromJSON(object.client_movement_direction),
+        }
+        : isSet(object.clientChangeColor)
+        ? { $case: "clientChangeColor", clientChangeColor: ClientChangeColor.fromJSON(object.clientChangeColor) }
+        : isSet(object.client_change_color)
+        ? { $case: "clientChangeColor", clientChangeColor: ClientChangeColor.fromJSON(object.client_change_color) }
         : undefined,
     };
   },
@@ -91,6 +137,10 @@ export const ClientMessage: MessageFns<ClientMessage> = {
     const obj: any = {};
     if (message.payload?.$case === "clientInputUpdate") {
       obj.clientInputUpdate = ClientInputUpdate.toJSON(message.payload.clientInputUpdate);
+    } else if (message.payload?.$case === "clientMovementDirection") {
+      obj.clientMovementDirection = ClientMovementDirection.toJSON(message.payload.clientMovementDirection);
+    } else if (message.payload?.$case === "clientChangeColor") {
+      obj.clientChangeColor = ClientChangeColor.toJSON(message.payload.clientChangeColor);
     }
     return obj;
   },
@@ -106,6 +156,24 @@ export const ClientMessage: MessageFns<ClientMessage> = {
           message.payload = {
             $case: "clientInputUpdate",
             clientInputUpdate: ClientInputUpdate.fromPartial(object.payload.clientInputUpdate),
+          };
+        }
+        break;
+      }
+      case "clientMovementDirection": {
+        if (object.payload?.clientMovementDirection !== undefined && object.payload?.clientMovementDirection !== null) {
+          message.payload = {
+            $case: "clientMovementDirection",
+            clientMovementDirection: ClientMovementDirection.fromPartial(object.payload.clientMovementDirection),
+          };
+        }
+        break;
+      }
+      case "clientChangeColor": {
+        if (object.payload?.clientChangeColor !== undefined && object.payload?.clientChangeColor !== null) {
+          message.payload = {
+            $case: "clientChangeColor",
+            clientChangeColor: ClientChangeColor.fromPartial(object.payload.clientChangeColor),
           };
         }
         break;

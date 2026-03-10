@@ -9,9 +9,65 @@ import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 
 export const protobufPackage = "proto.game.network.server";
 
+/** ECS Archetype identificator */
+export enum EntityType {
+  PLAYER = 0,
+  UNRECOGNIZED = -1,
+}
+
+export function entityTypeFromJSON(object: any): EntityType {
+  switch (object) {
+    case 0:
+    case "PLAYER":
+      return EntityType.PLAYER;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return EntityType.UNRECOGNIZED;
+  }
+}
+
+export function entityTypeToJSON(object: EntityType): string {
+  switch (object) {
+    case EntityType.PLAYER:
+      return "PLAYER";
+    case EntityType.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 /** Server message */
 export interface ServerMessage {
-  payload: { $case: "motionUpdates"; motionUpdates: MotionUpdate } | undefined;
+  payload:
+    | { $case: "motidonUpdates"; motidonUpdates: MotionUpdate }
+    | { $case: "entitySpawned"; entitySpawned: EntitySpawned }
+    | { $case: "entityDespawned"; entityDespawned: EntityDespawned }
+    | { $case: "possessEntity"; possessEntity: PossessEntity }
+    | undefined;
+}
+
+/** Position */
+export interface Position {
+  x: number;
+  y: number;
+}
+
+/** Entity just spawned in the world */
+export interface EntitySpawned {
+  entityType: EntityType;
+  entityId: number;
+  position?: Position | undefined;
+}
+
+/** Entity despawned */
+export interface EntityDespawned {
+  entityId: number;
+}
+
+/** Server instructs client to possess (take control of) an entity */
+export interface PossessEntity {
+  entityId: number;
 }
 
 /** Tick update messages */
@@ -34,8 +90,7 @@ export interface MovementDirectionChange {
 /** Some Entity change their position */
 export interface PositionChange {
   entityId: number;
-  x: number;
-  y: number;
+  position: Position | undefined;
 }
 
 function createBaseServerMessage(): ServerMessage {
@@ -45,8 +100,17 @@ function createBaseServerMessage(): ServerMessage {
 export const ServerMessage: MessageFns<ServerMessage> = {
   encode(message: ServerMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     switch (message.payload?.$case) {
-      case "motionUpdates":
-        MotionUpdate.encode(message.payload.motionUpdates, writer.uint32(10).fork()).join();
+      case "motidonUpdates":
+        MotionUpdate.encode(message.payload.motidonUpdates, writer.uint32(10).fork()).join();
+        break;
+      case "entitySpawned":
+        EntitySpawned.encode(message.payload.entitySpawned, writer.uint32(18).fork()).join();
+        break;
+      case "entityDespawned":
+        EntityDespawned.encode(message.payload.entityDespawned, writer.uint32(26).fork()).join();
+        break;
+      case "possessEntity":
+        PossessEntity.encode(message.payload.possessEntity, writer.uint32(34).fork()).join();
         break;
     }
     return writer;
@@ -64,7 +128,34 @@ export const ServerMessage: MessageFns<ServerMessage> = {
             break;
           }
 
-          message.payload = { $case: "motionUpdates", motionUpdates: MotionUpdate.decode(reader, reader.uint32()) };
+          message.payload = { $case: "motidonUpdates", motidonUpdates: MotionUpdate.decode(reader, reader.uint32()) };
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.payload = { $case: "entitySpawned", entitySpawned: EntitySpawned.decode(reader, reader.uint32()) };
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.payload = {
+            $case: "entityDespawned",
+            entityDespawned: EntityDespawned.decode(reader, reader.uint32()),
+          };
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.payload = { $case: "possessEntity", possessEntity: PossessEntity.decode(reader, reader.uint32()) };
           continue;
         }
       }
@@ -78,18 +169,36 @@ export const ServerMessage: MessageFns<ServerMessage> = {
 
   fromJSON(object: any): ServerMessage {
     return {
-      payload: isSet(object.motionUpdates)
-        ? { $case: "motionUpdates", motionUpdates: MotionUpdate.fromJSON(object.motionUpdates) }
-        : isSet(object.motion_updates)
-        ? { $case: "motionUpdates", motionUpdates: MotionUpdate.fromJSON(object.motion_updates) }
+      payload: isSet(object.motidonUpdates)
+        ? { $case: "motidonUpdates", motidonUpdates: MotionUpdate.fromJSON(object.motidonUpdates) }
+        : isSet(object.motidon_updates)
+        ? { $case: "motidonUpdates", motidonUpdates: MotionUpdate.fromJSON(object.motidon_updates) }
+        : isSet(object.entitySpawned)
+        ? { $case: "entitySpawned", entitySpawned: EntitySpawned.fromJSON(object.entitySpawned) }
+        : isSet(object.entity_spawned)
+        ? { $case: "entitySpawned", entitySpawned: EntitySpawned.fromJSON(object.entity_spawned) }
+        : isSet(object.entityDespawned)
+        ? { $case: "entityDespawned", entityDespawned: EntityDespawned.fromJSON(object.entityDespawned) }
+        : isSet(object.entity_despawned)
+        ? { $case: "entityDespawned", entityDespawned: EntityDespawned.fromJSON(object.entity_despawned) }
+        : isSet(object.possessEntity)
+        ? { $case: "possessEntity", possessEntity: PossessEntity.fromJSON(object.possessEntity) }
+        : isSet(object.possess_entity)
+        ? { $case: "possessEntity", possessEntity: PossessEntity.fromJSON(object.possess_entity) }
         : undefined,
     };
   },
 
   toJSON(message: ServerMessage): unknown {
     const obj: any = {};
-    if (message.payload?.$case === "motionUpdates") {
-      obj.motionUpdates = MotionUpdate.toJSON(message.payload.motionUpdates);
+    if (message.payload?.$case === "motidonUpdates") {
+      obj.motidonUpdates = MotionUpdate.toJSON(message.payload.motidonUpdates);
+    } else if (message.payload?.$case === "entitySpawned") {
+      obj.entitySpawned = EntitySpawned.toJSON(message.payload.entitySpawned);
+    } else if (message.payload?.$case === "entityDespawned") {
+      obj.entityDespawned = EntityDespawned.toJSON(message.payload.entityDespawned);
+    } else if (message.payload?.$case === "possessEntity") {
+      obj.possessEntity = PossessEntity.toJSON(message.payload.possessEntity);
     }
     return obj;
   },
@@ -100,16 +209,349 @@ export const ServerMessage: MessageFns<ServerMessage> = {
   fromPartial<I extends Exact<DeepPartial<ServerMessage>, I>>(object: I): ServerMessage {
     const message = createBaseServerMessage();
     switch (object.payload?.$case) {
-      case "motionUpdates": {
-        if (object.payload?.motionUpdates !== undefined && object.payload?.motionUpdates !== null) {
+      case "motidonUpdates": {
+        if (object.payload?.motidonUpdates !== undefined && object.payload?.motidonUpdates !== null) {
           message.payload = {
-            $case: "motionUpdates",
-            motionUpdates: MotionUpdate.fromPartial(object.payload.motionUpdates),
+            $case: "motidonUpdates",
+            motidonUpdates: MotionUpdate.fromPartial(object.payload.motidonUpdates),
+          };
+        }
+        break;
+      }
+      case "entitySpawned": {
+        if (object.payload?.entitySpawned !== undefined && object.payload?.entitySpawned !== null) {
+          message.payload = {
+            $case: "entitySpawned",
+            entitySpawned: EntitySpawned.fromPartial(object.payload.entitySpawned),
+          };
+        }
+        break;
+      }
+      case "entityDespawned": {
+        if (object.payload?.entityDespawned !== undefined && object.payload?.entityDespawned !== null) {
+          message.payload = {
+            $case: "entityDespawned",
+            entityDespawned: EntityDespawned.fromPartial(object.payload.entityDespawned),
+          };
+        }
+        break;
+      }
+      case "possessEntity": {
+        if (object.payload?.possessEntity !== undefined && object.payload?.possessEntity !== null) {
+          message.payload = {
+            $case: "possessEntity",
+            possessEntity: PossessEntity.fromPartial(object.payload.possessEntity),
           };
         }
         break;
       }
     }
+    return message;
+  },
+};
+
+function createBasePosition(): Position {
+  return { x: 0, y: 0 };
+}
+
+export const Position: MessageFns<Position> = {
+  encode(message: Position, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.x !== 0) {
+      writer.uint32(13).float(message.x);
+    }
+    if (message.y !== 0) {
+      writer.uint32(21).float(message.y);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): Position {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePosition();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 13) {
+            break;
+          }
+
+          message.x = reader.float();
+          continue;
+        }
+        case 2: {
+          if (tag !== 21) {
+            break;
+          }
+
+          message.y = reader.float();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Position {
+    return {
+      x: isSet(object.x) ? globalThis.Number(object.x) : 0,
+      y: isSet(object.y) ? globalThis.Number(object.y) : 0,
+    };
+  },
+
+  toJSON(message: Position): unknown {
+    const obj: any = {};
+    if (message.x !== 0) {
+      obj.x = message.x;
+    }
+    if (message.y !== 0) {
+      obj.y = message.y;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Position>, I>>(base?: I): Position {
+    return Position.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Position>, I>>(object: I): Position {
+    const message = createBasePosition();
+    message.x = object.x ?? 0;
+    message.y = object.y ?? 0;
+    return message;
+  },
+};
+
+function createBaseEntitySpawned(): EntitySpawned {
+  return { entityType: 0, entityId: 0, position: undefined };
+}
+
+export const EntitySpawned: MessageFns<EntitySpawned> = {
+  encode(message: EntitySpawned, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.entityType !== 0) {
+      writer.uint32(8).int32(message.entityType);
+    }
+    if (message.entityId !== 0) {
+      writer.uint32(16).int32(message.entityId);
+    }
+    if (message.position !== undefined) {
+      Position.encode(message.position, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): EntitySpawned {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseEntitySpawned();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.entityType = reader.int32() as any;
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.entityId = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.position = Position.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): EntitySpawned {
+    return {
+      entityType: isSet(object.entityType)
+        ? entityTypeFromJSON(object.entityType)
+        : isSet(object.entity_type)
+        ? entityTypeFromJSON(object.entity_type)
+        : 0,
+      entityId: isSet(object.entityId)
+        ? globalThis.Number(object.entityId)
+        : isSet(object.entity_id)
+        ? globalThis.Number(object.entity_id)
+        : 0,
+      position: isSet(object.position) ? Position.fromJSON(object.position) : undefined,
+    };
+  },
+
+  toJSON(message: EntitySpawned): unknown {
+    const obj: any = {};
+    if (message.entityType !== 0) {
+      obj.entityType = entityTypeToJSON(message.entityType);
+    }
+    if (message.entityId !== 0) {
+      obj.entityId = Math.round(message.entityId);
+    }
+    if (message.position !== undefined) {
+      obj.position = Position.toJSON(message.position);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<EntitySpawned>, I>>(base?: I): EntitySpawned {
+    return EntitySpawned.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<EntitySpawned>, I>>(object: I): EntitySpawned {
+    const message = createBaseEntitySpawned();
+    message.entityType = object.entityType ?? 0;
+    message.entityId = object.entityId ?? 0;
+    message.position = (object.position !== undefined && object.position !== null)
+      ? Position.fromPartial(object.position)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseEntityDespawned(): EntityDespawned {
+  return { entityId: 0 };
+}
+
+export const EntityDespawned: MessageFns<EntityDespawned> = {
+  encode(message: EntityDespawned, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.entityId !== 0) {
+      writer.uint32(8).int32(message.entityId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): EntityDespawned {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseEntityDespawned();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.entityId = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): EntityDespawned {
+    return {
+      entityId: isSet(object.entityId)
+        ? globalThis.Number(object.entityId)
+        : isSet(object.entity_id)
+        ? globalThis.Number(object.entity_id)
+        : 0,
+    };
+  },
+
+  toJSON(message: EntityDespawned): unknown {
+    const obj: any = {};
+    if (message.entityId !== 0) {
+      obj.entityId = Math.round(message.entityId);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<EntityDespawned>, I>>(base?: I): EntityDespawned {
+    return EntityDespawned.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<EntityDespawned>, I>>(object: I): EntityDespawned {
+    const message = createBaseEntityDespawned();
+    message.entityId = object.entityId ?? 0;
+    return message;
+  },
+};
+
+function createBasePossessEntity(): PossessEntity {
+  return { entityId: 0 };
+}
+
+export const PossessEntity: MessageFns<PossessEntity> = {
+  encode(message: PossessEntity, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.entityId !== 0) {
+      writer.uint32(8).int32(message.entityId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PossessEntity {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePossessEntity();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.entityId = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PossessEntity {
+    return {
+      entityId: isSet(object.entityId)
+        ? globalThis.Number(object.entityId)
+        : isSet(object.entity_id)
+        ? globalThis.Number(object.entity_id)
+        : 0,
+    };
+  },
+
+  toJSON(message: PossessEntity): unknown {
+    const obj: any = {};
+    if (message.entityId !== 0) {
+      obj.entityId = Math.round(message.entityId);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PossessEntity>, I>>(base?: I): PossessEntity {
+    return PossessEntity.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PossessEntity>, I>>(object: I): PossessEntity {
+    const message = createBasePossessEntity();
+    message.entityId = object.entityId ?? 0;
     return message;
   },
 };
@@ -312,7 +754,7 @@ export const MovementDirectionChange: MessageFns<MovementDirectionChange> = {
 };
 
 function createBasePositionChange(): PositionChange {
-  return { entityId: 0, x: 0, y: 0 };
+  return { entityId: 0, position: undefined };
 }
 
 export const PositionChange: MessageFns<PositionChange> = {
@@ -320,11 +762,8 @@ export const PositionChange: MessageFns<PositionChange> = {
     if (message.entityId !== 0) {
       writer.uint32(8).int32(message.entityId);
     }
-    if (message.x !== 0) {
-      writer.uint32(21).float(message.x);
-    }
-    if (message.y !== 0) {
-      writer.uint32(29).float(message.y);
+    if (message.position !== undefined) {
+      Position.encode(message.position, writer.uint32(18).fork()).join();
     }
     return writer;
   },
@@ -345,19 +784,11 @@ export const PositionChange: MessageFns<PositionChange> = {
           continue;
         }
         case 2: {
-          if (tag !== 21) {
+          if (tag !== 18) {
             break;
           }
 
-          message.x = reader.float();
-          continue;
-        }
-        case 3: {
-          if (tag !== 29) {
-            break;
-          }
-
-          message.y = reader.float();
+          message.position = Position.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -376,8 +807,7 @@ export const PositionChange: MessageFns<PositionChange> = {
         : isSet(object.entity_id)
         ? globalThis.Number(object.entity_id)
         : 0,
-      x: isSet(object.x) ? globalThis.Number(object.x) : 0,
-      y: isSet(object.y) ? globalThis.Number(object.y) : 0,
+      position: isSet(object.position) ? Position.fromJSON(object.position) : undefined,
     };
   },
 
@@ -386,11 +816,8 @@ export const PositionChange: MessageFns<PositionChange> = {
     if (message.entityId !== 0) {
       obj.entityId = Math.round(message.entityId);
     }
-    if (message.x !== 0) {
-      obj.x = message.x;
-    }
-    if (message.y !== 0) {
-      obj.y = message.y;
+    if (message.position !== undefined) {
+      obj.position = Position.toJSON(message.position);
     }
     return obj;
   },
@@ -401,8 +828,9 @@ export const PositionChange: MessageFns<PositionChange> = {
   fromPartial<I extends Exact<DeepPartial<PositionChange>, I>>(object: I): PositionChange {
     const message = createBasePositionChange();
     message.entityId = object.entityId ?? 0;
-    message.x = object.x ?? 0;
-    message.y = object.y ?? 0;
+    message.position = (object.position !== undefined && object.position !== null)
+      ? Position.fromPartial(object.position)
+      : undefined;
     return message;
   },
 };

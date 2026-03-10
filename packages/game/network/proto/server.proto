@@ -11,6 +11,9 @@ enum EntityType {
 message ServerMessage {
   oneof payload {
     MotionUpdate motidon_updates = 1;
+    EntitySpawned entity_spawned = 2;
+    EntityDespawned entity_despawned = 3;
+    PossessEntity possess_entity = 4;
   }
 }
 
@@ -29,7 +32,12 @@ message EntitySpawned {
 }
 
 // Entity despawned
-message DespawnEntity {
+message EntityDespawned {
+  int32 entity_id = 1;
+}
+
+// Server instructs client to possess (take control of) an entity
+message PossessEntity {
   int32 entity_id = 1;
 }
 
