@@ -10,7 +10,7 @@ enum EntityType {
 // Server message
 message ServerMessage {
   oneof payload {
-    MotionUpdate motidon_updates = 1;
+    MotionUpdate motion_updates = 1;
     EntitySpawned entity_spawned = 2;
     EntityDespawned entity_despawned = 3;
     PossessEntity possess_entity = 4;

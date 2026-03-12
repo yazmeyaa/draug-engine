@@ -40,7 +40,7 @@ export function entityTypeToJSON(object: EntityType): string {
 /** Server message */
 export interface ServerMessage {
   payload:
-    | { $case: "motidonUpdates"; motidonUpdates: MotionUpdate }
+    | { $case: "motionUpdates"; motionUpdates: MotionUpdate }
     | { $case: "entitySpawned"; entitySpawned: EntitySpawned }
     | { $case: "entityDespawned"; entityDespawned: EntityDespawned }
     | { $case: "possessEntity"; possessEntity: PossessEntity }
@@ -100,8 +100,8 @@ function createBaseServerMessage(): ServerMessage {
 export const ServerMessage: MessageFns<ServerMessage> = {
   encode(message: ServerMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     switch (message.payload?.$case) {
-      case "motidonUpdates":
-        MotionUpdate.encode(message.payload.motidonUpdates, writer.uint32(10).fork()).join();
+      case "motionUpdates":
+        MotionUpdate.encode(message.payload.motionUpdates, writer.uint32(10).fork()).join();
         break;
       case "entitySpawned":
         EntitySpawned.encode(message.payload.entitySpawned, writer.uint32(18).fork()).join();
@@ -128,7 +128,7 @@ export const ServerMessage: MessageFns<ServerMessage> = {
             break;
           }
 
-          message.payload = { $case: "motidonUpdates", motidonUpdates: MotionUpdate.decode(reader, reader.uint32()) };
+          message.payload = { $case: "motionUpdates", motionUpdates: MotionUpdate.decode(reader, reader.uint32()) };
           continue;
         }
         case 2: {
@@ -169,10 +169,10 @@ export const ServerMessage: MessageFns<ServerMessage> = {
 
   fromJSON(object: any): ServerMessage {
     return {
-      payload: isSet(object.motidonUpdates)
-        ? { $case: "motidonUpdates", motidonUpdates: MotionUpdate.fromJSON(object.motidonUpdates) }
-        : isSet(object.motidon_updates)
-        ? { $case: "motidonUpdates", motidonUpdates: MotionUpdate.fromJSON(object.motidon_updates) }
+      payload: isSet(object.motionUpdates)
+        ? { $case: "motionUpdates", motionUpdates: MotionUpdate.fromJSON(object.motionUpdates) }
+        : isSet(object.motion_updates)
+        ? { $case: "motionUpdates", motionUpdates: MotionUpdate.fromJSON(object.motion_updates) }
         : isSet(object.entitySpawned)
         ? { $case: "entitySpawned", entitySpawned: EntitySpawned.fromJSON(object.entitySpawned) }
         : isSet(object.entity_spawned)
@@ -191,8 +191,8 @@ export const ServerMessage: MessageFns<ServerMessage> = {
 
   toJSON(message: ServerMessage): unknown {
     const obj: any = {};
-    if (message.payload?.$case === "motidonUpdates") {
-      obj.motidonUpdates = MotionUpdate.toJSON(message.payload.motidonUpdates);
+    if (message.payload?.$case === "motionUpdates") {
+      obj.motionUpdates = MotionUpdate.toJSON(message.payload.motionUpdates);
     } else if (message.payload?.$case === "entitySpawned") {
       obj.entitySpawned = EntitySpawned.toJSON(message.payload.entitySpawned);
     } else if (message.payload?.$case === "entityDespawned") {
@@ -209,11 +209,11 @@ export const ServerMessage: MessageFns<ServerMessage> = {
   fromPartial<I extends Exact<DeepPartial<ServerMessage>, I>>(object: I): ServerMessage {
     const message = createBaseServerMessage();
     switch (object.payload?.$case) {
-      case "motidonUpdates": {
-        if (object.payload?.motidonUpdates !== undefined && object.payload?.motidonUpdates !== null) {
+      case "motionUpdates": {
+        if (object.payload?.motionUpdates !== undefined && object.payload?.motionUpdates !== null) {
           message.payload = {
-            $case: "motidonUpdates",
-            motidonUpdates: MotionUpdate.fromPartial(object.payload.motidonUpdates),
+            $case: "motionUpdates",
+            motionUpdates: MotionUpdate.fromPartial(object.payload.motionUpdates),
           };
         }
         break;

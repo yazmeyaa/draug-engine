@@ -58,19 +58,41 @@ export class ClientSocket<UserData = unknown> {
 }
 
 export class WebsocketServer<UserData = unknown> {
-    private wss: Server;
+    private wss: Server | null = null;
     private clients: ClientSocket<UserData>[] = [];
     private opts: WebsocketServerConstructorOptions<UserData>;
+    private heartbeatTimer: NodeJS.Timeout | null = null;
 
     constructor(opts?: WebsocketServerConstructorOptions<UserData>) {
-        this.opts = opts ?? {};
-        this.wss = new Server({ ...opts?.websocket });
+        this.opts = opts ?? {}
+    }
 
-        this.setupListeners();
-        this.setupHeartbeat(opts?.hearthBeatInterval ?? 30_000);
+    public start(): void {
+        if (this.wss) return;
+        this.wss = new Server({ ...this.opts.websocket })
+        this.setupListeners()
+        this.setupHeartbeat(this.opts.hearthBeatInterval ?? 30_000)
+    };
+    public stop() {
+        if (!this.wss) return
+
+        for (const c of this.clients) {
+            c.ws.terminate()
+        }
+
+        this.clients = []
+
+        if (this.heartbeatTimer) {
+            clearInterval(this.heartbeatTimer)
+            this.heartbeatTimer = null;
+        }
+
+        this.wss.close()
+        this.wss = null;
     }
 
     private setupListeners() {
+        if (!this.wss) return;
         this.wss.on("connection", (ws) => {
             this.onClientConnect(ws);
         });
@@ -94,7 +116,7 @@ export class WebsocketServer<UserData = unknown> {
     }
 
     private setupHeartbeat(interval: number) {
-        const timer = setInterval(() => {
+        this.heartbeatTimer = setInterval(() => {
             for (let i = this.clients.length - 1; i >= 0; i--) {
                 const socket = this.clients[i]!;
 
@@ -115,7 +137,9 @@ export class WebsocketServer<UserData = unknown> {
             }
         }, interval);
 
-        this.wss.on("close", () => clearInterval(timer));
+        if(this.wss) {
+            this.wss.on("close", () => clearInterval(this.heartbeatTimer!));
+        }
     }
 
     private onClientConnect(ws: WebSocket): void {
