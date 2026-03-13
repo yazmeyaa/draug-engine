@@ -54,7 +54,7 @@ setInterval(() => {
     world.systems.update(world);
     const aPos = pStore.tryGet(attractorId);
     console.log(`Attractor position: x=${aPos.x.toFixed(2)}, y=${aPos.y.toFixed(2)}`)
-    const ids = world.query({ components: [Position, Velocity] })
+    const ids = world.query({ take: [Position, Velocity] })
     for (const id of ids) {
         const pos = pStore.tryGet(id);
         const vel = vStore.tryGet(id);

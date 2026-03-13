@@ -18,7 +18,7 @@
     "build:client": "vite build --config apps/browser-client/vite.config.ts",
     "build:server": "node scripts/build-server.mjs",
     "dev:client": "vite --config apps/browser-client/vite.config.ts",
-    "dev:server": "ts-node -r tsconfig-paths/register apps/room-server/node.ts"
+    "dev:server": "ts-node -r tsconfig-paths/register apps/room-server/main.ts"
   },
   "devDependencies": {
     "@types/node": "^25.3.3",

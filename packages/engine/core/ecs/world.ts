@@ -1,11 +1,11 @@
 import { ClassType, ComponentType } from "@/packages/types/class";
 import { ComponentsManager, ComponentStorage } from "./component";
-import { EntitiesManager, EntityID } from "./entity";
+import { EntitiesManager, EntityID, EntityRef } from "./entity";
 import { SystemsManager } from "./system";
 import { ECS_DEFAULTS } from "./constant";
 
 export type QueryParameters = {
-    components?: ComponentType[];
+    include?: ComponentType[];
     excludeEntitiesIds?: number[];
 }
 
@@ -18,14 +18,14 @@ export class World {
         this.components = new ComponentsManager(maxEntityCount);
     }
 
-    public query(params: QueryParameters): number[] {
-        const { components, excludeEntitiesIds } = params;
-        if (!components || components.length === 0)
+    public query(params: QueryParameters): EntityRef[] {
+        const { excludeEntitiesIds, include } = params;
+        if (!include || include.length === 0)
             return [];
 
-        const stores: ComponentStorage<object>[] = new Array(components.length);
-        for (let i = 0; i < components.length; i++)
-            stores[i] = this.components.getComponentStorage(components[i]!);
+        const stores: ComponentStorage<object>[] = new Array(include.length);
+        for (let i = 0; i < include.length; i++)
+            stores[i] = this.components.getComponentStorage(include[i]!);
 
         let base = stores[0]!;
         let minCount = base.entitiesCount();
@@ -59,7 +59,7 @@ export class World {
             result.push(id);
         });
 
-        return result;
+        return result.map((i) => new EntityRef(this, i));
     }
 
     public addComponent<T extends object>(id: EntityID, component: ClassType<T>, initFn?: (obj: T) => void): void {

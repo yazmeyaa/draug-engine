@@ -30,15 +30,11 @@ export class RenderingSystem extends System {
     public compute(_ctx: SystemComputeContext): void { }
 
     public getSnapshot(world: World, camera: Camera): RenderingSnapshot {
-        const renderableStore = world.components.getComponentStorage(Renderable);
-        const positionStore = world.components.getComponentStorage(Position);
-
-        const ids = world.query({ components: [Position, Renderable] });
-        const snaps: RenderingSnapshot = new Array(ids.length);
-        for (let i = 0; i < ids.length; i++) {
-            const id = ids[i]!;
-            const r = renderableStore.tryGet(id);
-            const p = positionStore.tryGet(id);
+        const entities = world.query({ include: [Position, Renderable] });
+        const snaps: RenderingSnapshot = new Array(entities.length);
+        for (let i = 0; i < entities.length; i++) {
+            const entity = entities[i]!;
+            const [r, p] = entity.with(Renderable, Position);
 
             const cx = (p.x - camera.x) * camera.zoom + camera.width / 2;
             const cy = (p.y - camera.y) * camera.zoom + camera.height / 2;
@@ -48,7 +44,7 @@ export class RenderingSystem extends System {
                 y: cy,
                 spriteId: r.spriteId,
                 zIndex: r.layer,
-                entityId: id,
+                entityId: entity.id,
             } satisfies RenderingSnapshotEntry;
             snaps[i] = snapshot;
         }

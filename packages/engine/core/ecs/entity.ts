@@ -42,7 +42,7 @@ export class EntitiesManager {
 export class EntityRef {
     constructor(
         private world: World,
-        private id: EntityID,
+        public id: EntityID,
     ) { }
 
     public with<

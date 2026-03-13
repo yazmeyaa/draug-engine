@@ -111,12 +111,12 @@ const game = new BrowserGame(world, (world) => {
     lastDy = dy;
   }
 
-  const ids = world.query({ components: [Position, Velocity] });
+  const ids = world.query({ take: [Position, Velocity] });
   const renderingSystem = world.systems.get(RenderingSystem)
   const pStore = world.components.getComponentStorage(Position);
   const vStore = world.components.getComponentStorage(Velocity);
   const snapshot = renderingSystem.getSnapshot(world, camera);
-  const attractorIds = world.query({ components: [Position, AttractorObject] });
+  const attractorIds = world.query({ take: [Position, AttractorObject] });
 
   // Draw to canvas
   ctx.clearRect(0, 0, camera.width, camera.height);

@@ -1,11 +1,12 @@
 import { DAGNode, VisitedState } from "../../../core/graph/dag";
 import type { World } from "./world";
 import { ClassType, ComponentType } from "../../../types/class";
+import { EntityRef } from "./entity";
 
 export type SystemCtor<T extends System = System> = ClassType<T>;
 
 export type SystemComputeContext = {
-    entities: number[];
+    entities: EntityRef[];
     world: World;
     dt: number;
 };
@@ -61,7 +62,7 @@ export class SystemsManager {
             throw new Error("Systems not built");
 
         for (const s of this.executionOrder_) {
-            const entities = world.query({ components: s.queryComponents })
+            const entities = world.query({ include: s.queryComponents })
             const ctx = { entities, world, dt} satisfies SystemComputeContext;
             s.compute(ctx);
         }

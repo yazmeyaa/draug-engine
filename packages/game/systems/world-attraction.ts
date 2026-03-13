@@ -3,8 +3,7 @@ import { ComponentType } from "@/packages/types/class";
 import { Position } from "../components/position";
 import { AttractorObject } from "../components/attrcator";
 import { Velocity } from "../components/velocity";
-import { EntityRef } from "@/packages/engine/core/ecs/entity";
-
+    
 export class AttractionSystem extends System {
     constructor() {
         super();
@@ -18,19 +17,19 @@ export class AttractionSystem extends System {
     public compute(ctx: SystemComputeContext): void {
         const { entities, world } = ctx;
 
-        const attractorEntities = world.query({ components: [AttractorObject, Position] });
+        const attractorEntities = world.query({ include: [AttractorObject, Position] });
         if (attractorEntities.length === 0) return;
 
-        for (const id of entities) {
-            const [pos, vel] = new EntityRef(world, id).with(Position, Velocity)
+        for (const entity of entities) {
+            const [pos, vel] = entity.with(Position, Velocity)
 
             let ax = 0;
             let ay = 0;
 
-            for (const aid of attractorEntities) {
-                if (aid === id) continue;
+            for (const aEntity of attractorEntities) {
+                if (aEntity === entity) continue;
 
-                const [aPos, attractor] = new EntityRef(world, aid).with(Position, AttractorObject);
+                const [aPos, attractor] = aEntity.with(Position, AttractorObject);
 
                 const dx = aPos.x - pos.x;
                 const dy = aPos.y - pos.y;

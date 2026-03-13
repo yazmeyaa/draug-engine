@@ -5,20 +5,18 @@ import { Position } from "@/packages/game/components/position";
 import { Velocity } from "@/packages/game/components/velocity";
 
 export class MovementSystem extends System {
-    // Компоненты, которые необходимы для работы системы
     public requiredComponents: ComponentType[] = [Position, Velocity];
-    // Объекты которые имеют эти компоненты будут инжектированы в контекст compute
     public queryComponents: ComponentType[] = [Position, Velocity];
     constructor() {
         super()
     }
 
     public compute(ctx: SystemComputeContext): void {
-        const { entities, world } = ctx;
+        const { entities } = ctx;
 
         for (let i = 0; i < entities.length; i++) {
-            const id = entities[i]!;
-            const [p, v] = new EntityRef(world, id).with(Position, Velocity);
+            const entity = entities[i]!;
+            const [p, v] = entity.with(Position, Velocity);
 
             p.x += v.vx;
             p.y += v.vy;
