@@ -1,4 +1,4 @@
-import { System, SystemComputeContext } from "@/packages/engine/core/ecs/system";
+import { System, SystemComputeContext } from "@/packages/engine/ecs/system";
 import { ComponentType } from "@/packages/types/class";
 import { Position } from "../components/position";
 import { AttractorObject } from "../components/attrcator";

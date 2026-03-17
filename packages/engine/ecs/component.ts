@@ -1,6 +1,6 @@
 import { Bitmap } from "bitmap-index";
 import { SparseSet } from "ts-sparse-set";
-import { ObjectPool } from "../../../core/memory/pool";
+import { ObjectPool } from "@/packages/core/memory/pool";
 import { UnregisteredComponentStorageError } from "./entity";
 import { ECS_DEFAULTS } from "./constant";
 import { ComponentType } from "@/packages/types/class";

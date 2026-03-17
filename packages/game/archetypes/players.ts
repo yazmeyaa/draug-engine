@@ -1,5 +1,5 @@
-import { EntityRef } from "@/packages/engine/core/ecs/entity";
-import { World } from "@/packages/engine/core/ecs/world";
+import { EntityRef } from "@/packages/engine/ecs/entity";
+import { World } from "@/packages/engine/ecs/world";
 import { PlayerTag } from "@/packages/game/components/player-tag";
 import { Position } from "@/packages/game/components/position";
 import { NetworkEntity } from "@/packages/game/components/network-entity";

@@ -1,4 +1,4 @@
-import { World } from "@/packages/engine/core/ecs/world";
+import { World } from "@/packages/engine/ecs/world";
 import { MovementSystem } from "./systems/movement";
 import { AttractionSystem } from "./systems/world-attraction";
 import { RenderingSystem } from "./systems/rendering";

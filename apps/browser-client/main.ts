@@ -111,17 +111,17 @@ const game = new BrowserGame(world, (world) => {
     lastDy = dy;
   }
 
-  const ids = world.query({ take: [Position, Velocity] });
+  const ids = world.query({ include: [Position, Velocity] });
   const renderingSystem = world.systems.get(RenderingSystem)
   const pStore = world.components.getComponentStorage(Position);
   const vStore = world.components.getComponentStorage(Velocity);
   const snapshot = renderingSystem.getSnapshot(world, camera);
-  const attractorIds = world.query({ take: [Position, AttractorObject] });
+  const attractorIds = world.query({ include: [Position, AttractorObject] });
 
   // Draw to canvas
   ctx.clearRect(0, 0, camera.width, camera.height);
   for (const id of attractorIds) {
-    const p = pStore.tryGet(id);
+    const p = pStore.tryGet(id.id);
     const [sx, sy] = worldToScreen(p.x, p.y);
     ctx.beginPath();
     ctx.arc(sx, sy, RADIUS_ATTRACTOR, 0, Math.PI * 2);
@@ -137,8 +137,8 @@ const game = new BrowserGame(world, (world) => {
 
   const entitiesHtml = [...ids]
     .map((id) => {
-      const pos = pStore.tryGet(id);
-      const vel = vStore.tryGet(id);
+      const pos = pStore.tryGet(id.id);
+      const vel = vStore.tryGet(id.id);
       return `<div class="row"><span class="key">Entity ${id}</span><span class="val">x=${pos.x.toFixed(2)} y=${pos.y.toFixed(2)} vx=${vel.vx.toFixed(2)} vy=${vel.vy.toFixed(2)}</span></div>`;
     })
     .join("");

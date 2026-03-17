@@ -104,11 +104,16 @@ export class GameServer {
                 this.handler.emit({ $case: "connected" }, ctx);
             },
             onClientMessage: (ctx) => {
+                serverOpts?.onClientMessage?.(ctx);
                 this.router.handle(ctx.message, ctx);
             },
             onClientDisconnect: (ctx) => {
+                serverOpts?.onClientDisconnect?.(ctx);
                 this.handler.emit({ $case: "disconnected" }, ctx);
-            }
+            },
+            getUserData: (ws) => {
+                return serverOpts?.getUserData?.(ws) ?? {} as GameUserData;
+            },
         });
     }
 

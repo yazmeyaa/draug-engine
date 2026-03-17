@@ -1,4 +1,4 @@
-import { World } from "../engine/core/ecs/world";
+import { World } from "../engine/ecs/world";
 import { Clock } from "../engine/runtime/clock";
 import { GameLoop } from "../engine/runtime/game-loop";
 

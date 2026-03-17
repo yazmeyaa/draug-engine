@@ -1,5 +1,5 @@
-import { System, SystemComputeContext } from "@/packages/engine/core/ecs/system";
-import { EntityRef } from "@/packages/engine/core/ecs/entity";
+import { System, SystemComputeContext } from "@/packages/engine/ecs/system";
+import { EntityRef } from "@/packages/engine/ecs/entity";
 import { ComponentType } from "@/packages/types/class";
 import { Position } from "@/packages/game/components/position";
 import { Velocity } from "@/packages/game/components/velocity";

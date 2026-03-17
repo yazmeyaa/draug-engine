@@ -1,6 +1,6 @@
-import { DAGNode, VisitedState } from "../../../core/graph/dag";
+import { DAGNode, VisitedState } from "@/packages/core/graph/dag";
+import { ClassType, ComponentType } from "@/packages/types/class";
 import type { World } from "./world";
-import { ClassType, ComponentType } from "../../../types/class";
 import { EntityRef } from "./entity";
 
 export type SystemCtor<T extends System = System> = ClassType<T>;

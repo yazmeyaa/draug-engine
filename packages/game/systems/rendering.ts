@@ -1,8 +1,8 @@
-import { System, SystemComputeContext } from "@/packages/engine/core/ecs/system";
+import { System, SystemComputeContext } from "@/packages/engine/ecs/system";
 import { ComponentType } from "@/packages/types/class";
 import { Position } from "@/packages/game/components/position";
 import { Renderable } from "@/packages/game/components/renderable";
-import { World } from "@/packages/engine/core/ecs/world";
+import { World } from "@/packages/engine/ecs/world";
 import { MovementSystem } from "./movement";
 
 export type RenderingSnapshotEntry = {

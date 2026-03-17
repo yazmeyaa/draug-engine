@@ -1,7 +1,7 @@
-import { World } from "@/packages/engine/core/ecs/world";
+import { World } from "@/packages/engine/ecs/world";
 import { createServerSideWorld } from "@/packages/game/create-world";
 import { MotionUpdate, MovementDirectionChange, PositionChange, ServerMessage } from "@/packages/game/network/generated/server";
-import { EntityID } from "@/packages/engine/core/ecs/entity";
+import { EntityID } from "@/packages/engine/ecs/entity";
 import { NodeLoop } from "@/packages/game/node-game";
 import { GameServer } from "./transport/game-server";
 import { Position } from "@/packages/game/components/position";
@@ -27,8 +27,9 @@ export class EntryPoint {
         this.loop = new NodeLoop(this.world, this.onWorldUpdate.bind(this));
 
         this.server_ = new GameServer({
-            getUserData: (ws) => {
+            getUserData: () => {
                 const entity = createPlayer(this.world, { position: { x: 0, y: 0 } });
+                console.log(entity)
                 return new GameUserData(entity.id);
             },
         });
