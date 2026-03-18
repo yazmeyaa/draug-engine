@@ -1,0 +1,1 @@
+export type RawData = ArrayBuffer | Uint8Array | ArrayBuffer[];

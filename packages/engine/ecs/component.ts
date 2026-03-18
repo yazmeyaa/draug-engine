@@ -1,9 +1,11 @@
+import { ObjectPool } from "@amber-game/core/memory/pool";
 import { Bitmap } from "bitmap-index";
 import { SparseSet } from "ts-sparse-set";
-import { ObjectPool } from "@/packages/core/memory/pool";
 import { UnregisteredComponentStorageError } from "./entity";
 import { ECS_DEFAULTS } from "./constant";
-import { ComponentType } from "@/packages/types/class";
+import type { ClassType } from "@amber-game/types/class";
+
+export type ComponentType<T extends object = object> = ClassType<T>;
 
 export class ComponentStorage
     // Can store only pointer-type objects

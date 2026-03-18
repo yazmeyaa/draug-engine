@@ -1,9 +1,9 @@
-import { System, SystemComputeContext } from "@/packages/engine/ecs/system";
-import { ComponentType } from "@/packages/types/class";
-import { Position } from "@/packages/game/components/position";
-import { Renderable } from "@/packages/game/components/renderable";
-import { World } from "@/packages/engine/ecs/world";
+import { System, SystemComputeContext } from "@amber-game/engine/ecs/system";
+import { World } from "@amber-game/engine/ecs/world";
 import { MovementSystem } from "./movement";
+import { ComponentType } from "@amber-game/engine/ecs/component";
+import { Position } from "../components/position";
+import { Renderable } from "../components/renderable";
 
 export type RenderingSnapshotEntry = {
     entityId: number;

@@ -20,19 +20,16 @@
     "dev:client": "vite --config apps/browser-client/vite.config.ts",
     "dev:server": "ts-node -r tsconfig-paths/register apps/room-server/main.ts"
   },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "devDependencies": {
-    "@types/node": "^25.3.3",
-    "@types/ws": "^8.18.1",
     "esbuild": "^0.24.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3",
     "vite": "^6.0.0"
   },
-  "dependencies": {
-    "bitmap-index": "^1.0.9",
-    "ts-proto": "^2.11.4",
-    "ts-sparse-set": "^1.0.5",
-    "ws": "^8.19.0"
-  }
+  "packageManager": "yarn@4.13.0"
 }

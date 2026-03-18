@@ -1,0 +1,13 @@
+{
+  "name": "browser-client",
+  "version": "1.0.0",
+  "description": "Game browser client implementation",
+  "main": "index.js",
+  "repository": "https://github.com/yazmeyaa/project-survival.git",
+  "author": "(yazmeyaa)[evgenijantonenkov456@gmail.com]",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@amber-game/game": "workspace:^"
+  }
+}

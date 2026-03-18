@@ -1,12 +1,12 @@
+import { createPlayer } from "@amber-game/game/archetypes/players";
+import { AttractorObject } from "@amber-game/game/components/attrcator";
+import { Position } from "@amber-game/game/components/position";
+import { Velocity } from "@amber-game/game/components/velocity";
+import { createClientSideWorld } from "@amber-game/game/create-world";
+import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@amber-game/game/network/generated/client";
+import { ServerMessage } from "@amber-game/game/network/generated/server";
+import { Camera, RenderingSystem } from "@amber-game/game/systems/rendering";
 import { BrowserGame } from "./browser";
-import { AttractorObject } from "@/packages/game/components/attrcator";
-import { Position } from "@/packages/game/components/position";
-import { Velocity } from "@/packages/game/components/velocity";
-import { Camera, RenderingSystem } from "@/packages/game/systems/rendering";
-import { ClientInputUpdate, ClientMessage, ClientMovementDirection } from "@/packages/game/network/generated/client";
-import { ServerMessage } from "@/packages/game/network/generated/server";
-import { createClientSideWorld } from "@/packages/game/create-world";
-import { createPlayer } from "@/packages/game/archetypes/players";
 
 const world = createClientSideWorld();
 world.systems.build();

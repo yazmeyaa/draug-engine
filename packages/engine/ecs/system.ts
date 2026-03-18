@@ -1,5 +1,6 @@
-import { DAGNode, VisitedState } from "@/packages/core/graph/dag";
-import { ClassType, ComponentType } from "@/packages/types/class";
+import { DAGNode, VisitedState } from '@amber-game/core/graph/dag';
+import type { ClassType } from '@amber-game/types/class'
+import type { ComponentType } from "./component";
 import type { World } from "./world";
 import { EntityRef } from "./entity";
 
@@ -29,7 +30,7 @@ export class SystemsManager {
     private executionOrder_: System[] = [];
     private built_ = false;
     private requiredComponents_: Set<ComponentType> = new Set();
-    public get requiredComponents(): ComponentType[] {
+    public getRequiredComponents(): ComponentType[] {
         return Array.from(this.requiredComponents_);
     }
 
@@ -40,7 +41,7 @@ export class SystemsManager {
             throw new Error("Duplicate system");
 
         this.systems_.set(ctor, sys);
-        for(const c of sys.requiredComponents) 
+        for (const c of sys.requiredComponents)
             this.requiredComponents_.add(c);
     }
 
@@ -63,7 +64,7 @@ export class SystemsManager {
 
         for (const s of this.executionOrder_) {
             const entities = world.query({ include: s.queryComponents })
-            const ctx = { entities, world, dt} satisfies SystemComputeContext;
+            const ctx = { entities, world, dt } satisfies SystemComputeContext;
             s.compute(ctx);
         }
     }

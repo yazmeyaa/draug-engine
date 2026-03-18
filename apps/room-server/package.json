@@ -1,0 +1,17 @@
+{
+  "name": "room-server",
+  "version": "1.0.0",
+  "description": "Game server implementation",
+  "main": "index.js",
+  "repository": "https://github.com/yazmeyaa/project-survival-server.git",
+  "author": "(yazmeyaa)[evgenijantonenkov456@gmail.com]",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@amber-game/game": "workspace:^",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8"
+  }
+}

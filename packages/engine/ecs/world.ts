@@ -1,4 +1,5 @@
-import { ClassType, ComponentType } from "@/packages/types/class";
+import { ClassType } from "@amber-game/types/class";
+import { ComponentType } from "./component";
 import { ComponentsManager, ComponentStorage } from "./component";
 import { EntitiesManager, EntityID, EntityRef } from "./entity";
 import { SystemsManager } from "./system";
@@ -62,8 +63,16 @@ export class World {
         return result.map((i) => new EntityRef(this, i));
     }
 
-    public addComponent<T extends object>(id: EntityID, component: ClassType<T>, initFn?: (obj: T) => void): void {
+    public addComponent<T extends object>(id: EntityID, component: ClassType<T>, initFn?: (obj: T) => void): void;
+    public addComponent<T extends object>(id: EntityRef, component: ClassType<T>, initFn?: (obj: T) => void): void
+    public addComponent<T extends object>(entity: EntityID | EntityRef, component: ClassType<T>, initFn?: (obj: T) => void): void {
         const storage = this.components.getComponentStorage(component);
+        let id: number;
+        if(typeof entity === 'number') {
+            id = entity;
+        } else {
+            id = entity.id;
+        }
         storage.addComponent(id, (o) => {
             if (initFn) {
                 initFn(o);

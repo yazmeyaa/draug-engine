@@ -4,7 +4,7 @@ export class NetworkEntity {
         return this._networkId;
     }
     constructor(
-        public _networkId: number
+        private _networkId: number
     ) { }
 
     public setNetworkId(id: number): void {

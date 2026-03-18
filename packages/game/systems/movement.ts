@@ -1,8 +1,7 @@
-import { System, SystemComputeContext } from "@/packages/engine/ecs/system";
-import { EntityRef } from "@/packages/engine/ecs/entity";
-import { ComponentType } from "@/packages/types/class";
-import { Position } from "@/packages/game/components/position";
-import { Velocity } from "@/packages/game/components/velocity";
+import { ComponentType } from "@amber-game/engine/ecs/component";
+import { System, SystemComputeContext } from "@amber-game/engine/ecs/system";
+import { Position } from "../components/position";
+import { Velocity } from "../components/velocity";
 
 export class MovementSystem extends System {
     public requiredComponents: ComponentType[] = [Position, Velocity];

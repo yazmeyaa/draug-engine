@@ -1,4 +1,4 @@
-import { ClientMessage } from "@/packages/game/network/generated/client";
+import { ClientMessage } from "./generated/client";
 import { ServerMessage } from "./generated/server";
 
 export type CaseUnion = { $case: string }

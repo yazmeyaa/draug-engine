@@ -1,0 +1,22 @@
+{
+  "name": "@amber-game/engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "author": {
+    "name": "future_undefined",
+    "email": "evgenijantonenkov456@gmail.com",
+    "url": "https://github.com/yazmeyaa"
+  },
+  "description": "Amber game engine. Based on ECS architecture.",
+  "license": "GPL-3.0-only",
+  "readme": "README.md",
+  "dependencies": {
+    "@amber-game/core": "workspace:^",
+    "bitmap-index": "^1.0.9",
+    "ts-sparse-set": "^1.0.5"
+  },
+  "devDependencies": {
+    "@amber-game/types": "workspace:^"
+  }
+}

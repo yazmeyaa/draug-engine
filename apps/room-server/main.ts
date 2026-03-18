@@ -1,12 +1,12 @@
-import { World } from "@/packages/engine/ecs/world";
-import { createServerSideWorld } from "@/packages/game/create-world";
-import { MotionUpdate, MovementDirectionChange, PositionChange, ServerMessage } from "@/packages/game/network/generated/server";
-import { EntityID } from "@/packages/engine/ecs/entity";
-import { NodeLoop } from "@/packages/game/node-game";
+import { EntityID } from "@amber-game/engine/ecs/entity";
+import { World } from "@amber-game/engine/ecs/world";
+import { createPlayer } from "@amber-game/game/archetypes/players";
+import { PlayerTag } from "@amber-game/game/components/player-tag";
+import { Position } from "@amber-game/game/components/position";
+import { createServerSideWorld } from "@amber-game/game/create-world";
+import { PositionChange, MovementDirectionChange, MotionUpdate, ServerMessage } from "@amber-game/game/network/generated/server";
+import { NodeLoop } from "@amber-game/game/node-game";
 import { GameServer } from "./transport/game-server";
-import { Position } from "@/packages/game/components/position";
-import { PlayerTag } from "@/packages/game/components/player-tag";
-import { createPlayer } from "@/packages/game/archetypes/players";
 import { GameUserData } from "./types";
 
 type UpdEntry = {

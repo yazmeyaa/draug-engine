@@ -1,8 +1,8 @@
-import { World } from "@/packages/engine/ecs/world";
 import { MovementSystem } from "./systems/movement";
 import { AttractionSystem } from "./systems/world-attraction";
 import { RenderingSystem } from "./systems/rendering";
 import { PlayerTag } from "./components/player-tag";
+import { World } from "@amber-game/engine/ecs/world";
 
 function createBaseWorld(): World {
     const world = new World();
@@ -22,7 +22,7 @@ export function createClientSideWorld(): World {
         new RenderingSystem(),
     ].forEach(x => world.systems.register(x));
 
-    for (const c of world.systems.requiredComponents) {
+    for (const c of world.systems.getRequiredComponents()) {
         world.components.registerComponent(c);
     }
     return world;
@@ -30,7 +30,7 @@ export function createClientSideWorld(): World {
 
 export function createServerSideWorld(): World {
     const world = createBaseWorld();
-    for (const c of world.systems.requiredComponents) {
+    for (const c of world.systems.getRequiredComponents()) {
         world.components.registerComponent(c);
     }
     return world;

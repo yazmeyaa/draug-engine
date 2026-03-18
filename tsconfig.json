@@ -5,12 +5,6 @@
     // "rootDir": "./src",
     // "outDir": "./dist",
 
-    // Path Aliases
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./*"]
-    },
-
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "commonjs",

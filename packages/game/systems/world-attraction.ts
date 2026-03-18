@@ -1,8 +1,8 @@
-import { System, SystemComputeContext } from "@/packages/engine/ecs/system";
-import { ComponentType } from "@/packages/types/class";
+import { System, SystemComputeContext } from "@amber-game/engine/ecs/system";
 import { Position } from "../components/position";
 import { AttractorObject } from "../components/attrcator";
 import { Velocity } from "../components/velocity";
+import { ComponentType } from "@amber-game/engine/ecs/component";
     
 export class AttractionSystem extends System {
     constructor() {

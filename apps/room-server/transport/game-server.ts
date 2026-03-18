@@ -1,9 +1,9 @@
-import { ClientMessage } from "@/packages/game/network/generated/client";
-import { CaseName, CasePayload, ClientPayload, MessageHandler } from "@/packages/game/network/message-handler";
+import { CaseName, CasePayload, ClientPayload, MessageHandler } from '@amber-game/game/network/message-handler'
 import { Data } from "ws";
 import { ClientConnectContext, ClientDisconnectContext, ClientMessageContext, WebsocketServer, WebsocketServerConstructorOptions } from "./websocket-server";
 import { GameUserData } from "../types";
-import { ProtoMessageRouter } from "@/packages/game/network/proto-router";
+import { ClientMessage } from "@amber-game/game/network/generated/client";
+import { ProtoMessageRouter } from "@amber-game/game/network/proto-router";
 
 /**
  * Internal events of the game server.

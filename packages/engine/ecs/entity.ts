@@ -1,5 +1,5 @@
 import { World } from "./world";
-import { ComponentType } from "@/packages/types/class";
+import type { ComponentType } from "./component";
 
 export type EntityID = number;
 

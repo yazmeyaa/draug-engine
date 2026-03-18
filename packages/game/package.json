@@ -1,0 +1,19 @@
+{
+  "name": "@amber-game/game",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "author": {
+    "name": "future_undefined",
+    "email": "evgenijantonenkov456@gmail.com",
+    "url": "https://github.com/yazmeyaa"
+  },
+  "license": "GPL-3.0-only",
+  "readme": "README.md",
+  "description": "A web-based game built with the Amber game engine",
+  "packageManager": "yarn@4.13.0",
+  "dependencies": {
+    "@amber-game/engine": "workspace:^",
+    "ts-proto": "^2.11.5"
+  }
+}

@@ -1,10 +1,11 @@
-import { EntityRef } from "@/packages/engine/ecs/entity";
-import { World } from "@/packages/engine/ecs/world";
-import { PlayerTag } from "@/packages/game/components/player-tag";
-import { Position } from "@/packages/game/components/position";
-import { NetworkEntity } from "@/packages/game/components/network-entity";
-import { Velocity } from "@/packages/game/components/velocity";
-import { Renderable } from "@/packages/game/components/renderable";
+import { EntityRef } from "@amber-game/engine/ecs/entity";
+import { World } from "@amber-game/engine/ecs/world";
+import { NetworkEntity } from "../components/network-entity";
+import { PlayerTag } from "../components/player-tag";
+import { Position } from "../components/position";
+import { Renderable } from "../components/renderable";
+import { Velocity } from "../components/velocity";
+
 
 export type PlayerInitialData = {
     position: Position;

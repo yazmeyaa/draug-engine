@@ -1,6 +1,6 @@
-import { World } from "../engine/ecs/world";
-import { Clock } from "../engine/runtime/clock";
-import { GameLoop } from "../engine/runtime/game-loop";
+import { World } from "@amber-game/engine/ecs/world";
+import { Clock } from "@amber-game/engine/runtime/clock";
+import { GameLoop } from "@amber-game/engine/runtime/game-loop";
 
 export class NodeLoop {
     constructor(private world: World, private onWorldUpdate?: (world: World) => void) {}
