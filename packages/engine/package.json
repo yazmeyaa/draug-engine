@@ -16,6 +16,9 @@
     "bitmap-index": "^1.0.9",
     "ts-sparse-set": "^1.0.5"
   },
+  "scripts": {
+    "test": "echo Hello from engine!"
+  },
   "devDependencies": {
     "@amber-game/types": "workspace:^"
   }

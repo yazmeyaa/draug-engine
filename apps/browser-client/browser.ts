@@ -1,6 +1,7 @@
-import { World } from "@/packages/engine/ecs/world";
-import { Clock } from "@/packages/engine/runtime/clock";
-import { GameLoop } from "@/packages/engine/runtime/game-loop";
+import { World } from "@amber-game/engine/ecs/world";
+import { Clock } from "@amber-game/engine/runtime/clock";
+import { GameLoop } from "@amber-game/engine/runtime/game-loop";
+
 
 export class BrowserGame {
     constructor(

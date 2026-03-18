@@ -1,7 +1,7 @@
 {
-  "name": "game",
+  "name": "amber-game",
   "version": "0.0.1",
-  "description": "Draft of simple MMO game",
+  "description": "Draft of simple web game",
   "homepage": "https://github.com/yazmeyaa/game_draft#readme",
   "bugs": {
     "url": "https://github.com/yazmeyaa/game_draft/issues"
@@ -11,14 +11,15 @@
     "url": "git+https://github.com/yazmeyaa/game_draft.git"
   },
   "license": "MIT",
-  "author": "[yazmeyaa] (evgenijantonenkov456@gmail.com)",
+  "author": {
+    "email": "evgenijantonenkov456@gmail.com",
+    "name": "future_undefined",
+    "url": "https://github.com/yazmeyaa"
+  },
   "main": "src/index.js",
   "scripts": {
-    "dev": "ts-node -r tsconfig-paths/register index.ts",
-    "build:client": "vite build --config apps/browser-client/vite.config.ts",
-    "build:server": "node scripts/build-server.mjs",
-    "dev:client": "vite --config apps/browser-client/vite.config.ts",
-    "dev:server": "ts-node -r tsconfig-paths/register apps/room-server/main.ts"
+    "test:all": "yarn workspaces foreach --all -pt run test",
+    "test": "echo Hello!"
   },
   "workspaces": [
     "packages/*",

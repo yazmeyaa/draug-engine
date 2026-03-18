@@ -7,6 +7,9 @@
   "author": "(yazmeyaa)[evgenijantonenkov456@gmail.com]",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "test": "echo Hello from browser!"
+  },
   "dependencies": {
     "@amber-game/game": "workspace:^"
   }

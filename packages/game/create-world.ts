@@ -3,10 +3,11 @@ import { AttractionSystem } from "./systems/world-attraction";
 import { RenderingSystem } from "./systems/rendering";
 import { PlayerTag } from "./components/player-tag";
 import { World } from "@amber-game/engine/ecs/world";
+import { Acceleration } from "./components/acceleration";
 
 function createBaseWorld(): World {
     const world = new World();
-    world.components.registerComponent(PlayerTag)
+    [PlayerTag, Acceleration].forEach(c => world.components.registerComponent(c));
     const systems = [
         new MovementSystem(),
         new AttractionSystem(),

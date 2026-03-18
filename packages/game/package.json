@@ -12,6 +12,9 @@
   "readme": "README.md",
   "description": "A web-based game built with the Amber game engine",
   "packageManager": "yarn@4.13.0",
+  "scripts": {
+    "test": "echo Hello from game!"
+  },
   "dependencies": {
     "@amber-game/engine": "workspace:^",
     "ts-proto": "^2.11.5"

@@ -1,4 +1,7 @@
 {
   "name": "@amber-game/types",
-  "packageManager": "yarn@4.13.0"
+  "packageManager": "yarn@4.13.0",
+  "scripts": {
+    "test": "echo Hello types!"
+  }
 }
