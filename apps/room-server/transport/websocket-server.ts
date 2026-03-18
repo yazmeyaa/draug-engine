@@ -1,4 +1,4 @@
-import { Server, WebSocket, RawData, ServerOptions, Data } from "ws";
+import { WebSocket, type RawData, type ServerOptions, type Data, WebSocketServer } from "ws";
 
 /**
  * Maximum buffer size before terminating a connection.
@@ -273,7 +273,7 @@ export class WebsocketServer<UserData = unknown> {
      * Null until start() is called, and set back to null when stop() is called.
      * @private
      */
-    private wss: Server | null = null;
+    private wss: WebSocketServer | null = null;
 
     /**
      * Array of all connected clients.
@@ -321,7 +321,7 @@ export class WebsocketServer<UserData = unknown> {
      */
     public start(): void {
         if (this.wss) return;
-        this.wss = new Server({ ...this.opts.websocket })
+        this.wss = new WebSocketServer({ ...this.opts.websocket })
         this.setupListeners()
         this.setupHeartbeat(this.opts.hearthBeatInterval ?? 30_000)
     }

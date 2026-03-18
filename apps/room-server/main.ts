@@ -1,4 +1,4 @@
-import { EntityID } from "@amber-game/engine/ecs/entity";
+import { type EntityID } from "@amber-game/engine/ecs/entity";
 import { World } from "@amber-game/engine/ecs/world";
 import { createPlayer } from "@amber-game/game/archetypes/players";
 import { PlayerTag } from "@amber-game/game/components/player-tag";

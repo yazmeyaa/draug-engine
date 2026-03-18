@@ -1,9 +1,10 @@
-import { CaseName, CasePayload, ClientPayload, MessageHandler } from '@amber-game/game/network/message-handler'
-import { Data } from "ws";
-import { ClientConnectContext, ClientDisconnectContext, ClientMessageContext, WebsocketServer, WebsocketServerConstructorOptions } from "./websocket-server";
+import { type CaseName, type CasePayload, type ClientPayload, MessageHandler } from '@amber-game/game/network/message-handler'
+import { type Data } from "ws";
+import { type ClientConnectContext, type ClientDisconnectContext, type ClientMessageContext, WebsocketServer, type WebsocketServerConstructorOptions } from "./websocket-server";
 import { GameUserData } from "../types";
 import { ClientMessage } from "@amber-game/game/network/generated/client";
 import { ProtoMessageRouter } from "@amber-game/game/network/proto-router";
+import { normalizeWsData } from './helpers';
 
 /**
  * Internal events of the game server.
@@ -105,7 +106,9 @@ export class GameServer {
             },
             onClientMessage: (ctx) => {
                 serverOpts?.onClientMessage?.(ctx);
-                this.router.handle(ctx.message, ctx);
+                const data = normalizeWsData(ctx.message);
+                
+                this.router.handle(data, ctx);
             },
             onClientDisconnect: (ctx) => {
                 serverOpts?.onClientDisconnect?.(ctx);
