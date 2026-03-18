@@ -5,8 +5,8 @@ import { Velocity } from "@amber-game/game/components/velocity";
 import { createClientSideWorld } from "@amber-game/game/create-world";
 import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@amber-game/game/network/generated/client";
 import { ServerMessage } from "@amber-game/game/network/generated/server";
-import { Camera, RenderingSystem } from "@amber-game/game/systems/rendering";
-import { BrowserGame } from "./browser";
+import { type Camera, RenderingSystem } from "@amber-game/game/systems/rendering";
+import { BrowserGame } from "./browser-game";
 
 const world = createClientSideWorld();
 world.systems.build();

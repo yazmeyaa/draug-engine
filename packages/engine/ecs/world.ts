@@ -1,7 +1,7 @@
-import { ClassType } from "@amber-game/types/class";
-import { ComponentType } from "./component";
+import { type ClassType } from "@amber-game/types/class";
+import { type ComponentType } from "./component";
 import { ComponentsManager, ComponentStorage } from "./component";
-import { EntitiesManager, EntityID, EntityRef } from "./entity";
+import { EntitiesManager, type EntityID, EntityRef } from "./entity";
 import { SystemsManager } from "./system";
 import { ECS_DEFAULTS } from "./constant";
 
