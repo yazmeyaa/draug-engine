@@ -15,11 +15,23 @@ export class World {
     public readonly components = new ComponentsManager();
     public readonly systems = new SystemsManager();
 
+    private entityRefs_ = new Map<number, EntityRef>();
+
+
     constructor(maxEntityCount: number = ECS_DEFAULTS.MAX_ENTITY_COUNT) {
         this.components = new ComponentsManager(maxEntityCount);
     }
+    
+    public getEntityRef(id: number): EntityRef {
+        let ref = this.entityRefs_.get(id);
+        if (!ref) {
+            ref = new EntityRef(this, id);
+            this.entityRefs_.set(id, ref);
+        }
+        return ref;
+    }
 
-    public query(params: QueryParameters): EntityRef[] {
+    public query(params: QueryParameters): number[] {
         const { excludeEntitiesIds, include } = params;
         if (!include || include.length === 0)
             return [];
@@ -60,7 +72,7 @@ export class World {
             result.push(id);
         });
 
-        return result.map((i) => new EntityRef(this, i));
+        return result;
     }
 
     public addComponent<T extends object>(id: EntityID, component: ClassType<T>, initFn?: (obj: T) => void): void;

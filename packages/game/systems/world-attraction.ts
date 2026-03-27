@@ -21,7 +21,7 @@ export class AttractionSystem extends System {
         if (attractorEntities.length === 0) return;
 
         for (const entity of entities) {
-            const [pos, vel] = entity.with(Position, Velocity)
+            const [pos, vel] = world.getEntityRef(entity).with(Position, Velocity)
 
             let ax = 0;
             let ay = 0;
@@ -29,7 +29,7 @@ export class AttractionSystem extends System {
             for (const aEntity of attractorEntities) {
                 if (aEntity === entity) continue;
 
-                const [aPos, attractor] = aEntity.with(Position, AttractorObject);
+                const [aPos, attractor] = world.getEntityRef(aEntity).with(Position, AttractorObject);
 
                 const dx = aPos.x - pos.x;
                 const dy = aPos.y - pos.y;

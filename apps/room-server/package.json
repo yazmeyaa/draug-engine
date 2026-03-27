@@ -8,13 +8,18 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "test": "echo Hello from server!"
+    "test": "echo Hello from server!",
+    "build": "",
+    "dev": ""
   },
   "dependencies": {
     "@amber-game/game": "workspace:^",
     "ws": "^8.19.0"
   },
   "devDependencies": {
-    "@types/ws": "^8"
+    "@types/node": "^25.5.0",
+    "@types/ws": "^8",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

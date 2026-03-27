@@ -5,6 +5,7 @@ import { PlayerTag } from "../components/player-tag";
 import { Position } from "../components/position";
 import { Renderable } from "../components/renderable";
 import { Velocity } from "../components/velocity";
+import { AttractorObject } from "../components/attrcator";
 
 
 export type PlayerInitialData = {
@@ -17,6 +18,10 @@ export type PlayerInitialData = {
 export function createPlayer(world: World, initData: PlayerInitialData): EntityRef {
     const id = world.entities.getId();
     const ref = new EntityRef(world, id);
+    world.addComponent(id, AttractorObject, (o) => {
+        o.mass = 20;
+        return o;
+    })
     world.addComponent(id, PlayerTag);
     world.addComponent(id, Position, (obj) => {
         obj.x = initData.position.x;

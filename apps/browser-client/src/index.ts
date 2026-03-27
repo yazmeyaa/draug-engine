@@ -1,7 +1,7 @@
 import { createPlayer } from "@amber-game/game/archetypes/players";
 import { AttractorObject } from "@amber-game/game/components/attrcator";
 import { Position } from "@amber-game/game/components/position";
-import { Velocity } from "@amber-game/game/components/velocity";
+// import { Velocity } from "@amber-game/game/components/velocity";
 import { createClientSideWorld } from "@amber-game/game/create-world";
 import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@amber-game/game/network/generated/client";
 import { ServerMessage } from "@amber-game/game/network/generated/server";
@@ -13,7 +13,7 @@ world.systems.build();
 
 
 let step = 0;
-let fps = 0;
+// let fps = 0;
 let lastTime = performance.now();
 let frameCount = 0;
 
@@ -51,7 +51,7 @@ function worldToScreen(wx: number, wy: number): [number, number] {
 const RADIUS_OBJECT = 6;
 const RADIUS_ATTRACTOR = 12;
 
-const debugPanel = document.getElementById("debug-panel")!;
+// const debugPanel = document.getElementById("debug-panel")!;
 
 // Track keyboard and movement state
 const keysPressed: { [key: string]: boolean } = {};
@@ -95,11 +95,11 @@ const game = new BrowserGame(world, (world) => {
   const currentTime = performance.now();
   const deltaTime = currentTime - lastTime;
 
-  if (deltaTime >= 1000) {
-    fps = Math.round((frameCount * 1000) / deltaTime);
-    frameCount = 0;
-    lastTime = currentTime;
-  }
+  // if (deltaTime >= 1000) {
+  //   fps = Math.round((frameCount * 1000) / deltaTime);
+  //   frameCount = 0;
+  //   lastTime = currentTime;
+  // }
 
   world.update(deltaTime);
 
@@ -111,17 +111,18 @@ const game = new BrowserGame(world, (world) => {
     lastDy = dy;
   }
 
-  const ids = world.query({ include: [Position, Velocity] });
+  // const ids = world.query({ include: [Position, Velocity] });
   const renderingSystem = world.systems.get(RenderingSystem)
   const pStore = world.components.getComponentStorage(Position);
-  const vStore = world.components.getComponentStorage(Velocity);
+  // const vStore = world.components.getComponentStorage(Velocity);
   const snapshot = renderingSystem.getSnapshot(world, camera);
   const attractorIds = world.query({ include: [Position, AttractorObject] });
 
   // Draw to canvas
   ctx.clearRect(0, 0, camera.width, camera.height);
   for (const id of attractorIds) {
-    const p = pStore.tryGet(id.id);
+    const ref = world.getEntityRef(id);
+    const p = pStore.tryGet(ref.id);
     const [sx, sy] = worldToScreen(p.x, p.y);
     ctx.beginPath();
     ctx.arc(sx, sy, RADIUS_ATTRACTOR, 0, Math.PI * 2);
@@ -134,41 +135,42 @@ const game = new BrowserGame(world, (world) => {
     ctx.fillStyle = "#dc2626";
     ctx.fill();
   }
+})
+//   const entitiesHtml = [...ids]
+//     .map((id) => {
+//       const ref = world.getEntityRef(id);
+//       const pos = pStore.tryGet(ref.id);
+//       const vel = vStore.tryGet(ref.id);
+//       return `<div class="row"><span class="key">Entity ${id}</span><span class="val">x=${pos.x.toFixed(2)} y=${pos.y.toFixed(2)} vx=${vel.vx.toFixed(2)} vy=${vel.vy.toFixed(2)}</span></div>`;
+//     })
+//     .join("");
 
-  const entitiesHtml = [...ids]
-    .map((id) => {
-      const pos = pStore.tryGet(id.id);
-      const vel = vStore.tryGet(id.id);
-      return `<div class="row"><span class="key">Entity ${id}</span><span class="val">x=${pos.x.toFixed(2)} y=${pos.y.toFixed(2)} vx=${vel.vx.toFixed(2)} vy=${vel.vy.toFixed(2)}</span></div>`;
-    })
-    .join("");
+//   const renderItemsHtml = snapshot
+//     .map((e) => `<div class="row"><span class="key">#${e.entityId}</span><span class="val">x=${e.x.toFixed(3)} y=${e.y.toFixed(3)}</span></div>`)
+//     .join("");
 
-  const renderItemsHtml = snapshot
-    .map((e) => `<div class="row"><span class="key">#${e.entityId}</span><span class="val">x=${e.x.toFixed(3)} y=${e.y.toFixed(3)}</span></div>`)
-    .join("");
-
-  debugPanel.innerHTML = `
-    <section><h3>Step ${step}</h3></section>
-    <section>
-      <h3>Performance</h3>
-      <div class="row"><span class="key">FPS</span><span class="val">${fps}</span></div>
-    </section>
-    <section>
-      <h3>Entities</h3>
-      ${entitiesHtml || "<div class=\"key\">—</div>"}
-    </section>
-    <section>
-      <h3>Camera</h3>
-      <div class="row"><span class="key">Center</span><span class="val">${camera.x.toFixed(3)}, ${camera.y.toFixed(3)}</span></div>
-      <div class="row"><span class="key">Size</span><span class="val">${camera.width} × ${camera.height}</span></div>
-      <div class="row"><span class="key">Zoom</span><span class="val">${camera.zoom}</span></div>
-    </section>
-    <section>
-      <h3>Rendering</h3>
-      ${renderItemsHtml || "<div class=\"key\">—</div>"}
-    </section>
-  `;
-});
+//   debugPanel.innerHTML = `
+//     <section><h3>Step ${step}</h3></section>
+//     <section>
+//       <h3>Performance</h3>
+//       <div class="row"><span class="key">FPS</span><span class="val">${fps}</span></div>
+//     </section>
+//     <section>
+//       <h3>Entities</h3>
+//       ${entitiesHtml || "<div class=\"key\">—</div>"}
+//     </section>
+//     <section>
+//       <h3>Camera</h3>
+//       <div class="row"><span class="key">Center</span><span class="val">${camera.x.toFixed(3)}, ${camera.y.toFixed(3)}</span></div>
+//       <div class="row"><span class="key">Size</span><span class="val">${camera.width} × ${camera.height}</span></div>
+//       <div class="row"><span class="key">Zoom</span><span class="val">${camera.zoom}</span></div>
+//     </section>
+//     <section>
+//       <h3>Rendering</h3>
+//       ${renderItemsHtml || "<div class=\"key\">—</div>"}
+//     </section>
+//   `;
+// });
 game.start();
 
 // WebSocket connection and keyboard input
@@ -218,4 +220,18 @@ createPlayer(world, {
     layer: 1,
     spriteId: '1',
   },
-})  
+})
+
+for (let i = 0; i < 50; i++) {
+  createPlayer(world, {
+    position: {
+      x: i * 10,
+      y: i * 10,
+    },
+    isLocal: false,
+    renderable: {
+      layer: 1,
+      spriteId: '1',
+    },
+  })
+}

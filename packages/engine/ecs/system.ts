@@ -2,12 +2,11 @@ import { DAGNode, VisitedState } from '@amber-game/core/graph/dag';
 import type { ClassType } from '@amber-game/types/class'
 import type { ComponentType } from "./component";
 import type { World } from "./world";
-import { EntityRef } from "./entity";
 
 export type SystemCtor<T extends System = System> = ClassType<T>;
 
 export type SystemComputeContext = {
-    entities: EntityRef[];
+    entities: number[];
     world: World;
     dt: number;
 };

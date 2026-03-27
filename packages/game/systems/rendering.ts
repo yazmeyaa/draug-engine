@@ -33,7 +33,7 @@ export class RenderingSystem extends System {
         const entities = world.query({ include: [Position, Renderable] });
         const snaps: RenderingSnapshot = new Array(entities.length);
         for (let i = 0; i < entities.length; i++) {
-            const entity = entities[i]!;
+            const entity = world.getEntityRef(entities[i]!);
             const [r, p] = entity.with(Renderable, Position);
 
             const cx = (p.x - camera.x) * camera.zoom + camera.width / 2;

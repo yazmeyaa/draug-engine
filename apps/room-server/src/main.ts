@@ -51,8 +51,9 @@ export class EntryPoint {
 
             const entities = this.world.query({ include: [PlayerTag, Position] });
             const players = entities.map((e) => {
-                const [position] = e.with(Position);
-                return { position, entityID: e.id };
+                const ref = this.world.getEntityRef(e);
+                const [position] = ref.with(Position);
+                return { position, entityID: ref.id };
             })
             console.log(players);
         })
