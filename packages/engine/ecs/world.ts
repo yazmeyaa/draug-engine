@@ -4,6 +4,7 @@ import { ComponentsManager, ComponentStorage } from "./component";
 import { EntitiesManager, type EntityID, EntityRef } from "./entity";
 import { SystemsManager } from "./system";
 import { ECS_DEFAULTS } from "./constant";
+import { EventBus } from "./events-buffer";
 
 export type QueryParameters = {
     include?: ComponentType[];
@@ -14,6 +15,7 @@ export class World {
     public readonly entities = new EntitiesManager();
     public readonly components = new ComponentsManager();
     public readonly systems = new SystemsManager();
+    public readonly events = new EventBus();
 
     private entityRefs_ = new Map<number, EntityRef>();
 

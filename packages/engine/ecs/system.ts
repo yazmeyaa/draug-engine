@@ -94,7 +94,7 @@ export class SystemsManager {
     public update(world: World, dt: number) {
         if (!this.built_)
             throw new Error("Systems not built");
-
+        world.events.swapAll();
         for (const s of this.executionOrder_) {
             const entities = world.query({ include: s.targetComponents })
             const ctx = { entities, world, dt } satisfies SystemComputeContext;

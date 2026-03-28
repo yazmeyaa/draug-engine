@@ -4,13 +4,17 @@ import { RenderingSystem } from "./systems/rendering";
 import { PlayerTag } from "./components/player-tag";
 import { World } from "@amber-game/engine/ecs/world";
 import { Acceleration } from "./components/acceleration";
+import { CircleCollider } from "./components/circle-collider";
+import { RectangleCollider } from "./components/rectangle-collider";
+import { CircleCollisionSystem } from "./systems/circle-collision";
 
 function createBaseWorld(): World {
     const world = new World();
-    [PlayerTag, Acceleration].forEach(c => world.components.registerComponent(c));
+    [PlayerTag, Acceleration, CircleCollider, RectangleCollider].forEach(c => world.components.registerComponent(c));
     const systems = [
         new MovementSystem(),
         new AttractionSystem(),
+        new CircleCollisionSystem(),
     ]
     systems.forEach(x => world.systems.register(x));
 

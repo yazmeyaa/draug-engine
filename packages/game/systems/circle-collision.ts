@@ -3,6 +3,7 @@ import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system
 import { CircleCollider } from "../components/circle-collider";
 import { RectangleCollider } from "../components/rectangle-collider";
 import { Position } from "../components/position";
+import { COLLISION_EVENT_KEY } from "../events/collision";
 
 export class CircleCollisionSystem extends System {
     public targetComponents: ComponentType[] = [CircleCollider, Position];
@@ -13,6 +14,8 @@ export class CircleCollisionSystem extends System {
         const pStore = ctx.world.components.getComponentStorage(Position);
         const cStore = ctx.world.components.getComponentStorage(CircleCollider);
         const rStore = ctx.world.components.getComponentStorage(RectangleCollider);
+
+        const buf = ctx.world.events.getBuffer(COLLISION_EVENT_KEY);
 
         for (let i = 0; i < circles.length; i++) {
             const currCircle = circles[i]!;
@@ -30,7 +33,16 @@ export class CircleCollisionSystem extends System {
                 const radiusSum = currCircleRad.radius + otherRad.radius;
 
                 if (distanceSq <= radiusSum * radiusSum) {
-                    console.log('Collision!', currCircle, otherCircle);
+                    buf.write({
+                        objA: {
+                            colliderId: currCircle,
+                            position: { x: currCirclePos.x, y: currCirclePos.y }
+                        },
+                        objB: {
+                            colliderId: otherCircle,
+                            position: { x: otherPos.x, y: otherPos.y }
+                        },
+                    });
                 }
             }
 
@@ -51,7 +63,16 @@ export class CircleCollisionSystem extends System {
                 const dy = currCirclePos.y - closestY;
 
                 if (dx * dx + dy * dy <= currCircleRad.radius * currCircleRad.radius) {
-                    console.log('Circle-Rectangle Collision!', currCircle, rect);
+                    buf.write({
+                        objA: {
+                            colliderId: currCircle,
+                            position: { x: currCirclePos.x, y: currCirclePos.y }
+                        },
+                        objB: {
+                            colliderId: rect,
+                            position: { x: rectPos.x, y: rectPos.y }
+                        },
+                    });
                 }
             }
         }

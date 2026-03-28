@@ -117,7 +117,7 @@ export class ComponentsManager {
 
     public registerComponent<T extends object>(component: ComponentType<T>, opts?: RegisterComponentOptions<T>): ComponentStorage<T> {
         if (this.stores_.has(component))
-            throw new ComponentAlreadyRegisteredError(component)
+            return this.stores_.get(component)!;
 
         const defaultFactoryStorage = (...args: any[]) => new component(...args);
         const factory = opts?.factory ?? defaultFactoryStorage;

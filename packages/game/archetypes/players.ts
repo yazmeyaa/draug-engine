@@ -6,6 +6,7 @@ import { Position } from "../components/position";
 import { Renderable } from "../components/renderable";
 import { Velocity } from "../components/velocity";
 import { AttractorObject } from "../components/attrcator";
+import { CircleCollider } from "../components/circle-collider";
 
 
 export type PlayerInitialData = {
@@ -20,6 +21,10 @@ export function createPlayer(world: World, initData: PlayerInitialData): EntityR
     const ref = new EntityRef(world, id);
     world.addComponent(id, AttractorObject, (o) => {
         o.mass = 20;
+        return o;
+    });
+    world.addComponent(id, CircleCollider, (o) => {
+        o.radius = 20;
         return o;
     })
     world.addComponent(id, PlayerTag);

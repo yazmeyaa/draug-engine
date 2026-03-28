@@ -1,7 +1,6 @@
 import { createPlayer } from "@amber-game/game/archetypes/players";
 import { AttractorObject } from "@amber-game/game/components/attrcator";
 import { Position } from "@amber-game/game/components/position";
-// import { Velocity } from "@amber-game/game/components/velocity";
 import { createClientSideWorld } from "@amber-game/game/create-world";
 import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@amber-game/game/network/generated/client";
 import { ServerMessage } from "@amber-game/game/network/generated/server";

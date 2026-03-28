@@ -2,45 +2,58 @@ export class EventBuffer<T extends unknown> {
     private readBuf: T[] = [];
     private writeBuf: T[] = [];
     public write(event: T): void {
-        this.readBuf.push(event);
+        this.writeBuf.push(event);
     };
 
+    /**
+     * Advances the buffer to the next frame.
+     *
+     * Performs a double-buffer flip:
+     * - Promotes all events written during the previous frame (`writeBuf`)
+     *   to be readable in the current frame (`readBuf`).
+     * - Reuses the previous `readBuf` as the new `writeBuf` and clears it
+     *   to collect events for the next frame.
+     *
+     * After calling this method:
+     * - `get()` will return a stable snapshot of events produced in the previous frame.
+     * - `add()` will write into an empty buffer for the current frame.
+     *
+     * Guarantees:
+     * - No events written during the current frame are visible until the next `swap()`.
+     * - Readers observe a consistent, immutable snapshot within a frame.
+     *
+     * Expected to be called exactly once per frame, before system execution.
+    */
     public swap() {
         const tmp = this.readBuf;
-        this.readBuf = this.writeBuf; 
-        this.writeBuf = tmp;          
-        this.writeBuf.length = 0;     
+        this.readBuf = this.writeBuf;
+        this.writeBuf = tmp;
+        this.writeBuf.length = 0;
     }
 
-    // ReadonlyArray<T> becase of i dont want to copy array to guarantee immutability of data.
-    // Because of that method returns an Readonly array. It's not readonly in runtime, but compile-
-    // time Typescript may garantee that this data will not mutate.
-    // Main flow of Event Buffer is:
-    // 1. Some systems can WRITE events to bus
-    // 2. Some systems can READ events.
-    // 3. Systems cant mutate events in buffer. 
-    public get(): ReadonlyArray<T> {
+    public read(): ReadonlyArray<T> {
         return this.readBuf;
-    };
-    public clear(): void {
-        this.readBuf.length = 0;
     };
 };
 
+type EventKey<T> = symbol & { __type?: T };
 
-type EventTypeID = string | symbol;
+export function createEventKey<T>(description?: string): EventKey<T> {
+    return Symbol(description) as EventKey<T>;
+}
+
 export class EventBus {
-    private storage: Map<EventTypeID, EventBuffer<unknown>> = new Map();
-    public clearAll(): void {
-        this.storage.forEach(s => s.clear());
+    private storage: Map<symbol, EventBuffer<any>> = new Map();
+    public swapAll(): void {
+        this.storage.forEach(s => s.swap());
     }
 
-    public getBuffer<T extends unknown>(id: EventTypeID): EventBuffer<T> {
-        if (this.storage.has(id)) {
-            return this.storage.get(id) as EventBuffer<T>;
+    public getBuffer<T>(key: EventKey<T>): EventBuffer<T> {
+        let buf = this.storage.get(key);
+        if (!buf) {
+            buf = new EventBuffer<T>();
+            this.storage.set(key, buf);
         }
-        const buf = new EventBuffer<T>();
-        this.storage.set(id, buf);
         return buf;
     }
 }
