@@ -5,21 +5,55 @@ import type { World } from "./world";
 
 export type SystemCtor<T extends System = System> = ClassType<T>;
 
+/**
+ * Arguments passed to {@link System.compute} on each {@link SystemsManager.update} call.
+ */
 export type SystemComputeContext = {
+    /** Entity IDs from the query for this {@link System.compute} invocation. */
     entities: number[];
+    /** ECS world instance. */
     world: World;
+    /** Delta time (seconds or your engine's convention) since the previous update. */
     dt: number;
 };
 
+/**
+ * Base class for ECS systems executed by {@link SystemsManager}.
+ *
+ * Subclasses declare which components they iterate over (`queryComponents`), which component
+ * types must exist in the world for registration (`requiredComponents`), and optional ordering
+ * relative to other systems (`computeAfter` / `super(OtherSystem)`).
+ */
 export abstract class System {
-    public abstract readonly queryComponents: ComponentType[];
-    public abstract readonly requiredComponents: ComponentType[];
+    /**
+     * Component types used to build the entity set on each {@link SystemsManager.update}:
+     * it runs `world.query({ include: queryComponents })` and passes the resulting IDs into
+     * {@link System.compute} as {@link SystemComputeContext.entities}.
+     */
+    public abstract readonly targetComponents: ComponentType[];
+    /**
+     * Component types this system depends on for correct operation. {@link SystemsManager}
+     * unions these across all registered systems; callers (for example world setup) use
+     * {@link SystemsManager.getRequiredComponents} to register those component types on the world.
+     */
+    public abstract readonly worldDependencies: ComponentType[];
+    /**
+     * Systems that must run before this one. Pass constructor arguments
+     * `super(OtherSystemCtor, ...)` to add edges; each listed system is scheduled earlier than
+     * this instance. Used when {@link SystemsManager.build} computes a topological execution order.
+     */
     public readonly computeAfter?: Set<SystemCtor> = new Set();
 
+    /**
+     * @param deps - System classes that should run before this system (same as adding to {@link System.computeAfter}).
+     */
     constructor(...deps: SystemCtor[]) {
         deps.forEach(d => this.computeAfter?.add(d));
     }
 
+    /**
+     * Logic for one systems pass: run for all entities in {@link SystemComputeContext.entities}.
+     */
     public abstract compute(ctx: SystemComputeContext): void;
 };
 
@@ -40,7 +74,7 @@ export class SystemsManager {
             throw new Error("Duplicate system");
 
         this.systems_.set(ctor, sys);
-        for (const c of sys.requiredComponents)
+        for (const c of sys.worldDependencies)
             this.requiredComponents_.add(c);
     }
 
@@ -62,7 +96,7 @@ export class SystemsManager {
             throw new Error("Systems not built");
 
         for (const s of this.executionOrder_) {
-            const entities = world.query({ include: s.queryComponents })
+            const entities = world.query({ include: s.targetComponents })
             const ctx = { entities, world, dt } satisfies SystemComputeContext;
             s.compute(ctx);
         }

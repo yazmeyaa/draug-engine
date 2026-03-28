@@ -4,8 +4,8 @@ import { Position } from "../components/position";
 import { Velocity } from "../components/velocity";
 
 export class MovementSystem extends System {
-    public requiredComponents: ComponentType[] = [Position, Velocity];
-    public queryComponents: ComponentType[] = [Position, Velocity];
+    public worldDependencies: ComponentType[] = [Position, Velocity];
+    public targetComponents: ComponentType[] = [Position, Velocity];
     constructor() {
         super()
     }

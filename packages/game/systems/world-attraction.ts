@@ -8,8 +8,8 @@ export class AttractionSystem extends System {
     constructor() {
         super();
     }
-    public queryComponents: ComponentType[] = [Position, Velocity];
-    public requiredComponents: ComponentType[] = [Position, Velocity, AttractorObject];
+    public targetComponents: ComponentType[] = [Position, Velocity];
+    public worldDependencies: ComponentType[] = [Position, Velocity, AttractorObject];
     private attractionForce = 0.2;
     private damping = 0.98;
     private maxSpeed = 5;

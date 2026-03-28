@@ -25,8 +25,8 @@ export class RenderingSystem extends System {
     constructor() {
         super(MovementSystem)
     }
-    public requiredComponents: ComponentType[] = [Renderable, Position];
-    public queryComponents: ComponentType[] = [Renderable, Position];
+    public worldDependencies: ComponentType[] = [Renderable, Position];
+    public targetComponents: ComponentType[] = [Renderable, Position];
     public compute(_ctx: SystemComputeContext): void { }
 
     public getSnapshot(world: World, camera: Camera): RenderingSnapshot {
