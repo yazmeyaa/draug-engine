@@ -1,7 +1,6 @@
 import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
 import { World } from "@amber-game/engine/ecs/world";
 import { MovementSystem } from "./movement";
-import { type ComponentType } from "@amber-game/engine/ecs/component";
 import { Position } from "../components/position";
 import { Renderable } from "../components/renderable";
 

@@ -1,7 +1,7 @@
-import { type ComponentType } from "@amber-game/engine/ecs/component";
 import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
 import { Position } from "../components/position";
 import { Velocity } from "../components/velocity";
+import type { ComponentType } from "@amber-game/engine/ecs/components";
 
 export class MovementSystem extends System {
     public worldDependencies: ComponentType[] = [Position, Velocity];

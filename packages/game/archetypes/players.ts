@@ -20,7 +20,7 @@ export function createPlayer(world: World, initData: PlayerInitialData): EntityR
     const id = world.entities.getId();
     const ref = new EntityRef(world, id);
     world.addComponent(id, AttractorObject, (o) => {
-        o.mass = 20;
+        o.mass = 120;
         return o;
     });
     world.addComponent(id, CircleCollider, (o) => {

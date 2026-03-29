@@ -1,4 +1,4 @@
-import type { ComponentType } from "@amber-game/engine/ecs/component";
+import type { ComponentType } from "@amber-game/engine/ecs/components";
 import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
 import { CircleCollider } from "../components/circle-collider";
 import { RectangleCollider } from "../components/rectangle-collider";
@@ -11,9 +11,9 @@ export class CircleCollisionSystem extends System {
     public compute(ctx: SystemComputeContext): void {
         const circles = ctx.entities;
         const rectangles = ctx.world.query({ include: [Position, RectangleCollider] });
-        const pStore = ctx.world.components.getComponentStorage(Position);
-        const cStore = ctx.world.components.getComponentStorage(CircleCollider);
-        const rStore = ctx.world.components.getComponentStorage(RectangleCollider);
+        const pStore = ctx.world.components.getStorage(Position);
+        const cStore = ctx.world.components.getStorage(CircleCollider);
+        const rStore = ctx.world.components.getStorage(RectangleCollider);
 
         const buf = ctx.world.events.getBuffer(COLLISION_EVENT_KEY);
 
@@ -21,7 +21,7 @@ export class CircleCollisionSystem extends System {
             const currCircle = circles[i]!;
             const currCirclePos = pStore.tryGet(currCircle);
             const currCircleRad = cStore.tryGet(currCircle);
-            for (let j = i; j < circles.length; j++) {
+            for (let j = i + 1; j < circles.length; j++) {
                 const otherCircle = circles[j]!;
                 const otherPos = pStore.tryGet(otherCircle);
                 const otherRad = cStore.tryGet(otherCircle);

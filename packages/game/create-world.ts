@@ -10,7 +10,7 @@ import { CircleCollisionSystem } from "./systems/circle-collision";
 
 function createBaseWorld(): World {
     const world = new World();
-    [PlayerTag, Acceleration, CircleCollider, RectangleCollider].forEach(c => world.components.registerComponent(c));
+    [PlayerTag, Acceleration, CircleCollider, RectangleCollider].forEach(c => world.components.register(c));
     const systems = [
         new MovementSystem(),
         new AttractionSystem(),
@@ -28,7 +28,7 @@ export function createClientSideWorld(): World {
     ].forEach(x => world.systems.register(x));
 
     for (const c of world.systems.getRequiredComponents()) {
-        world.components.registerComponent(c);
+        world.components.register(c);
     }
     return world;
 }
@@ -36,7 +36,7 @@ export function createClientSideWorld(): World {
 export function createServerSideWorld(): World {
     const world = createBaseWorld();
     for (const c of world.systems.getRequiredComponents()) {
-        world.components.registerComponent(c);
+        world.components.register(c);
     }
     return world;
 }

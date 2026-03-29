@@ -1,6 +1,5 @@
 import { DAGNode, VisitedState } from '@amber-game/core/graph/dag';
-import type { ClassType } from '@amber-game/types/class'
-import type { ComponentType } from "./component";
+import type { ClassType, ComponentType } from '@amber-game/types/class'
 import type { World } from "./world";
 
 export type SystemCtor<T extends System = System> = ClassType<T>;

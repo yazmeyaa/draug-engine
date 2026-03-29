@@ -1,5 +1,5 @@
+import type { ComponentType } from "./components";
 import { World } from "./world";
-import type { ComponentType } from "./component";
 
 export type EntityID = number;
 
@@ -29,10 +29,10 @@ export class EntitiesManager {
         const id = this.nextId();
 
         for (const comp of components) {
-            const store = world.components.getComponentStorage(comp);
+            const store = world.components.getStorage(comp);
             if (!store)
                 throw new UnregisteredComponentStorageError(comp);
-            store.addComponent(id);
+            store.add(id);
         }
 
         return id;
@@ -50,7 +50,7 @@ export class EntityRef {
         Result extends { [K in keyof T]: InstanceType<T[K]> }
     >(...components: T): Result {
         return components.map(c => {
-            const s = this.world.components.getComponentStorage(c);
+            const s = this.world.components.getStorage(c);
             return s.tryGet(this.id);
         }) as Result;
     };

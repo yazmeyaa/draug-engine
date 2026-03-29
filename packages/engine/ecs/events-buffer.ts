@@ -34,6 +34,9 @@ export class EventBuffer<T extends unknown> {
     public read(): ReadonlyArray<T> {
         return this.readBuf;
     };
+    public size(): number {
+        return this.readBuf.length;
+    }
 };
 
 type EventKey<T> = symbol & { __type?: T };

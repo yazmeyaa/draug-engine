@@ -1,6 +1,7 @@
 import { createPlayer } from "@amber-game/game/archetypes/players";
 import { AttractorObject } from "@amber-game/game/components/attrcator";
 import { Position } from "@amber-game/game/components/position";
+// import { Velocity } from "@amber-game/game/components/velocity";
 import { createClientSideWorld } from "@amber-game/game/create-world";
 import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@amber-game/game/network/generated/client";
 import { ServerMessage } from "@amber-game/game/network/generated/server";
@@ -112,7 +113,7 @@ const game = new BrowserGame(world, (world) => {
 
   // const ids = world.query({ include: [Position, Velocity] });
   const renderingSystem = world.systems.get(RenderingSystem)
-  const pStore = world.components.getComponentStorage(Position);
+  const pStore = world.components.getStorage(Position);
   // const vStore = world.components.getComponentStorage(Velocity);
   const snapshot = renderingSystem.getSnapshot(world, camera);
   const attractorIds = world.query({ include: [Position, AttractorObject] });
@@ -221,7 +222,7 @@ createPlayer(world, {
   },
 })
 
-for (let i = 0; i < 50; i++) {
+for (let i = 0; i < 5; i++) {
   createPlayer(world, {
     position: {
       x: i * 10,

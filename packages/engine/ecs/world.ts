@@ -1,10 +1,9 @@
-import { type ClassType } from "@amber-game/types/class";
-import { type ComponentType } from "./component";
-import { ComponentsManager, ComponentStorage } from "./component";
+import { type ClassType, type ComponentType } from "@amber-game/types/class";
 import { EntitiesManager, type EntityID, EntityRef } from "./entity";
 import { SystemsManager } from "./system";
 import { ECS_DEFAULTS } from "./constant";
 import { EventBus } from "./events-buffer";
+import { ComponentsManager, type IStorage } from "./components";
 
 export type QueryParameters = {
     include?: ComponentType[];
@@ -38,15 +37,15 @@ export class World {
         if (!include || include.length === 0)
             return [];
 
-        const stores: ComponentStorage<object>[] = new Array(include.length);
+        const stores: IStorage<object>[] = new Array(include.length);
         for (let i = 0; i < include.length; i++)
-            stores[i] = this.components.getComponentStorage(include[i]!);
+            stores[i] = this.components.getStorage(include[i]!);
 
         let base = stores[0]!;
-        let minCount = base.entitiesCount();
+        let minCount = base.size();
 
         for (let i = 1; i < stores.length; i++) {
-            const count = stores[i]!.entitiesCount();
+            const count = stores[i]!.size();
             if (count < minCount) {
                 base = stores[i]!;
                 minCount = count;
@@ -58,7 +57,7 @@ export class World {
             ? new Set(excludeEntitiesIds)
             : null;
 
-        base.forEachEntity((id) => {
+        base.forEach((id) => {
             if (exclude && exclude.has(id))
                 return;
 
@@ -67,7 +66,7 @@ export class World {
                 if (s === base)
                     continue;
 
-                if (!s.hasComponent(id))
+                if (!s.has(id))
                     return;
             }
 
@@ -80,14 +79,14 @@ export class World {
     public addComponent<T extends object>(id: EntityID, component: ClassType<T>, initFn?: (obj: T) => void): void;
     public addComponent<T extends object>(id: EntityRef, component: ClassType<T>, initFn?: (obj: T) => void): void
     public addComponent<T extends object>(entity: EntityID | EntityRef, component: ClassType<T>, initFn?: (obj: T) => void): void {
-        const storage = this.components.getComponentStorage(component);
+        const storage = this.components.getStorage(component);
         let id: number;
         if(typeof entity === 'number') {
             id = entity;
         } else {
             id = entity.id;
         }
-        storage.addComponent(id, (o) => {
+        storage.add(id, (o) => {
             if (initFn) {
                 initFn(o);
             }
