@@ -31,6 +31,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@amber-game/resources@workspace:packages/resources":
+  version: 0.0.0-use.local
+  resolution: "@amber-game/resources@workspace:packages/resources"
+  languageName: unknown
+  linkType: soft
+
 "@amber-game/types@workspace:^, @amber-game/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@amber-game/types@workspace:packages/types"
