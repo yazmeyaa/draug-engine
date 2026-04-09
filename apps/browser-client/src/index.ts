@@ -236,12 +236,11 @@ for (let i = 0; i < 5; i++) {
   })
 }
 
-const resourcesStorage = createTexturesStorage(async (id, url) => {
+const resourcesStorage = createTexturesStorage(game.runtime.resources, async (url) => {
   const resp = await fetch(url);
   const buf = await resp.arrayBuffer();
   return new Uint8Array(buf);
 });
 
-game.runtime.resources.registerStorage(TextureResource, resourcesStorage);
 const res = resourcesStorage.add("https://picsum.photos/200/300")
 res.load().then(console.log);

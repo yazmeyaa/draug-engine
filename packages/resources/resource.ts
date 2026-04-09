@@ -1,149 +1,120 @@
 import type { ClassType } from "@amber-game/types/class";
 
-export type ResourceID = number;
+export type ResourceLoader<T> = (url: string) => Promise<T>;
 
-export class Resource<T extends object> {
-    private data_: T | null = null;
-    private loaded_ = false;
-    
+export class Resource<TData> {
+    private data_: TData | null = null;
+    private isLoaded_ = false;
     constructor(
-        public readonly id: ResourceID,
-        private url_: string,
-        private loader: (url: string) => Promise<T>,
-    ) {}
+        public readonly id: number,
+        private readonly url: string,
+        private readonly loader: ResourceLoader<TData>
+    ) { };
 
-    public async load() {
-        this.data_ = await this.loader(this.url_);
-        this.loaded_ = true;
+    public async load(): Promise<TData> {
+        if (this.data_ !== null && this.isLoaded_)
+            return this.data_!;
+        const data = await this.loader(this.url);
+        this.data_ = data;
+        this.isLoaded_ = true;
+        return data;
+    }
+
+    public dispose(): void {
+        this.data_ = null;
+        this.isLoaded_ = false;
+    };
+
+    public getData(): TData {
+        if (this.data_ === null || !this.isLoaded_)
+            throw new Error("Data is not loaded yet!");
         return this.data_;
     }
-
-    public dispose() {
-        this.data_ = null;
-        this.loaded_ = false;
-    }
-
-    public getData(): T {
-        if (!this.loaded_) throw new Error("Resource not loaded");
-        return this.data_!;
-    }
-
-    public getUrl(): string | undefined {
-        return this.url_;
-    }
-};
-
-export class ResourcesStorage<
-  TData extends object,
-  TResource extends Resource<TData>
-> {
-  private items_ = new Map<ResourceID, TResource>();
-  private nextId = 0;
-
-  constructor(
-    private factory: (id: ResourceID, loader: (url: string) => Promise<TData>, url: string) => TResource,
-    private defaultLoader: (id: ResourceID, url: string) => Promise<TData>
-  ) {}
-
-  private generateId(): ResourceID {
-    return this.nextId++;
-  }
-
-  public add(url: string): TResource {
-    const id = this.generateId();
-    const resource = this.factory(id, (u) => this.defaultLoader(id, u), url);
-    this.items_.set(id, resource);
-    return resource;
-  }
-
-  public addByUrl(url: string): TResource {
-    return this.add(url);
-  }
-
-  public addCustom(customLoader: (url: string) => Promise<TData>, url: string): TResource {
-    const id = this.generateId();
-    const resource = this.factory(id, customLoader, url);
-    this.items_.set(id, resource);
-    return resource;
-  }
-
-  public get(id: ResourceID): TResource | undefined {
-    return this.items_.get(id);
-  }
-
-  public getAll(): TResource[] {
-    return Array.from(this.items_.values());
-  }
-
-  public async loadAll(): Promise<void> {
-    await Promise.all(this.getAll().map(res => res.load()));
-  }
-
-  public disposeAll(): void {
-    this.getAll().forEach(res => res.dispose());
-  }
 }
 
-type ResourceMapKey = ClassType<Resource<any>>;
+export type ResourceID = number;
+export type ResourceIDGenerator = () => ResourceID;
+export class ResourceStorage<TData> {
+    private readonly items_ = new Map<ResourceID, Resource<TData>>();
+    constructor(
+        private readonly nextIdFn_: ResourceIDGenerator,
+        private readonly defaultLoader_: ResourceLoader<TData>,
+    ) { };
 
-export class ResourcesManager {
-    private readonly storagesMap = new Map<
-        ResourceMapKey,
-        ResourcesStorage<any, any>
-    >();
-
-    public registerStorage<
-        TData extends object,
-        TResource extends Resource<TData>
-    >(
-        resourceClass: ClassType<TResource>,
-        storage: ResourcesStorage<TData, TResource>
-    ): void {
-        if (this.storagesMap.has(resourceClass)) {
-            throw new Error(`Storage for ${resourceClass.name} is already registered.`);
-        }
-        this.storagesMap.set(resourceClass, storage);
+    private newResource(id: number, url: string, loader: ResourceLoader<TData>): Resource<TData> {
+        // TODO: Maybe object pool or something. By now its only allocate new object.
+        return new Resource(id, url, loader);
     }
 
-    public getStorage<
-        TData extends object,
-        TResource extends Resource<TData>
-    >(
-        resourceClass: ClassType<TResource>
-    ): ResourcesStorage<TData, TResource> | undefined {
-        return this.storagesMap.get(resourceClass) as
-            | ResourcesStorage<TData, TResource>
-            | undefined;
+    public add(url: string): Resource<TData> {
+        const id = this.nextIdFn_();
+        const rs = this.newResource(id, url, this.defaultLoader_);
+        this.items_.set(id, rs);
+
+        return rs;
+    };
+
+    public addCustom(url: string, customLoader: ResourceLoader<TData>): Resource<TData> {
+        const id = this.nextIdFn_();
+        const rs = this.newResource(id, url, customLoader);
+        this.items_.set(id, rs);
+
+        return rs;
     }
 
-    public getResource<
-        TData extends object,
-        TResource extends Resource<TData>
-    >(
-        resourceClass: ClassType<TResource>,
-        id: ResourceID
-    ): TResource | undefined {
-        return this.getStorage(resourceClass)?.get(id);
+    public remove(id: ResourceID): void {
+        const item = this.items_.get(id);
+        if (!item) return;
+        item.dispose();
+        this.items_.delete(id);
     }
 
-    public async loadResource<
-        TData extends object,
-        TResource extends Resource<TData>
-    >(
-        resourceClass: ClassType<TResource>,
-        id: ResourceID
-    ): Promise<TData | undefined> {
-        const resource = this.getResource(resourceClass, id);
-        return resource?.load();
-    }
-
-    public async loadAllStorages(): Promise<void> {
+    public async loadAll(): Promise<void> {
         await Promise.all(
-            Array.from(this.storagesMap.values()).map(s => s.loadAll())
+            Array.from(this.items_.values(), r => r.load())
         );
     }
 
-    public disposeAllStorages(): void {
-        this.storagesMap.forEach(s => s.disposeAll());
+    public clearAll(): void {
+        for (const rs of this.items_.values())
+            rs.dispose();
+    }
+}
+
+
+export class ResourcesManager {
+    private readonly storages_ = new Map<ClassType<Resource<any>>, ResourceStorage<any>>();
+    private currId = 0;
+    private nextIdFn(): number {
+        return ++this.currId;
+    }
+    public register<T>(res: ClassType<Resource<T>>, defaultLoader: ResourceLoader<T>): ResourceStorage<T> {
+        const storage = new ResourceStorage(
+            this.nextIdFn,
+            defaultLoader,
+        );
+        this.storages_.set(res, storage);
+
+        return storage;
+    }
+
+    public getStorage<T>(res: ClassType<Resource<T>>): ResourceStorage<T> | null {
+        return this.storages_.get(res) ?? null;
+    }
+
+    public tryGetStorage<T>(res: ClassType<Resource<T>>): ResourceStorage<T> {
+        const s = this.storages_.get(res);
+        if (!s)
+            throw new Error(`Storage ${res.name} is not registered!`);
+
+        return s;
+    }
+
+    public async loadAll(): Promise<void> {
+        await Promise.all(Array.from(this.storages_.values(), (s) => s.loadAll()));
+    }
+
+    public disposeAll(): void {
+        Array.from(this.storages_.values(), (s) => s.clearAll())
     }
 }
