@@ -27,11 +27,12 @@ __metadata:
   resolution: "@amber-game/game@workspace:packages/game"
   dependencies:
     "@amber-game/engine": "workspace:^"
+    "@amber-game/resources": "workspace:^"
     ts-proto: "npm:^2.11.5"
   languageName: unknown
   linkType: soft
 
-"@amber-game/resources@workspace:packages/resources":
+"@amber-game/resources@workspace:^, @amber-game/resources@workspace:packages/resources":
   version: 0.0.0-use.local
   resolution: "@amber-game/resources@workspace:packages/resources"
   languageName: unknown
@@ -426,6 +427,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "browser-client@workspace:apps/browser-client"
   dependencies:
+    "@amber-game/engine": "workspace:^"
     "@amber-game/game": "workspace:^"
     typescript: "npm:^5.9.3"
     vite: "npm:^8.0.0"

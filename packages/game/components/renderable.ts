@@ -1,6 +1,8 @@
+import type { ResourceID } from "@amber-game/resources/resource";
+
 export class Renderable {
     constructor(
-        public spriteId: string,
+        public spriteId: ResourceID,
         public layer: number,
     ){};
 };

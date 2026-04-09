@@ -1,12 +1,12 @@
 import { createPlayer } from "@amber-game/game/archetypes/players";
 import { AttractorObject } from "@amber-game/game/components/attrcator";
 import { Position } from "@amber-game/game/components/position";
-// import { Velocity } from "@amber-game/game/components/velocity";
 import { createClientSideWorld } from "@amber-game/game/create-world";
 import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@amber-game/game/network/generated/client";
 import { ServerMessage } from "@amber-game/game/network/generated/server";
 import { type Camera, RenderingSystem } from "@amber-game/game/systems/rendering";
 import { BrowserGame } from "./browser-game";
+import { TextureResource, createTexturesStorage } from '@amber-game/game/resources/textures'
 
 const world = createClientSideWorld();
 world.systems.build();
@@ -218,7 +218,7 @@ createPlayer(world, {
   isLocal: true,
   renderable: {
     layer: 1,
-    spriteId: '1',
+    spriteId: 1,
   },
 })
 
@@ -231,7 +231,17 @@ for (let i = 0; i < 5; i++) {
     isLocal: false,
     renderable: {
       layer: 1,
-      spriteId: '1',
+      spriteId: 1,
     },
   })
 }
+
+const resourcesStorage = createTexturesStorage(async (id, url) => {
+  const resp = await fetch(url);
+  const buf = await resp.arrayBuffer();
+  return new Uint8Array(buf);
+});
+
+game.runtime.resources.registerStorage(TextureResource, resourcesStorage);
+const res = resourcesStorage.add("https://picsum.photos/200/300")
+res.load().then(console.log);

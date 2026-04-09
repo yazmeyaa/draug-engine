@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@amber-game/engine": "workspace:^",
+    "@amber-game/resources": "workspace:^",
     "ts-proto": "^2.11.5"
   }
 }

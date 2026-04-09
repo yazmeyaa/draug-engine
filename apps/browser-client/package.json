@@ -13,6 +13,7 @@
     "test": "echo Hello from browser!"
   },
   "dependencies": {
+    "@amber-game/engine": "workspace:^",
     "@amber-game/game": "workspace:^"
   },
   "devDependencies": {

@@ -3,12 +3,14 @@ import { World } from "@amber-game/engine/ecs/world";
 import { MovementSystem } from "./movement";
 import { Position } from "../components/position";
 import { Renderable } from "../components/renderable";
+import type { ComponentType } from "@amber-game/engine/ecs/components";
+import type { ResourceID } from "@amber-game/resources/resource";
 
 export type RenderingSnapshotEntry = {
     entityId: number;
     x: number;
     y: number;
-    spriteId: string;
+    spriteId: ResourceID;
     zIndex: number;
 };
 export type RenderingSnapshot = RenderingSnapshotEntry[];
