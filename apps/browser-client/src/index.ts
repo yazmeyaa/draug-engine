@@ -6,7 +6,8 @@ import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@ambe
 import { ServerMessage } from "@amber-game/game/network/generated/server";
 import { type Camera, RenderingSystem } from "@amber-game/game/systems/rendering";
 import { BrowserGame } from "./browser-game";
-import { TextureResource, createTexturesStorage } from '@amber-game/game/resources/textures'
+import { Renderable } from "@amber-game/game/components/renderable";
+import { Resource } from "@amber-game/resources/resource";
 
 const world = createClientSideWorld();
 world.systems.build();
@@ -48,7 +49,6 @@ function worldToScreen(wx: number, wy: number): [number, number] {
   return [sx, sy];
 }
 
-const RADIUS_OBJECT = 6;
 const RADIUS_ATTRACTOR = 12;
 
 // const debugPanel = document.getElementById("debug-panel")!;
@@ -114,6 +114,7 @@ const game = new BrowserGame(world, (world) => {
   // const ids = world.query({ include: [Position, Velocity] });
   const renderingSystem = world.systems.get(RenderingSystem)
   const pStore = world.components.getStorage(Position);
+  const rStore = world.components.getStorage(Renderable);
   // const vStore = world.components.getComponentStorage(Velocity);
   const snapshot = renderingSystem.getSnapshot(world, camera);
   const attractorIds = world.query({ include: [Position, AttractorObject] });
@@ -124,16 +125,16 @@ const game = new BrowserGame(world, (world) => {
     const ref = world.getEntityRef(id);
     const p = pStore.tryGet(ref.id);
     const [sx, sy] = worldToScreen(p.x, p.y);
+
     ctx.beginPath();
     ctx.arc(sx, sy, RADIUS_ATTRACTOR, 0, Math.PI * 2);
     ctx.fillStyle = "#000000";
     ctx.fill();
   }
   for (const entry of snapshot) {
-    ctx.beginPath();
-    ctx.arc(entry.x, entry.y, RADIUS_OBJECT, 0, Math.PI * 2);
-    ctx.fillStyle = "#dc2626";
-    ctx.fill();
+    const r = rStore.tryGet(entry.entityId);
+    const data = game.runtime.resources.tryGetStorage(ImageResource).tryGet(r.spriteId).getData();
+    ctx.drawImage(data, entry.x - 50, entry.y - 50, 100, 100)
   }
 })
 //   const entitiesHtml = [...ids]
@@ -210,37 +211,44 @@ ws.onmessage = (event) => {
   }
 };
 
-createPlayer(world, {
-  position: {
-    x: 1,
-    y: 2,
-  },
-  isLocal: true,
-  renderable: {
-    layer: 1,
-    spriteId: 1,
-  },
-})
+class ImageResource extends Resource<HTMLImageElement> { }
+const imageResourceStore = game.runtime.resources.register(ImageResource, (url) => {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
 
-for (let i = 0; i < 5; i++) {
-  createPlayer(world, {
-    position: {
-      x: i * 10,
-      y: i * 10,
-    },
-    isLocal: false,
-    renderable: {
-      layer: 1,
-      spriteId: 1,
-    },
-  })
-}
+    img.onload = () => resolve(img);
+    img.onerror = reject;
 
-const resourcesStorage = createTexturesStorage(game.runtime.resources, async (url) => {
-  const resp = await fetch(url);
-  const buf = await resp.arrayBuffer();
-  return new Uint8Array(buf);
+    img.src = url;
+  });
 });
 
-const res = resourcesStorage.add("https://picsum.photos/200/300")
-res.load().then(console.log);
+
+const res = imageResourceStore.add("https://picsum.photos/200/300")
+res.load().then(() => {
+  createPlayer(world, {
+    position: {
+      x: 1,
+      y: 2,
+    },
+    isLocal: true,
+    renderable: {
+      layer: 1,
+      spriteId: res.id,
+    },
+  })
+
+  for (let i = 0; i < 5; i++) {
+    createPlayer(world, {
+      position: {
+        x: i * 10,
+        y: i * 10,
+      },
+      isLocal: false,
+      renderable: {
+        layer: 1,
+        spriteId: res.id,
+      },
+    })
+  }
+});

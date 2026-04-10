@@ -62,6 +62,19 @@ export class ResourceStorage<TData> {
         return rs;
     }
 
+    public get(id: ResourceID): Resource<TData> | null {
+        const item = this.items_.get(id);
+        return item ?? null;
+    }
+
+    public tryGet(id: ResourceID): Resource<TData> {
+        const item = this.items_.get(id);
+        if(!item) 
+            throw new Error(`Resource with id ${id} in storage ${this.constructor.name} not exist`);
+
+        return item;
+    }
+
     public remove(id: ResourceID): void {
         const item = this.items_.get(id);
         if (!item) return;

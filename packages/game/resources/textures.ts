@@ -1,4 +1,4 @@
-import { Resource, ResourcesManager, ResourceStorage, type ResourceID, type ResourceLoader } from "@amber-game/resources/resource";
+import { Resource, ResourcesManager, ResourceStorage, type ResourceLoader } from "@amber-game/resources/resource";
 
 export class TextureResource extends Resource<Uint8Array> { };
 
