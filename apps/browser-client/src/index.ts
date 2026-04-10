@@ -1,6 +1,4 @@
 import { createPlayer } from "@amber-game/game/archetypes/players";
-import { AttractorObject } from "@amber-game/game/components/attrcator";
-import { Position } from "@amber-game/game/components/position";
 import { createClientSideWorld } from "@amber-game/game/create-world";
 import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@amber-game/game/network/generated/client";
 import { ServerMessage } from "@amber-game/game/network/generated/server";
@@ -43,17 +41,6 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
-function worldToScreen(wx: number, wy: number): [number, number] {
-  const sx = (wx - camera.x) * camera.zoom + camera.width / 2;
-  const sy = (wy - camera.y) * camera.zoom + camera.height / 2;
-  return [sx, sy];
-}
-
-const RADIUS_ATTRACTOR = 12;
-
-// const debugPanel = document.getElementById("debug-panel")!;
-
-// Track keyboard and movement state
 const keysPressed: { [key: string]: boolean } = {};
 let lastDx = 0;
 let lastDy = 0;
@@ -94,16 +81,8 @@ const game = new BrowserGame(world, (world) => {
 
   const currentTime = performance.now();
   const deltaTime = currentTime - lastTime;
-
-  // if (deltaTime >= 1000) {
-  //   fps = Math.round((frameCount * 1000) / deltaTime);
-  //   frameCount = 0;
-  //   lastTime = currentTime;
-  // }
-
   world.update(deltaTime);
 
-  // Check for movement changes on each world update
   const { dx, dy } = calculateMovement();
   if (dx !== lastDx || dy !== lastDy) {
     sendMovement(dx, dy);
@@ -111,74 +90,23 @@ const game = new BrowserGame(world, (world) => {
     lastDy = dy;
   }
 
-  // const ids = world.query({ include: [Position, Velocity] });
   const renderingSystem = world.systems.get(RenderingSystem)
-  const pStore = world.components.getStorage(Position);
   const rStore = world.components.getStorage(Renderable);
-  // const vStore = world.components.getComponentStorage(Velocity);
   const snapshot = renderingSystem.getSnapshot(world, camera);
-  const attractorIds = world.query({ include: [Position, AttractorObject] });
 
-  // Draw to canvas
   ctx.clearRect(0, 0, camera.width, camera.height);
-  for (const id of attractorIds) {
-    const ref = world.getEntityRef(id);
-    const p = pStore.tryGet(ref.id);
-    const [sx, sy] = worldToScreen(p.x, p.y);
 
-    ctx.beginPath();
-    ctx.arc(sx, sy, RADIUS_ATTRACTOR, 0, Math.PI * 2);
-    ctx.fillStyle = "#000000";
-    ctx.fill();
-  }
   for (const entry of snapshot) {
     const r = rStore.tryGet(entry.entityId);
     const data = game.runtime.resources.tryGetStorage(ImageResource).tryGet(r.spriteId).getData();
     ctx.drawImage(data, entry.x - 50, entry.y - 50, 100, 100)
   }
 })
-//   const entitiesHtml = [...ids]
-//     .map((id) => {
-//       const ref = world.getEntityRef(id);
-//       const pos = pStore.tryGet(ref.id);
-//       const vel = vStore.tryGet(ref.id);
-//       return `<div class="row"><span class="key">Entity ${id}</span><span class="val">x=${pos.x.toFixed(2)} y=${pos.y.toFixed(2)} vx=${vel.vx.toFixed(2)} vy=${vel.vy.toFixed(2)}</span></div>`;
-//     })
-//     .join("");
-
-//   const renderItemsHtml = snapshot
-//     .map((e) => `<div class="row"><span class="key">#${e.entityId}</span><span class="val">x=${e.x.toFixed(3)} y=${e.y.toFixed(3)}</span></div>`)
-//     .join("");
-
-//   debugPanel.innerHTML = `
-//     <section><h3>Step ${step}</h3></section>
-//     <section>
-//       <h3>Performance</h3>
-//       <div class="row"><span class="key">FPS</span><span class="val">${fps}</span></div>
-//     </section>
-//     <section>
-//       <h3>Entities</h3>
-//       ${entitiesHtml || "<div class=\"key\">—</div>"}
-//     </section>
-//     <section>
-//       <h3>Camera</h3>
-//       <div class="row"><span class="key">Center</span><span class="val">${camera.x.toFixed(3)}, ${camera.y.toFixed(3)}</span></div>
-//       <div class="row"><span class="key">Size</span><span class="val">${camera.width} × ${camera.height}</span></div>
-//       <div class="row"><span class="key">Zoom</span><span class="val">${camera.zoom}</span></div>
-//     </section>
-//     <section>
-//       <h3>Rendering</h3>
-//       ${renderItemsHtml || "<div class=\"key\">—</div>"}
-//     </section>
-//   `;
-// });
 game.start();
 
-// WebSocket connection and keyboard input
 ws = new WebSocket("ws://localhost:8090");
 ws.binaryType = 'arraybuffer'
 
-// Listen for keyboard events
 window.addEventListener("keydown", (e) => {
   keysPressed[e.key] = true;
 });
@@ -223,32 +151,41 @@ const imageResourceStore = game.runtime.resources.register(ImageResource, (url) 
   });
 });
 
+fetch('https://picsum.photos/v2/list?limit=6')
+  .then(r => r.json())
+  .then(data => {
+    const url = data[0].download_url;
+    const res = imageResourceStore.add(url);
+    res.load()
+      .then(() => {
+        createPlayer(world, {
+          position: {
+            x: 1,
+            y: 2,
+          },
+          isLocal: true,
+          renderable: {
+            layer: 1,
+            spriteId: res.id,
+          },
+        })
+      })
 
-const res = imageResourceStore.add("https://picsum.photos/200/300")
-res.load().then(() => {
-  createPlayer(world, {
-    position: {
-      x: 1,
-      y: 2,
-    },
-    isLocal: true,
-    renderable: {
-      layer: 1,
-      spriteId: res.id,
-    },
+    for (let i = 1; i < data.length; i++) {
+      const res = imageResourceStore.add(data[i].download_url);
+      res.load()
+        .then(() => {
+          createPlayer(world, {
+            position: {
+              x: i * 10,
+              y: i * 10,
+            },
+            isLocal: false,
+            renderable: {
+              layer: 1,
+              spriteId: res.id,
+            },
+          })
+        })
+    }
   })
-
-  for (let i = 0; i < 5; i++) {
-    createPlayer(world, {
-      position: {
-        x: i * 10,
-        y: i * 10,
-      },
-      isLocal: false,
-      renderable: {
-        layer: 1,
-        spriteId: res.id,
-      },
-    })
-  }
-});
