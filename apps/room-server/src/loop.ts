@@ -1,4 +1,4 @@
-import { World } from "@amber-game/engine/ecs/world";
+import type { World } from "@amber-game/engine/ecs/world";
 import { Clock } from "@amber-game/engine/runtime/clock";
 import { GameLoop } from "@amber-game/engine/runtime/game-loop";
 

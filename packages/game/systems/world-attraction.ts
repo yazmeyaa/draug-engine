@@ -1,5 +1,5 @@
 import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
-import { Position } from "../components/position";
+import { Transform} from "../components/transform";
 import { AttractorObject } from "../components/attrcator";
 import { Velocity } from "../components/velocity";
 import type { ComponentType } from "@amber-game/engine/ecs/components";
@@ -8,8 +8,8 @@ export class AttractionSystem extends System {
     constructor() {
         super();
     }
-    public targetComponents: ComponentType[] = [Position, Velocity];
-    public worldDependencies: ComponentType[] = [Position, Velocity, AttractorObject];
+    public targetComponents: ComponentType[] = [Transform, Velocity];
+    public worldDependencies: ComponentType[] = [Transform, Velocity, AttractorObject];
     private attractionForce = 0.2;
     private damping = 0.98;
     private maxSpeed = 5;
@@ -17,11 +17,11 @@ export class AttractionSystem extends System {
     public compute(ctx: SystemComputeContext): void {
         const { entities, world } = ctx;
 
-        const attractorEntities = world.query({ include: [AttractorObject, Position] });
+        const attractorEntities = world.query({ include: [AttractorObject, Transform] });
         if (attractorEntities.length === 0) return;
 
         for (const entity of entities) {
-            const [pos, vel] = world.getEntityRef(entity).with(Position, Velocity)
+            const [pos, vel] = world.getEntityRef(entity).with(Transform, Velocity)
 
             let ax = 0;
             let ay = 0;
@@ -29,7 +29,7 @@ export class AttractionSystem extends System {
             for (const aEntity of attractorEntities) {
                 if (aEntity === entity) continue;
 
-                const [aPos, attractor] = world.getEntityRef(aEntity).with(Position, AttractorObject);
+                const [aPos, attractor] = world.getEntityRef(aEntity).with(Transform, AttractorObject);
 
                 const dx = aPos.x - pos.x;
                 const dy = aPos.y - pos.y;

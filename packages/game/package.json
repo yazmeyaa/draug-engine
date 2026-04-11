@@ -19,5 +19,8 @@
     "@amber-game/engine": "workspace:^",
     "@amber-game/resources": "workspace:^",
     "ts-proto": "^2.11.5"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.2"
   }
 }

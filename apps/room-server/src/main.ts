@@ -2,12 +2,12 @@ import { type EntityID } from "@amber-game/engine/ecs/entity";
 import { World } from "@amber-game/engine/ecs/world";
 import { createPlayer } from "@amber-game/game/archetypes/players";
 import { PlayerTag } from "@amber-game/game/components/player-tag";
-import { Position } from "@amber-game/game/components/position";
+import { Transform } from "@amber-game/game/components/transform";
 import { createServerSideWorld } from "@amber-game/game/create-world";
 import { PositionChange, MovementDirectionChange, MotionUpdate, ServerMessage } from "@amber-game/game/network/generated/server";
-import { NodeLoop } from "@amber-game/game/node-game";
 import { GameServer } from "./transport/game-server";
 import { GameUserData } from "./types";
+import { NodeLoop } from "./loop";
 
 type UpdEntry = {
     pos?: PositionChange;
@@ -28,7 +28,7 @@ export class EntryPoint {
 
         this.server_ = new GameServer({
             getUserData: () => {
-                const entity = createPlayer(this.world, { position: { x: 0, y: 0 } });
+                const entity = createPlayer(this.world, { transform: { x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1 } });
                 console.log(entity)
                 return new GameUserData(entity.id);
             },
@@ -49,10 +49,10 @@ export class EntryPoint {
         this.server_.on('connected', (ctx) => {
 
 
-            const entities = this.world.query({ include: [PlayerTag, Position] });
+            const entities = this.world.query({ include: [PlayerTag, Transform] });
             const players = entities.map((e) => {
                 const ref = this.world.getEntityRef(e);
-                const [position] = ref.with(Position);
+                const [position] = ref.with(Transform);
                 return { position, entityID: ref.id };
             })
             console.log(players);

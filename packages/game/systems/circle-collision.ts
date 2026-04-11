@@ -2,16 +2,16 @@ import type { ComponentType } from "@amber-game/engine/ecs/components";
 import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
 import { CircleCollider } from "../components/circle-collider";
 import { RectangleCollider } from "../components/rectangle-collider";
-import { Position } from "../components/position";
+import { Transform} from "../components/transform";
 import { COLLISION_EVENT_KEY } from "../events/collision";
 
 export class CircleCollisionSystem extends System {
-    public targetComponents: ComponentType[] = [CircleCollider, Position];
-    public worldDependencies: ComponentType[] = [CircleCollider, RectangleCollider, Position];
+    public targetComponents: ComponentType[] = [CircleCollider, Transform];
+    public worldDependencies: ComponentType[] = [CircleCollider, RectangleCollider, Transform];
     public compute(ctx: SystemComputeContext): void {
         const circles = ctx.entities;
-        const rectangles = ctx.world.query({ include: [Position, RectangleCollider] });
-        const pStore = ctx.world.components.getStorage(Position);
+        const rectangles = ctx.world.query({ include: [Transform, RectangleCollider] });
+        const pStore = ctx.world.components.getStorage(Transform);
         const cStore = ctx.world.components.getStorage(CircleCollider);
         const rStore = ctx.world.components.getStorage(RectangleCollider);
 

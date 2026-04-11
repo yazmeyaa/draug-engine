@@ -1,17 +1,19 @@
 import { createPlayer } from "@amber-game/game/archetypes/players";
+import { createTrainingTarget } from "@amber-game/game/archetypes/traning-target";
 import { createFireball } from "@amber-game/game/archetypes/fireball";
 import { createClientSideWorld } from "@amber-game/game/create-world";
 import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@amber-game/game/network/generated/client";
 import { ServerMessage } from "@amber-game/game/network/generated/server";
-import { type Camera, RenderingSystem } from "@amber-game/game/systems/rendering";
+import { type Camera } from "@amber-game/game/systems/rendering";
 import { BrowserGame } from "./browser-game";
 import { Renderable } from "@amber-game/game/components/renderable";
 import { Resource } from "@amber-game/resources/resource";
-import { Position } from "@amber-game/game/components/position";
+import { Transform } from "@amber-game/game/components/transform";
+import { RenderView } from "@amber-game/game/render/renderer"
+import { EntityDebug } from "@amber-game/game/components/entity-debug";
 
 const world = createClientSideWorld();
 world.systems.build();
-
 
 let step = 0;
 // let fps = 0;
@@ -92,16 +94,42 @@ const game = new BrowserGame(world, (world) => {
     lastDy = dy;
   }
 
-  const renderingSystem = world.systems.get(RenderingSystem)
+  const renderView = new RenderView(game.runtime.world, camera)
   const rStore = world.components.getStorage(Renderable);
-  const snapshot = renderingSystem.getSnapshot(world, camera);
+  const snapshot = renderView.snapshot();
 
   ctx.clearRect(0, 0, camera.width, camera.height);
 
+  const tStore = world.components.getStorage(Transform);
+  const debugStore = world.components.getStorage(EntityDebug);
   for (const entry of snapshot) {
+    const debug = debugStore.get(entry.entityId);
     const r = rStore.tryGet(entry.entityId);
     const data = game.runtime.resources.tryGetStorage(ImageResource).tryGet(r.spriteId).getData();
-    ctx.drawImage(data, entry.x - 50, entry.y - 50, 100, 100)
+    const t = tStore.tryGet(entry.entityId);
+
+    ctx.save();
+
+    const rad = t.rotation * Math.PI / 180;
+
+    ctx.translate(entry.x, entry.y);
+
+    if (debug) {
+      ctx.font = "normal 24px serif";
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#000000';
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(debug.name, -50, -60);
+      ctx.strokeText(debug.name, -50, -60);
+    }
+
+    ctx.rotate(rad);
+    ctx.drawImage(data, -50, -50, 100, 100);
+
+    ctx.restore();
+
+
   }
 })
 // game.start();
@@ -157,23 +185,31 @@ const trainingTargetTexture = imageResourceStore.add('/assets/sprites/training_t
 const dummyCharacterTexture = imageResourceStore.add('/assets/sprites/dummy_char.png')
 const dummyFireballTexture = imageResourceStore.add('assets/sprites/dummy_fireball.png')
 imageResourceStore.loadAll().then(() => {
-  createPlayer(world, {
-    position: {
+  createTrainingTarget(world, {
+    transform: {
       x: 1,
       y: 2,
+      rotation: 0,
+      scaleX: 1,
+      scaleY: 1
     },
-    isLocal: true,
     renderable: {
       layer: 1,
       spriteId: trainingTargetTexture.id,
     },
+    collider: {
+      radius: 10,
+    }
   })
 
   for (let i = 0; i < 6; i++) {
     const playerId = createPlayer(world, {
-      position: {
-        x: 150 - (i * 50),
+      transform: {
+        x: 250 - (i * 100),
         y: 150,
+        rotation: 0,
+        scaleX: 1,
+        scaleY: 1,
       },
       isLocal: false,
       renderable: {
@@ -181,12 +217,15 @@ imageResourceStore.loadAll().then(() => {
         spriteId: dummyCharacterTexture.id,
       },
     })
-    const [p] = playerId.with(Position)
+    const [p] = playerId.with(Transform)
     createFireball(game.runtime.world, {
       damage: 10,
       initialPosition: {
         x: p.x,
         y: p.y,
+        rotation: 270,
+        scaleX: 1,
+        scaleY: 1
       },
       velocity: {
         vx: 0,
