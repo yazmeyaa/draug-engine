@@ -4,13 +4,13 @@ import { createFireball } from "@amber-game/game/archetypes/fireball";
 import { createClientSideWorld } from "@amber-game/game/create-world";
 import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@amber-game/game/network/generated/client";
 import { ServerMessage } from "@amber-game/game/network/generated/server";
-import { type Camera } from "@amber-game/game/systems/rendering";
 import { BrowserGame } from "./browser-game";
 import { Renderable } from "@amber-game/game/components/renderable";
 import { Resource } from "@amber-game/resources/resource";
 import { Transform } from "@amber-game/game/components/transform";
 import { RenderView } from "@amber-game/game/render/renderer"
 import { EntityDebug } from "@amber-game/game/components/entity-debug";
+import type { Camera } from "@amber-game/game/render/types";
 
 const world = createClientSideWorld();
 world.systems.build();
