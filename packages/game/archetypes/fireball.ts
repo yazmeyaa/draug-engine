@@ -4,12 +4,14 @@ import { Acceleration } from "../components/acceleration";
 import { Damage } from "../components/damage";
 import { Position } from "../components/position";
 import { Velocity } from "../components/velocity";
+import { Renderable } from "../components/renderable";
 
 type FireballInitialData = {
     initialPosition: Position;
     velocity: Velocity;
     acceleration?: Acceleration;
     damage: number;
+    renderable: Renderable,
 };
 export function createFireball(world: World, initData: FireballInitialData): EntityRef {
     const entity = new EntityRef(world, world.entities.getId());
@@ -34,6 +36,11 @@ export function createFireball(world: World, initData: FireballInitialData): Ent
     world.addComponent(entity, Damage, (o) => {
         o.value = initData.damage;
         return o;
+    })
+
+    world.addComponent(entity, Renderable, (o) => {
+        o.layer = 0;
+        o.spriteId = initData.renderable.spriteId;
     })
 
     return entity;

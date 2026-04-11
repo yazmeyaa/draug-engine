@@ -1,4 +1,5 @@
 import { createPlayer } from "@amber-game/game/archetypes/players";
+import { createFireball } from "@amber-game/game/archetypes/fireball";
 import { createClientSideWorld } from "@amber-game/game/create-world";
 import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@amber-game/game/network/generated/client";
 import { ServerMessage } from "@amber-game/game/network/generated/server";
@@ -6,6 +7,7 @@ import { type Camera, RenderingSystem } from "@amber-game/game/systems/rendering
 import { BrowserGame } from "./browser-game";
 import { Renderable } from "@amber-game/game/components/renderable";
 import { Resource } from "@amber-game/resources/resource";
+import { Position } from "@amber-game/game/components/position";
 
 const world = createClientSideWorld();
 world.systems.build();
@@ -102,7 +104,7 @@ const game = new BrowserGame(world, (world) => {
     ctx.drawImage(data, entry.x - 50, entry.y - 50, 100, 100)
   }
 })
-game.start();
+// game.start();
 
 ws = new WebSocket("ws://localhost:8090");
 ws.binaryType = 'arraybuffer'
@@ -151,41 +153,51 @@ const imageResourceStore = game.runtime.resources.register(ImageResource, (url) 
   });
 });
 
-fetch('https://picsum.photos/v2/list?limit=6')
-  .then(r => r.json())
-  .then(data => {
-    const url = data[0].download_url;
-    const res = imageResourceStore.add(url);
-    res.load()
-      .then(() => {
-        createPlayer(world, {
-          position: {
-            x: 1,
-            y: 2,
-          },
-          isLocal: true,
-          renderable: {
-            layer: 1,
-            spriteId: res.id,
-          },
-        })
-      })
-
-    for (let i = 1; i < data.length; i++) {
-      const res = imageResourceStore.add(data[i].download_url);
-      res.load()
-        .then(() => {
-          createPlayer(world, {
-            position: {
-              x: i * 10,
-              y: i * 10,
-            },
-            isLocal: false,
-            renderable: {
-              layer: 1,
-              spriteId: res.id,
-            },
-          })
-        })
-    }
+const trainingTargetTexture = imageResourceStore.add('/assets/sprites/training_target_sprite_001.png')
+const dummyCharacterTexture = imageResourceStore.add('/assets/sprites/dummy_char.png')
+const dummyFireballTexture = imageResourceStore.add('assets/sprites/dummy_fireball.png')
+imageResourceStore.loadAll().then(() => {
+  createPlayer(world, {
+    position: {
+      x: 1,
+      y: 2,
+    },
+    isLocal: true,
+    renderable: {
+      layer: 1,
+      spriteId: trainingTargetTexture.id,
+    },
   })
+
+  for (let i = 0; i < 6; i++) {
+    const playerId = createPlayer(world, {
+      position: {
+        x: 150 - (i * 50),
+        y: 150,
+      },
+      isLocal: false,
+      renderable: {
+        layer: 1,
+        spriteId: dummyCharacterTexture.id,
+      },
+    })
+    const [p] = playerId.with(Position)
+    createFireball(game.runtime.world, {
+      damage: 10,
+      initialPosition: {
+        x: p.x,
+        y: p.y,
+      },
+      velocity: {
+        vx: 0,
+        vy: -1,
+      },
+      renderable: {
+        layer: 0,
+        spriteId: dummyFireballTexture.id,
+      }
+    })
+  }
+  game.start();
+})
+

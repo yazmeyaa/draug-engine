@@ -7,10 +7,11 @@ import { Acceleration } from "./components/acceleration";
 import { CircleCollider } from "./components/circle-collider";
 import { RectangleCollider } from "./components/rectangle-collider";
 import { CircleCollisionSystem } from "./systems/circle-collision";
+import { Damage } from "./components/damage";
 
 function createBaseWorld(): World {
     const world = new World();
-    [PlayerTag, Acceleration, CircleCollider, RectangleCollider].forEach(c => world.components.register(c));
+    [PlayerTag, Acceleration, CircleCollider, RectangleCollider, Damage].forEach(c => world.components.register(c));
     const systems = [
         new MovementSystem(),
         new AttractionSystem(),
