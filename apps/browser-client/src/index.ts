@@ -219,8 +219,8 @@ imageResourceStore.loadAll().then(() => {
     })
     const [p] = playerId.with(Transform)
     createFireball(game.runtime.world, {
-      damage: 10,
-      initialPosition: {
+      damage: { value: 10 },
+      transform: {
         x: p.x,
         y: p.y,
         rotation: 270,

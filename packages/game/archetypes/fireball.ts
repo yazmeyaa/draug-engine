@@ -6,47 +6,26 @@ import { Transform } from "../components/transform";
 import { Velocity } from "../components/velocity";
 import { Renderable } from "../components/renderable";
 import { EntityDebug } from "../components/entity-debug";
+import { applyComponent } from "./shared";
 
 type FireballInitialData = {
-    initialPosition: Transform;
+    transform: Transform;
     velocity: Velocity;
     acceleration?: Acceleration;
-    damage: number;
+    damage: Damage;
     renderable: Renderable,
 };
 export function createFireball(world: World, initData: FireballInitialData): EntityRef {
     const entity = new EntityRef(world, world.entities.getId());
 
-    world.addComponent(entity, Transform, (o) => {
-        const { x, y, rotation, scaleX, scaleY } = initData.initialPosition;
-        [o.x, o.y, o.rotation, o.scaleX, o.scaleY] = [x, y, rotation, scaleX, scaleY];
-        return o;
-    })
-    world.addComponent(entity, Velocity, (o) => {
-        const { vx, vy } = initData.velocity;
-        [o.vx, o.vy] = [vx, vy]
-        return o;
-    })
-    world.addComponent(entity, Acceleration, (o) => {
-        if (!initData.acceleration)
-            return o;
-        const { x, y } = initData.acceleration;
-        [o.x, o.y] = [x, y];
-        return o;
-    })
-    world.addComponent(entity, Damage, (o) => {
-        o.value = initData.damage;
-        return o;
-    })
-
-    world.addComponent(entity, Renderable, (o) => {
-        o.layer = 0;
-        o.spriteId = initData.renderable.spriteId;
-    })
-
+    world.addComponent(entity, Transform, (o) => applyComponent(o, initData.transform));
+    world.addComponent(entity, Velocity, (o) => applyComponent(o, initData.velocity));
+    world.addComponent(entity, Acceleration, (o) => applyComponent(o, initData.acceleration));
+    world.addComponent(entity, Damage, (o) => applyComponent(o, initData.damage));
+    world.addComponent(entity, Renderable, (o) => applyComponent(o, initData.renderable))
     world.addComponent(entity, EntityDebug, (o) => {
         o.name = "Fireball";
-        return o; 
+        o.description = "Classic fireball, flying to target to burn them down!"
     });
 
     return entity;

@@ -7,6 +7,7 @@ import { Renderable } from "../components/renderable";
 import { Velocity } from "../components/velocity";
 import { CircleCollider } from "../components/circle-collider";
 import { EntityDebug } from "../components/entity-debug";
+import { applyComponent } from "./shared";
 
 
 export type PlayerInitialData = {
@@ -24,31 +25,18 @@ export function createPlayer(world: World, initData: PlayerInitialData): EntityR
         return o;
     })
     world.addComponent(id, PlayerTag);
-    world.addComponent(id, Transform, (obj) => {
-        obj.x = initData.transform.x;
-        obj.y = initData.transform.y;
-    });
-    world.addComponent(id, Velocity, (obj) => {
-        obj.vx = initData.velocity?.vx ?? 0;
-        obj.vy = initData.velocity?.vy ?? 0;
-    });
-
+    world.addComponent(id, Transform, (obj) => applyComponent(obj, initData.transform));
+    world.addComponent(id, Velocity, (obj) => applyComponent(obj, initData.velocity));
     world.addComponent(id, EntityDebug, (obj) => {
         obj.name = "Player"
     })
+    world.addComponent(id, Renderable, (obj) => applyComponent(obj, initData.renderable));
 
     if (initData.networkId !== undefined) {
         const nId = initData.networkId;
         world.addComponent(id, NetworkEntity, (obj) => {
             obj.setNetworkId(nId);
         })
-    }
-
-    if (initData.renderable) {
-        world.addComponent(id, Renderable, (obj) => {
-            obj.layer = initData.renderable!.layer;
-            obj.spriteId = initData.renderable!.spriteId;
-        });
     }
 
     return ref;
