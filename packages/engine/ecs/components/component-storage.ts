@@ -17,6 +17,9 @@ export class ComponentStorage
         this.bits_ = new Bitmap(cap);
         this.pool_ = new ObjectPool(factory, cap);
     }
+    public bitmap(): Bitmap {
+        return this.bits_;
+    }
 
     public get id(): number {
         return this.id_;

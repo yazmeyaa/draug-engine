@@ -1,4 +1,5 @@
 import type { ClassType } from "@amber-game/types/class";
+import type { Bitmap } from "bitmap-index";
 
 export type ComponentType<T extends object = object> = ClassType<T>;
 export interface IStorage <T extends object> {
@@ -8,5 +9,6 @@ export interface IStorage <T extends object> {
     tryGet(id: number): T;
     has(id: number): boolean
     size(): number;
-    forEach(cb: (id: number) => void): void
+    forEach(cb: (id: number) => void): void;
+    bitmap(): Bitmap;
 }; 

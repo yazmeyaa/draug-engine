@@ -5,6 +5,7 @@ import { ECS_DEFAULTS } from "./constant";
 import { EventBus } from "./events-buffer";
 import { ComponentsManager, type IStorage } from "./components";
 import { ResourcesManager } from "./resources/resources";
+import { Bitmap } from "bitmap-index";
 
 export type QueryParameters = {
     include?: ComponentType[];
@@ -35,45 +36,30 @@ export class World {
     }
 
     public query(params: QueryParameters): number[] {
-        const { excludeEntitiesIds, include } = params;
+        const { include, excludeEntitiesIds } = params;
         if (!include || include.length === 0)
             return [];
 
-        const stores: IStorage<object>[] = new Array(include.length);
-        for (let i = 0; i < include.length; i++)
-            stores[i] = this.components.getStorage(include[i]!);
+        const stores = include.map(c => this.components.getStorage(c));
+        if (stores.length <= 0)
+            return [];
 
-        let base = stores[0]!;
-        let minCount = base.size();
+        const resultBits = stores[0]!.bitmap().clone();
 
         for (let i = 1; i < stores.length; i++) {
-            const count = stores[i]!.size();
-            if (count < minCount) {
-                base = stores[i]!;
-                minCount = count;
-            }
+            resultBits.and(stores[i]!.bitmap());
+        }
+
+        if (excludeEntitiesIds?.length) {
+            const excludeBits = new Bitmap();
+            for (const id of excludeEntitiesIds)
+                excludeBits.set(id);
+
+            resultBits.andNot(excludeBits);
         }
 
         const result: number[] = [];
-        const exclude = excludeEntitiesIds?.length
-            ? new Set(excludeEntitiesIds)
-            : null;
-
-        base.forEach((id) => {
-            if (exclude && exclude.has(id))
-                return;
-
-            for (let i = 0; i < stores.length; i++) {
-                const s = stores[i]!;
-                if (s === base)
-                    continue;
-
-                if (!s.has(id))
-                    return;
-            }
-
-            result.push(id);
-        });
+        resultBits.range(id => { result.push(id) });
 
         return result;
     }

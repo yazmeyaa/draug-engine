@@ -1,9 +1,13 @@
+import type { Bitmap } from "bitmap-index";
 import type { IStorage } from "./types";
 
 export class SingletonStorage<T extends object> implements IStorage<T> {
     private value: T | null = null;
     private entityId: number | null = null;
     constructor(private factory: () => T) { }
+    bitmap(): Bitmap {
+        throw new Error("Singletone component cannot has a bitmap!");
+    }
 
     public add(id: number, initFn?: ((obj: T) => T) | undefined): T {
         if (this.value !== null)
