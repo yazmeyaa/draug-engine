@@ -1,5 +1,5 @@
 {
-  "name": "@amber-game/resources",
+  "name": "@amber-game/assets",
   "version": "1.0.0",
   "private": true,
   "packageManager": "yarn@4.13.0",
@@ -11,8 +11,8 @@
   },
   "license": "GPL-3.0-only",
   "readme": "README.md",
-  "description": "Resources manager",
+  "description": "Assets manager",
   "scripts": {
-    "test": "echo Hello from resources!"
+    "test": "echo Hello from assets!"
   }
 }

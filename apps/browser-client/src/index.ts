@@ -6,7 +6,7 @@ import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@ambe
 import { ServerMessage } from "@amber-game/game/network/generated/server";
 import { BrowserGame } from "./browser-game";
 import { Renderable } from "@amber-game/game/components/renderable";
-import { Resource } from "@amber-game/resources/resource";
+import { Asset } from "@amber-game/resources/assets";
 import { Transform } from "@amber-game/game/components/transform";
 import { RenderView } from "@amber-game/game/render/renderer"
 import { EntityDebug } from "@amber-game/game/components/entity-debug";
@@ -169,7 +169,7 @@ ws.onmessage = (event) => {
   }
 };
 
-class ImageResource extends Resource<HTMLImageElement> { }
+class ImageResource extends Asset<HTMLImageElement> { }
 const imageResourceStore = game.runtime.resources.register(ImageResource, (url) => {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
@@ -229,7 +229,7 @@ imageResourceStore.loadAll().then(() => {
       },
       velocity: {
         vx: 0,
-        vy: -1,
+        vy: -6,
       },
       renderable: {
         layer: 0,
