@@ -1,10 +1,10 @@
-import type { ResourceID } from "@amber-game/resources/resource";
+import { type AssetID } from '@amber-game/assets/assets'
 
 export type RenderingSnapshotEntry = {
     entityId: number;
     x: number;
     y: number;
-    spriteId: ResourceID;
+    spriteId: AssetID;
     zIndex: number;
 };
 export type RenderingSnapshot = RenderingSnapshotEntry[];

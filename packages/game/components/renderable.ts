@@ -1,8 +1,8 @@
-import type { ResourceID } from "@amber-game/resources/resource";
+import type { AssetID } from "@amber-game/assets/assets";
 
 export class Renderable {
     constructor(
-        public spriteId: ResourceID,
+        public spriteId: AssetID,
         public layer: number,
     ){};
 };

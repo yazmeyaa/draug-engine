@@ -28,7 +28,10 @@ export function createPlayer(world: World, initData: PlayerInitialData): EntityR
     world.addComponent(id, Transform, (obj) => applyComponent(obj, initData.transform));
     world.addComponent(id, Velocity, (obj) => applyComponent(obj, initData.velocity));
     world.addComponent(id, EntityDebug, (obj) => {
-        obj.name = "Player"
+        obj.name = "Player";
+        if (initData.isLocal) {
+            obj.name = `[LOCAL]: ${obj.name}`;
+        }
     })
     world.addComponent(id, Renderable, (obj) => applyComponent(obj, initData.renderable));
 

@@ -5,6 +5,12 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
+"@amber-game/assets@workspace:^, @amber-game/assets@workspace:packages/assets":
+  version: 0.0.0-use.local
+  resolution: "@amber-game/assets@workspace:packages/assets"
+  languageName: unknown
+  linkType: soft
+
 "@amber-game/core@workspace:^, @amber-game/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@amber-game/core@workspace:packages/core"
@@ -26,16 +32,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@amber-game/game@workspace:packages/game"
   dependencies:
+    "@amber-game/assets": "workspace:^"
     "@amber-game/engine": "workspace:^"
-    "@amber-game/resources": "workspace:^"
     ts-proto: "npm:^2.11.5"
     typescript: "npm:^6.0.2"
-  languageName: unknown
-  linkType: soft
-
-"@amber-game/resources@workspace:^, @amber-game/resources@workspace:packages/resources":
-  version: 0.0.0-use.local
-  resolution: "@amber-game/resources@workspace:packages/resources"
   languageName: unknown
   linkType: soft
 
@@ -428,6 +428,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "browser-client@workspace:apps/browser-client"
   dependencies:
+    "@amber-game/assets": "workspace:^"
     "@amber-game/engine": "workspace:^"
     "@amber-game/game": "workspace:^"
     typescript: "npm:^5.9.3"

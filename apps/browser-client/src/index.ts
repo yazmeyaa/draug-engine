@@ -6,11 +6,12 @@ import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@ambe
 import { ServerMessage } from "@amber-game/game/network/generated/server";
 import { BrowserGame } from "./browser-game";
 import { Renderable } from "@amber-game/game/components/renderable";
-import { Asset } from "@amber-game/resources/assets";
+import { Asset } from "@amber-game/assets/assets";
 import { Transform } from "@amber-game/game/components/transform";
 import { RenderView } from "@amber-game/game/render/renderer"
 import { EntityDebug } from "@amber-game/game/components/entity-debug";
 import type { Camera } from "@amber-game/game/render/types";
+import { PlayerActions } from '@amber-game/game/resources/player-actions'
 
 const world = createClientSideWorld();
 world.systems.build();
@@ -92,6 +93,9 @@ const game = new BrowserGame(world, (world) => {
     sendMovement(dx, dy);
     lastDx = dx;
     lastDy = dy;
+
+    playerActions.movement.dx = dx;
+    playerActions.movement.dy = dy;
   }
 
   const renderView = new RenderView(game.runtime.world, camera)
@@ -169,6 +173,9 @@ ws.onmessage = (event) => {
   }
 };
 
+const playerActions = new PlayerActions();
+game.runtime.world.resources.insert(PlayerActions, playerActions);
+ 
 class ImageResource extends Asset<HTMLImageElement> { }
 const imageResourceStore = game.runtime.resources.register(ImageResource, (url) => {
   return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -211,7 +218,7 @@ imageResourceStore.loadAll().then(() => {
         scaleX: 1,
         scaleY: 1,
       },
-      isLocal: false,
+      isLocal: i === 0,
       renderable: {
         layer: 1,
         spriteId: dummyCharacterTexture.id,

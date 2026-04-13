@@ -1,7 +1,7 @@
+import { AssetsManager } from "@amber-game/assets/assets";
 import { World } from "@amber-game/engine/ecs/world";
 import { Clock } from "@amber-game/engine/runtime/clock";
 import { GameLoop } from "@amber-game/engine/runtime/game-loop";
-import { ResourcesManager } from "@amber-game/resources/resource";
 import {Runtime} from '@amber-game/engine/runtime/runtime'
 
 export class BrowserGame {
@@ -11,7 +11,7 @@ export class BrowserGame {
         private onWorldUpdate?: (world: World) => void,
 
     ) {
-        const res = new ResourcesManager();
+        const res = new AssetsManager();
         this.runtime = new Runtime(world, res);
     };
     public start(): void {
