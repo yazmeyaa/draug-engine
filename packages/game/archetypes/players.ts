@@ -8,6 +8,7 @@ import { Velocity } from "../components/velocity";
 import { CircleCollider } from "../components/circle-collider";
 import { EntityDebug } from "../components/entity-debug";
 import { applyComponent } from "./shared";
+import { BaseSpeed } from "../components/base-speed";
 
 
 export type PlayerInitialData = {
@@ -16,6 +17,7 @@ export type PlayerInitialData = {
     renderable?: Renderable;
     networkId?: number;
     isLocal?: boolean;
+    baseSpeed: BaseSpeed;
 };
 export function createPlayer(world: World, initData: PlayerInitialData): EntityRef {
     const id = world.entities.getId();
@@ -27,6 +29,7 @@ export function createPlayer(world: World, initData: PlayerInitialData): EntityR
     world.addComponent(id, PlayerTag);
     world.addComponent(id, Transform, (obj) => applyComponent(obj, initData.transform));
     world.addComponent(id, Velocity, (obj) => applyComponent(obj, initData.velocity));
+    world.addComponent(id, BaseSpeed, (obj) => applyComponent(obj, initData.baseSpeed));
     world.addComponent(id, EntityDebug, (obj) => {
         obj.name = "Player";
         if (initData.isLocal) {

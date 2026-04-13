@@ -18,8 +18,8 @@ world.systems.build();
 
 let step = 0;
 // let fps = 0;
-let lastTime = performance.now();
 let frameCount = 0;
+let localPlayerId = -1;
 
 const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d")!;
@@ -55,10 +55,10 @@ function calculateMovement(): { dx: number; dy: number } {
   let dx = 0;
   let dy = 0;
 
-  if (keysPressed["ArrowRight"]) dx += 1;
-  if (keysPressed["ArrowLeft"]) dx -= 1;
-  if (keysPressed["ArrowUp"]) dy -= 1;
-  if (keysPressed["ArrowDown"]) dy += 1;
+  if (keysPressed["KeyD"]) dx += 1;
+  if (keysPressed["KeyA"]) dx -= 1;
+  if (keysPressed["KeyW"]) dy -= 1;
+  if (keysPressed["KeyS"]) dy += 1;
 
   return { dx, dy };
 }
@@ -84,23 +84,25 @@ const game = new BrowserGame(world, (world) => {
   step += 1;
   frameCount++;
 
-  const currentTime = performance.now();
-  const deltaTime = currentTime - lastTime;
-  world.update(deltaTime);
-
   const { dx, dy } = calculateMovement();
   if (dx !== lastDx || dy !== lastDy) {
     sendMovement(dx, dy);
     lastDx = dx;
     lastDy = dy;
 
-    playerActions.movement.dx = dx;
-    playerActions.movement.dy = dy;
+    let localPlayerState = playerActions.data.get(localPlayerId);
+    if (!localPlayerState) {
+      localPlayerState = { movement: { dx: 0, dy: 0, } };
+      playerActions.data.set(localPlayerId, localPlayerState);
+    }
+
+    localPlayerState.movement.dx = dx;
+    localPlayerState.movement.dy = dy;
   }
 
   const renderView = new RenderView(game.runtime.world, camera)
   const rStore = world.components.getStorage(Renderable);
-  const snapshot = renderView.snapshot();
+  const snapshot = renderView.snapshot().sort((a, b) => a.zIndex - b.zIndex);
 
   ctx.clearRect(0, 0, camera.width, camera.height);
 
@@ -142,11 +144,11 @@ ws = new WebSocket("ws://localhost:8090");
 ws.binaryType = 'arraybuffer'
 
 window.addEventListener("keydown", (e) => {
-  keysPressed[e.key] = true;
+  keysPressed[e.code] = true;
 });
 
 window.addEventListener("keyup", (e) => {
-  keysPressed[e.key] = false;
+  keysPressed[e.code] = false;
 });
 
 ws.onopen = () => {
@@ -175,7 +177,7 @@ ws.onmessage = (event) => {
 
 const playerActions = new PlayerActions();
 game.runtime.world.resources.insert(PlayerActions, playerActions);
- 
+
 class ImageResource extends Asset<HTMLImageElement> { }
 const imageResourceStore = game.runtime.resources.register(ImageResource, (url) => {
   return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -201,13 +203,29 @@ imageResourceStore.loadAll().then(() => {
       scaleY: 1
     },
     renderable: {
-      layer: 1,
+      layer: 10,
       spriteId: trainingTargetTexture.id,
     },
     collider: {
       radius: 10,
     }
   })
+
+  localPlayerId = createPlayer(world, {
+    transform: {
+      x: 250 - (-1 * 100),
+      y: 150,
+      rotation: 0,
+      scaleX: 1,
+      scaleY: 1,
+    },
+    isLocal: true,
+    renderable: {
+      layer: 1,
+      spriteId: dummyCharacterTexture.id,
+    },
+    baseSpeed: { speed: 100 }
+  }).id
 
   for (let i = 0; i < 6; i++) {
     const playerId = createPlayer(world, {
@@ -218,11 +236,12 @@ imageResourceStore.loadAll().then(() => {
         scaleX: 1,
         scaleY: 1,
       },
-      isLocal: i === 0,
+      isLocal: false,
       renderable: {
         layer: 1,
         spriteId: dummyCharacterTexture.id,
       },
+      baseSpeed: { speed: 100 },
     })
     const [p] = playerId.with(Transform)
     createFireball(game.runtime.world, {
@@ -241,6 +260,9 @@ imageResourceStore.loadAll().then(() => {
       renderable: {
         layer: 0,
         spriteId: dummyFireballTexture.id,
+      },
+      baseSpeed: {
+        speed: 120
       }
     })
   }

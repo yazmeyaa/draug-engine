@@ -11,6 +11,7 @@ import type { ComponentType } from "@amber-game/types/class";
 import { Renderable } from "./components/renderable";
 import { EntityDebug } from "./components/entity-debug";
 import { Health } from "./components/health";
+import { InputSystem } from "./systems/input";
 
 function createBaseWorld(): World {
     const world = new World();
@@ -27,7 +28,9 @@ function createBaseWorld(): World {
 
 export function createClientSideWorld(): World {
     const world = createBaseWorld();
-    [].forEach(x => world.systems.register(x));
+    [
+        new InputSystem()
+    ].forEach(x => world.systems.register(x));
     const components: ComponentType[] = [
         ...world.systems.getRequiredComponents(),
         Renderable,

@@ -1,3 +1,9 @@
+import { EntityType } from "../network/generated/server";
+
+type PlayerAction = {
+    movement: {dx: number; dy: number};
+};
+
 export class PlayerActions {
-    public readonly movement = { dx: 0, dy: 0 };
+    public data = new Map<EntityType, PlayerAction>()
 };
