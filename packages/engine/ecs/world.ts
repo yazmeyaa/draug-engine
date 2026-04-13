@@ -9,7 +9,10 @@ import { Bitmap } from "bitmap-index";
 
 export type QueryParameters = {
     include?: ComponentType[];
+    exclude?: ComponentType[];
+    anyOf?: ComponentType[];
     excludeEntitiesIds?: number[];
+    filter?: (id: number) => boolean;
 }
 
 export class World {
@@ -34,33 +37,84 @@ export class World {
         }
         return ref;
     }
-
     public query(params: QueryParameters): number[] {
-        const { include, excludeEntitiesIds } = params;
-        if (!include || include.length === 0)
-            return [];
+        let resultBits = this.combineBitmaps(params.include, 'and');
 
-        const stores = include.map(c => this.components.getStorage(c));
-        if (stores.length <= 0)
-            return [];
-
-        const resultBits = stores[0]!.bitmap().clone();
-
-        for (let i = 1; i < stores.length; i++) {
-            resultBits.and(stores[i]!.bitmap());
+        const anyBits = this.combineBitmaps(params.anyOf, 'or');
+        if (anyBits) {
+            resultBits = resultBits ? resultBits.and(anyBits) : anyBits;
         }
 
-        if (excludeEntitiesIds?.length) {
+        if (!resultBits) {
+            return [];
+        }
+
+        this.applyExclusions(resultBits, params.exclude, params.excludeEntitiesIds);
+
+        if (params.filter) {
+            resultBits.filter(params.filter);
+        }
+
+        return this.extractIds(resultBits);
+    }
+
+    private combineBitmaps(components: any[] | undefined, operation: 'and' | 'or'): Bitmap | null {
+        if (!components?.length) {
+            return null;
+        }
+
+        const bitmaps = this.getValidBitmaps(components);
+        if (bitmaps.length === 0) {
+            return null;
+        }
+
+        const result = bitmaps[0]!.clone();
+
+        for (let i = 1; i < bitmaps.length; i++) {
+            if (operation === 'and') {
+                result.and(bitmaps[i]!);
+            } else {
+                result.or(bitmaps[i]!);
+            }
+        }
+
+        return result;
+    }
+
+    private getValidBitmaps(components: any[]): Bitmap[] {
+        return components
+            .map(c => this.components.getStorage(c)?.bitmap())
+            .filter((bm): bm is Bitmap => bm !== null && bm !== undefined);
+    }
+
+
+    private applyExclusions(
+        targetBitmap: Bitmap,
+        excludeComponents: any[] | undefined,
+        excludeIds: number[] | undefined
+    ): void {
+        if (excludeComponents?.length) {
+            const excludeBitmaps = this.getValidBitmaps(excludeComponents);
+            for (const bm of excludeBitmaps) {
+                targetBitmap.andNot(bm);
+            }
+        }
+
+        if (excludeIds?.length) {
             const excludeBits = new Bitmap();
-            for (const id of excludeEntitiesIds)
+            for (const id of excludeIds) {
                 excludeBits.set(id);
-
-            resultBits.andNot(excludeBits);
+            }
+            targetBitmap.andNot(excludeBits);
         }
+    }
 
+    /**
+     * Конвертирует битмап в массив чисел
+     */
+    private extractIds(bitmap: Bitmap): number[] {
         const result: number[] = [];
-        resultBits.range(id => { result.push(id) });
-
+        bitmap.range(id => {result.push(id)});
         return result;
     }
 
