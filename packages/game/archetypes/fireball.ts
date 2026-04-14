@@ -18,7 +18,7 @@ type FireballInitialData = {
     baseSpeed: BaseSpeed;
 };
 export function createFireball(world: World, initData: FireballInitialData): EntityRef {
-    const entity = new EntityRef(world, world.entities.getId());
+    const entity = new EntityRef(world, world.entities.create());
 
     world.addComponent(entity, Transform, (o) => applyComponent(o, initData.transform));
     world.addComponent(entity, Velocity, (o) => applyComponent(o, initData.velocity));

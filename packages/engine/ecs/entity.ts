@@ -21,21 +21,8 @@ export class EntitiesManager {
         return ++this.id_;
     }
 
-    public getId(): EntityID {
+    public create(): EntityID {
         return this.nextId();
-    }
-
-    public createEntity(world: World, components: ComponentType[]): EntityID {
-        const id = this.nextId();
-
-        for (const comp of components) {
-            const store = world.components.getStorage(comp);
-            if (!store)
-                throw new UnregisteredComponentStorageError(comp);
-            store.add(id);
-        }
-
-        return id;
     }
 };
 

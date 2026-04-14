@@ -1,12 +1,13 @@
 import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
-import type { ComponentType } from "@amber-game/types/class";
 import { Velocity } from "../components/physics/velocity";
 import { PlayerTag } from "../components/tags/player-tag";
 import { PlayerActions } from "../resources/player-actions";
+import type { QueryParameters } from "@amber-game/engine/ecs/world";
 
 export class InputSystem extends System {
-    public targetComponents: ComponentType[] = [Velocity, PlayerTag];
-    public worldDependencies: ComponentType[] = [Velocity, PlayerTag];
+    public readonly query: QueryParameters = {
+        include: [Velocity, PlayerTag]
+    };
     public compute(ctx: SystemComputeContext): void {
         const { world } = ctx;
         const actions = world.resources.get(PlayerActions);

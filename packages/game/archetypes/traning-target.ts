@@ -14,7 +14,7 @@ export type TrainingTargetInitialData = {
 };
 
 export function createTrainingTarget(world: World, initData: TrainingTargetInitialData): EntityID {
-    const id = world.entities.getId();
+    const id = world.entities.create();
 
     world.addComponent(id, Transform, (o) => applyComponent(o, initData.transform));
     world.addComponent(id, CircleCollider, (o) => applyComponent(o, initData.collider));

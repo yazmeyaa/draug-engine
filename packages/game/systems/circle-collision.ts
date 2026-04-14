@@ -4,10 +4,12 @@ import { CircleCollider } from "../components/collision/circle-collider";
 import { RectangleCollider } from "../components/collision/rectangle-collider";
 import { Transform} from "../components/render/transform";
 import { COLLISION_EVENT_KEY } from "../events/collision";
+import type { QueryParameters } from "@amber-game/engine/ecs/world";
 
 export class CircleCollisionSystem extends System {
-    public targetComponents: ComponentType[] = [CircleCollider, Transform];
-    public worldDependencies: ComponentType[] = [CircleCollider, RectangleCollider, Transform];
+    public readonly query: QueryParameters = {
+        include: [CircleCollider, Transform],
+    };
     public compute(ctx: SystemComputeContext): void {
         const circles = ctx.entities;
         const rectangles = ctx.world.query({ include: [Transform, RectangleCollider] });

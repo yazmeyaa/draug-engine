@@ -1,6 +1,6 @@
 import { DAGNode, VisitedState } from '@amber-game/core/graph/dag';
 import type { ClassType, ComponentType } from '@amber-game/types/class'
-import type { World } from "./world";
+import type { QueryParameters, World } from "./world";
 
 export type SystemCtor<T extends System = System> = ClassType<T>;
 
@@ -25,17 +25,24 @@ export type SystemComputeContext = {
  */
 export abstract class System {
     /**
-     * Component types used to build the entity set on each {@link SystemsManager.update}:
-     * it runs `world.query({ include: queryComponents })` and passes the resulting IDs into
-     * {@link System.compute} as {@link SystemComputeContext.entities}.
+     * ECS query definition used to select entities for this system execution.
+     *
+     * Determines the iteration set passed to {@link System.compute}.
+     * The ECS runtime resolves entities based on this query each update.
      */
-    public abstract readonly targetComponents: ComponentType[];
+    public abstract readonly query: QueryParameters;
     /**
-     * Component types this system depends on for correct operation. {@link SystemsManager}
-     * unions these across all registered systems; callers (for example world setup) use
-     * {@link SystemsManager.getRequiredComponents} to register those component types on the world.
+     * Explicit list of component types required by the system but not necessarily
+     * part of the iteration query.
+     *
+     * Used for:
+     * - ensuring component storages are initialized in the world
+     * - safe access via `world.components.getStorage`
+     * - dependencies that should not affect entity selection
+     *
+     * This does NOT influence entity iteration; only runtime validation/setup.
      */
-    public abstract readonly worldDependencies: ComponentType[];
+    public readonly requiredComponents_: ComponentType[] = [];
     /**
      * Systems that must run before this one. Pass constructor arguments
      * `super(OtherSystemCtor, ...)` to add edges; each listed system is scheduled earlier than
@@ -68,12 +75,23 @@ export class SystemsManager {
 
     public register<T extends System>(sys: T): void {
         if (this.built_) throw new Error("Cannot register after build");
-        const ctor = sys.constructor as SystemCtor<T>
-        if (this.systems_.has(ctor))
-            throw new Error("Duplicate system");
+
+        const ctor = sys.constructor as SystemCtor<T>;
+        if (this.systems_.has(ctor)) throw new Error("Duplicate system");
 
         this.systems_.set(ctor, sys);
-        for (const c of sys.worldDependencies)
+
+        const q = sys.query;
+
+        for (const c of q.include ?? [])
+            this.requiredComponents_.add(c);
+
+        for (const c of q.exclude ?? [])
+            this.requiredComponents_.add(c);
+
+        for (const c of q.anyOf ?? [])
+            this.requiredComponents_.add(c);
+        for (const c of sys.requiredComponents_)
             this.requiredComponents_.add(c);
     }
 
@@ -90,14 +108,14 @@ export class SystemsManager {
         return s as T;
     }
 
-    public update(world: World, dt: number) {
-        if (!this.built_)
-            throw new Error("Systems not built");
+    public update(world: World, dt: number): void {
+        if (!this.built_) throw new Error("Systems not built");
+
         world.events.swapAll();
+
         for (const s of this.executionOrder_) {
-            const entities = world.query({ include: s.targetComponents })
-            const ctx = { entities, world, dt } satisfies SystemComputeContext;
-            s.compute(ctx);
+            const entities = world.query(s.query);
+            s.compute({ entities, world, dt });
         }
     }
 
@@ -109,46 +127,47 @@ export class SystemsManager {
             const state = visited.get(node) ?? VisitedState.Unvisited;
 
             if (state === VisitedState.Visited) return;
-            if (state === VisitedState.Visiting)
+            if (state === VisitedState.Visiting) {
                 throw new Error("Cycle detected");
+            }
 
             visited.set(node, VisitedState.Visiting);
 
-            for (const child of node.vertices)
+            for (const child of node.vertices) {
                 dfs(child);
+            }
 
             visited.set(node, VisitedState.Visited);
             result.push(node.data);
         };
 
-        for (const node of nodes)
+        for (const node of nodes) {
             dfs(node);
+        }
 
-        return result;
+        return result.reverse();
     }
 
-    private buildSystemsArray() {
+    private buildSystemsArray(): void {
         const map = new Map<SystemCtor, DAGNode<System>>();
 
-        // 1. Create nodes
         for (const [ctor, system] of this.systems_.entries()) {
             map.set(ctor, new DAGNode(system));
         }
 
-        // 2. Create edges
         for (const [ctor, system] of this.systems_.entries()) {
             const currentNode = map.get(ctor)!;
 
             for (const depCtor of system.computeAfter ?? []) {
                 const depNode = map.get(depCtor);
-                if (!depNode)
+                if (!depNode) {
                     throw new Error(`Dependency ${depCtor.name} not registered`);
+                }
 
                 depNode.vertices.push(currentNode);
             }
         }
 
-        // 3. Build execution order array.
-        this.executionOrder_ = this.topoSort(map.values()).reverse();
+        this.executionOrder_ = this.topoSort(map.values());
     }
 }

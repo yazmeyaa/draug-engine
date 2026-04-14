@@ -20,7 +20,7 @@ export type PlayerInitialData = {
     baseSpeed: BaseSpeed;
 };
 export function createPlayer(world: World, initData: PlayerInitialData): EntityRef {
-    const id = world.entities.getId();
+    const id = world.entities.create();
     const ref = new EntityRef(world, id);
     world.addComponent(id, CircleCollider, (o) => {
         o.radius = 20;

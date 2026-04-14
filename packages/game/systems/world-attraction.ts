@@ -1,15 +1,18 @@
 import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
-import { Transform} from "../components/render/transform";
+import { Transform } from "../components/render/transform";
 import { AttractorObject } from "../components/physics/attrcator";
 import { Velocity } from "../components/physics/velocity";
-import type { ComponentType } from "@amber-game/engine/ecs/components";
-    
+import type { QueryParameters } from "@amber-game/engine/ecs/world";
+import type { ComponentType } from "@amber-game/types/class";
+
 export class AttractionSystem extends System {
+    public query: QueryParameters = {
+        include: [Transform, Velocity],
+    };
+    public requiredComponents_: ComponentType[] = [AttractorObject];
     constructor() {
         super();
     }
-    public targetComponents: ComponentType[] = [Transform, Velocity];
-    public worldDependencies: ComponentType[] = [Transform, Velocity, AttractorObject];
     private attractionForce = 0.2;
     private damping = 0.98;
     private maxSpeed = 5;
