@@ -3,9 +3,10 @@ import { EntitiesManager, type EntityID, EntityRef } from "./entity";
 import { SystemsManager } from "./system";
 import { ECS_DEFAULTS } from "./constant";
 import { EventBus } from "./events-buffer";
-import { ComponentsManager, type IStorage } from "./components";
+import { ComponentsManager } from "./components";
 import { ResourcesManager } from "./resources/resources";
 import { Bitmap } from "bitmap-index";
+import { Commands } from "./command";
 
 export type QueryParameters = {
     include?: ComponentType[];
@@ -21,9 +22,9 @@ export class World {
     public readonly systems = new SystemsManager();
     public readonly events = new EventBus();
     public readonly resources = new ResourcesManager();
+    public readonly commands = new Commands();
 
     private entityRefs_ = new Map<number, EntityRef>();
-
 
     constructor(maxEntityCount: number = ECS_DEFAULTS.MAX_ENTITY_COUNT) {
         this.components = new ComponentsManager(maxEntityCount);
@@ -114,7 +115,7 @@ export class World {
      */
     private extractIds(bitmap: Bitmap): number[] {
         const result: number[] = [];
-        bitmap.range(id => {result.push(id)});
+        bitmap.range(id => { result.push(id) });
         return result;
     }
 
@@ -138,5 +139,6 @@ export class World {
 
     public update(dt: number): void {
         this.systems.update(this, dt);
+        this.commands.flush(this);
     }
 };

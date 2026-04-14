@@ -30,7 +30,7 @@ export abstract class System {
      * Determines the iteration set passed to {@link System.compute}.
      * The ECS runtime resolves entities based on this query each update.
      */
-    public abstract readonly query: QueryParameters;
+    public abstract query: Readonly<QueryParameters>;
     /**
      * Explicit list of component types required by the system but not necessarily
      * part of the iteration query.

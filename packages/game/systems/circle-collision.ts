@@ -1,13 +1,12 @@
-import type { ComponentType } from "@amber-game/engine/ecs/components";
 import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
 import { CircleCollider } from "../components/collision/circle-collider";
 import { RectangleCollider } from "../components/collision/rectangle-collider";
-import { Transform} from "../components/render/transform";
+import { Transform } from "../components/render/transform";
 import { COLLISION_EVENT_KEY } from "../events/collision";
 import type { QueryParameters } from "@amber-game/engine/ecs/world";
 
 export class CircleCollisionSystem extends System {
-    public readonly query: QueryParameters = {
+    public query: Readonly<QueryParameters> = {
         include: [CircleCollider, Transform],
     };
     public compute(ctx: SystemComputeContext): void {
