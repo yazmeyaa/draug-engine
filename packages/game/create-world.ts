@@ -1,16 +1,16 @@
 import { MovementSystem } from "./systems/movement";
 import { AttractionSystem } from "./systems/world-attraction";
-import { PlayerTag } from "./components/player-tag";
+import { PlayerTag } from "./components/tags/player-tag";
 import { World } from "@amber-game/engine/ecs/world";
-import { Acceleration } from "./components/acceleration";
-import { CircleCollider } from "./components/circle-collider";
-import { RectangleCollider } from "./components/rectangle-collider";
+import { Acceleration } from "./components/physics/acceleration";
+import { CircleCollider } from "./components/collision/circle-collider";
+import { RectangleCollider } from "./components/collision/rectangle-collider";
 import { CircleCollisionSystem } from "./systems/circle-collision";
-import { Damage } from "./components/damage";
+import { Damage } from "./components/gameplay/damage";
 import type { ComponentType } from "@amber-game/types/class";
-import { Renderable } from "./components/renderable";
-import { EntityDebug } from "./components/entity-debug";
-import { Health } from "./components/health";
+import { Renderable } from "./components/render/renderable";
+import { EntityDebug } from "./components/debug/entity-debug";
+import { Health } from "./components/gameplay/health";
 import { InputSystem } from "./systems/input";
 
 function createBaseWorld(): World {

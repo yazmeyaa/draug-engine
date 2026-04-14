@@ -1,8 +1,8 @@
 import type { ComponentType } from "@amber-game/engine/ecs/components";
 import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
-import { CircleCollider } from "../components/circle-collider";
-import { RectangleCollider } from "../components/rectangle-collider";
-import { Transform} from "../components/transform";
+import { CircleCollider } from "../components/collision/circle-collider";
+import { RectangleCollider } from "../components/collision/rectangle-collider";
+import { Transform} from "../components/render/transform";
 import { COLLISION_EVENT_KEY } from "../events/collision";
 
 export class CircleCollisionSystem extends System {

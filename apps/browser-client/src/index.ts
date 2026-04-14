@@ -5,13 +5,13 @@ import { createClientSideWorld } from "@amber-game/game/create-world";
 import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@amber-game/game/network/generated/client";
 import { ServerMessage } from "@amber-game/game/network/generated/server";
 import { BrowserGame } from "./browser-game";
-import { Renderable } from "@amber-game/game/components/renderable";
 import { Asset } from "@amber-game/assets/assets";
-import { Transform } from "@amber-game/game/components/transform";
 import { RenderView } from "@amber-game/game/render/renderer"
-import { EntityDebug } from "@amber-game/game/components/entity-debug";
 import type { Camera } from "@amber-game/game/render/types";
 import { PlayerActions } from '@amber-game/game/resources/player-actions'
+import { Renderable } from "@amber-game/game/components/render/renderable";
+import { Transform } from "@amber-game/game/components/render/transform";
+import { EntityDebug } from "@amber-game/game/components/debug/entity-debug";
 
 const world = createClientSideWorld();
 world.systems.build();

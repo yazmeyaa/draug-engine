@@ -1,14 +1,14 @@
 import { EntityRef } from "@amber-game/engine/ecs/entity";
 import { World } from "@amber-game/engine/ecs/world";
-import { NetworkEntity } from "../components/network-entity";
-import { PlayerTag } from "../components/player-tag";
-import { Transform } from "../components/transform";
-import { Renderable } from "../components/renderable";
-import { Velocity } from "../components/velocity";
-import { CircleCollider } from "../components/circle-collider";
-import { EntityDebug } from "../components/entity-debug";
+import { NetworkEntity } from "../components/network/network-entity";
+import { PlayerTag } from "../components/tags/player-tag";
+import { Transform } from "../components/render/transform";
+import { Renderable } from "../components/render/renderable";
+import { Velocity } from "../components/physics/velocity";
+import { CircleCollider } from "../components/collision/circle-collider";
+import { EntityDebug } from "../components/debug/entity-debug";
 import { applyComponent } from "./shared";
-import { BaseSpeed } from "../components/base-speed";
+import { BaseSpeed } from "../components/gameplay/base-speed";
 
 
 export type PlayerInitialData = {

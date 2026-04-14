@@ -1,7 +1,7 @@
 import type { World } from "@amber-game/engine/ecs/world";
 import type { Camera, RenderingSnapshot, RenderingSnapshotEntry } from "./types";
-import { Transform } from "../components/transform";
-import { Renderable } from "../components/renderable";
+import { Transform } from "../components/render/transform";
+import { Renderable } from "../components/render/renderable";
 
 export class RenderView {
     constructor(

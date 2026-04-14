@@ -1,10 +1,10 @@
 import type { EntityID } from "@amber-game/engine/ecs/entity";
 import type { World } from "@amber-game/engine/ecs/world";
-import { Transform } from "../components/transform";
-import { CircleCollider } from "../components/circle-collider";
-import { Health } from "../components/health";
-import { Renderable } from "../components/renderable";
-import { EntityDebug } from "../components/entity-debug";
+import { Transform } from "../components/render/transform";
+import { CircleCollider } from "../components/collision/circle-collider";
+import { Health } from "../components/gameplay/health";
+import { Renderable } from "../components/render/renderable";
+import { EntityDebug } from "../components/debug/entity-debug";
 import { applyComponent } from "./shared";
 
 export type TrainingTargetInitialData = {

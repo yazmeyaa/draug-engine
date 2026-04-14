@@ -1,7 +1,7 @@
 import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
 import type { ComponentType } from "@amber-game/types/class";
-import { Velocity } from "../components/velocity";
-import { PlayerTag } from "../components/player-tag";
+import { Velocity } from "../components/physics/velocity";
+import { PlayerTag } from "../components/tags/player-tag";
 import { PlayerActions } from "../resources/player-actions";
 
 export class InputSystem extends System {

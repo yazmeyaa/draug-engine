@@ -1,8 +1,8 @@
 import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
-import { Transform } from "../components/transform";
-import { Velocity } from "../components/velocity";
+import { Transform } from "../components/render/transform";
+import { Velocity } from "../components/physics/velocity";
 import type { ComponentType } from "@amber-game/engine/ecs/components";
-import { BaseSpeed } from "../components/base-speed";
+import { BaseSpeed } from "../components/gameplay/base-speed";
 
 export class MovementSystem extends System {
     public worldDependencies: ComponentType[] = [Transform, Velocity, BaseSpeed];
