@@ -61,6 +61,8 @@ export abstract class System {
      * Logic for one systems pass: run for all entities in {@link SystemComputeContext.entities}.
      */
     public abstract compute(ctx: SystemComputeContext): void;
+
+    public onInit?(world: World): void;
 };
 
 
@@ -102,6 +104,9 @@ export class SystemsManager {
 
     public build(): void {
         this.buildSystemsArray();
+        for (const sys of this.systems_.values())
+            sys.onInit?.(this.world);
+        
         this.built_ = true;
     }
 
@@ -116,7 +121,7 @@ export class SystemsManager {
     public update(dt: number): void {
         if (!this.built_) throw new Error("Systems not built");
         this.world.events.swapAll();
-        
+
         for (const s of this.executionOrder_) {
             const entities = this.world.query(s.query);
             s.compute({ entities, world: this.world, dt });

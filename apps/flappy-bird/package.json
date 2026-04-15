@@ -1,0 +1,17 @@
+{
+  "name": "flappy-bird",
+  "packageManager": "yarn@4.13.0",
+  "scripts": {
+    "build": "tsc && vite build",
+    "dev": "vite",
+    "test": "echo Hello from browser!"
+  },
+  "dependencies": {
+    "@amber-game/assets": "workspace:^",
+    "@amber-game/engine": "workspace:^"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.2",
+    "vite": "^8.0.8"
+  }
+}

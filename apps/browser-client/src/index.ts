@@ -12,7 +12,6 @@ import { PlayerActions } from '@amber-game/game/resources/player-actions'
 import { Renderable } from "@amber-game/game/components/render/renderable";
 import { Transform } from "@amber-game/game/components/render/transform";
 import { EntityDebug } from "@amber-game/game/components/debug/entity-debug";
-import { Component, getComponentId } from '@amber-game/engine/ecs/components/utils'
 
 const world = createClientSideWorld();
 world.systems.build();
@@ -135,8 +134,6 @@ const game = new BrowserGame(world, (world) => {
     ctx.drawImage(data, -50, -50, 100, 100);
 
     ctx.restore();
-
-
   }
 })
 // game.start();
