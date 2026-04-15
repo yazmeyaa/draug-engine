@@ -1,3 +1,6 @@
+import { Component } from "@amber-game/engine/ecs/components";
+
+@Component()
 export class NetworkEntity {
     private _isInit = false;
     public get networkId(): number {

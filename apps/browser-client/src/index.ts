@@ -12,6 +12,7 @@ import { PlayerActions } from '@amber-game/game/resources/player-actions'
 import { Renderable } from "@amber-game/game/components/render/renderable";
 import { Transform } from "@amber-game/game/components/render/transform";
 import { EntityDebug } from "@amber-game/game/components/debug/entity-debug";
+import { Component, getComponentId } from '@amber-game/engine/ecs/components/utils'
 
 const world = createClientSideWorld();
 world.systems.build();
@@ -225,7 +226,7 @@ imageResourceStore.loadAll().then(() => {
       spriteId: dummyCharacterTexture.id,
     },
     baseSpeed: { speed: 100 }
-  }).id
+  })
 
   for (let i = 0; i < 6; i++) {
     const x = 250 - (i * 100);
@@ -237,6 +238,10 @@ imageResourceStore.loadAll().then(() => {
         rotation: 0,
         scaleX: 1,
         scaleY: 1,
+      },
+      velocity: {
+        vx: 1 - (Math.random() * 2),
+        vy: 1 - (Math.random() * 2),
       },
       isLocal: false,
       renderable: {
@@ -269,4 +274,3 @@ imageResourceStore.loadAll().then(() => {
   }
   game.start();
 })
-

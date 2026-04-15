@@ -115,9 +115,8 @@ export class SystemsManager {
 
     public update(dt: number): void {
         if (!this.built_) throw new Error("Systems not built");
-
         this.world.events.swapAll();
-
+        
         for (const s of this.executionOrder_) {
             const entities = this.world.query(s.query);
             s.compute({ entities, world: this.world, dt });

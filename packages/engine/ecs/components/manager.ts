@@ -3,6 +3,7 @@ import { ECS_DEFAULTS } from "../constant";
 import { ComponentStorage } from "./component-storage";
 import type { ComponentType, IStorage } from "./types";
 import { SingletonStorage } from "./singleton-storage";
+import { getComponentId } from "./";
 
 export enum ComponentStorageType {
     COMPONENT_STORAGE = 1,
@@ -82,5 +83,9 @@ export class ComponentsManager {
             throw new UnregisteredComponentStorageError(component);
 
         return store;
+    }
+
+    public getComponentId(ctor: ComponentType): number {
+        return getComponentId(ctor);
     }
 }

@@ -1,3 +1,6 @@
+import { Component } from "@amber-game/engine/ecs/components";
+
+@Component()
 export class Transform {
     constructor(
         public x: number,

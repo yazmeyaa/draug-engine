@@ -1,4 +1,3 @@
-import { EntityRef } from "@amber-game/engine/ecs/entity";
 import { World } from "@amber-game/engine/ecs/world";
 import { NetworkEntity } from "../components/network/network-entity";
 import { PlayerTag } from "../components/tags/player-tag";
@@ -20,15 +19,15 @@ export type PlayerInitialData = {
     isLocal?: boolean;
     baseSpeed: BaseSpeed;
 };
-export function createPlayer(world: World, initData: PlayerInitialData): EntityRef {
+export function createPlayer(world: World, initData: PlayerInitialData): number {
     const entries: CreateEntityComponentEntry[] = [];
 
     entries.push(
         entry(PlayerTag),
         entry(Transform, obj => applyComponent(obj, initData.transform)),
-        entry(CircleCollider, o => o.radius = 20),
         entry(Velocity, obj => applyComponent(obj, initData.velocity)),
         entry(BaseSpeed, obj => applyComponent(obj, initData.baseSpeed)),
+        entry(CircleCollider, o => o.radius = 20),
         entry(EntityDebug, obj => {
             obj.name = "Player";
             if (initData.isLocal) {
@@ -48,7 +47,5 @@ export function createPlayer(world: World, initData: PlayerInitialData): EntityR
         )
     }
 
-    const id = world.commands.createEntity(...entries)
-    const ref = new EntityRef(world, id);
-    return ref;
+    return world.commands.createEntity(...entries)
 };

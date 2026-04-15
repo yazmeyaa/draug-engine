@@ -35,8 +35,8 @@ export class Commands {
 
         const cmd = (world: World) => {
             for (const [cls, initFn] of entries) {
-                const cmp = world.components.getStorage(cls).add(id);
-                initFn(cmp);
+                world.addComponent(id, cls, initFn);
+                console.log(`Add component "${cls.name}" for id ${id}`);
             }
         }
         this.add(cmd);

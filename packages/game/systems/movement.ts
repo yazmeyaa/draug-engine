@@ -3,7 +3,6 @@ import { Transform } from "../components/render/transform";
 import { Velocity } from "../components/physics/velocity";
 import { BaseSpeed } from "../components/gameplay/base-speed";
 import type { QueryParameters } from "@amber-game/engine/ecs/world";
-import { createFireball } from "../archetypes/fireball";
 
 export class MovementSystem extends System {
     public readonly query: QueryParameters = {
