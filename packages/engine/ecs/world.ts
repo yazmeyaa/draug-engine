@@ -19,10 +19,10 @@ export type QueryParameters = {
 export class World {
     public readonly entities = new EntitiesManager();
     public readonly components = new ComponentsManager();
-    public readonly systems = new SystemsManager();
     public readonly events = new EventBus();
     public readonly resources = new ResourcesManager();
-    public readonly commands = new Commands();
+    public readonly systems = new SystemsManager(this);
+    public readonly commands = new Commands(this);
 
     private entityRefs_ = new Map<number, EntityRef>();
 
@@ -138,7 +138,7 @@ export class World {
     };
 
     public update(dt: number): void {
-        this.systems.update(this, dt);
+        this.systems.update(dt);
         this.commands.flush(this);
     }
 };

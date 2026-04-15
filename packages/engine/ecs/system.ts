@@ -69,6 +69,11 @@ export class SystemsManager {
     private executionOrder_: System[] = [];
     private built_ = false;
     private requiredComponents_: Set<ComponentType> = new Set();
+
+    constructor(
+        private readonly world: World,
+    ) { }
+
     public getRequiredComponents(): ComponentType[] {
         return Array.from(this.requiredComponents_);
     }
@@ -108,14 +113,14 @@ export class SystemsManager {
         return s as T;
     }
 
-    public update(world: World, dt: number): void {
+    public update(dt: number): void {
         if (!this.built_) throw new Error("Systems not built");
 
-        world.events.swapAll();
+        this.world.events.swapAll();
 
         for (const s of this.executionOrder_) {
-            const entities = world.query(s.query);
-            s.compute({ entities, world, dt });
+            const entities = this.world.query(s.query);
+            s.compute({ entities, world: this.world, dt });
         }
     }
 

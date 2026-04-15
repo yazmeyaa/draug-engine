@@ -228,10 +228,12 @@ imageResourceStore.loadAll().then(() => {
   }).id
 
   for (let i = 0; i < 6; i++) {
-    const playerId = createPlayer(world, {
+    const x = 250 - (i * 100);
+    const y = 150;
+    createPlayer(world, {
       transform: {
-        x: 250 - (i * 100),
-        y: 150,
+        x: x,
+        y: y,
         rotation: 0,
         scaleX: 1,
         scaleY: 1,
@@ -243,12 +245,11 @@ imageResourceStore.loadAll().then(() => {
       },
       baseSpeed: { speed: 100 },
     })
-    const [p] = playerId.with(Transform)
     createFireball(game.runtime.world, {
       damage: { value: 10 },
       transform: {
-        x: p.x,
-        y: p.y,
+        x: x,
+        y: y,
         rotation: 270,
         scaleX: 1,
         scaleY: 1

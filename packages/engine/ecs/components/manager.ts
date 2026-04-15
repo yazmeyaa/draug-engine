@@ -64,7 +64,7 @@ export class ComponentsManager {
 
     private createComponentStore<T extends object>(component: ComponentType<T>, opts?: RegisterComponentOptions<T>): IStorage<T> {
         const factory = opts?.factory ?? ((...args: any[]) => new component(...args));
-        const store = new ComponentStorage(this.maxEntityCount, factory);
+        const store = new ComponentStorage(this.maxEntityCount, factory, component);
         store._internalSetId(this.nextId());
         return store;
     }

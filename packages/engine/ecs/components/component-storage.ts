@@ -3,6 +3,7 @@ import { Bitmap } from "bitmap-index";
 import { SparseSet } from "ts-sparse-set";
 import { ECS_DEFAULTS } from "../constant";
 import type { IStorage } from "./types";
+import type { ClassType } from "@amber-game/types/class";
 
 export class ComponentStorage
     // Only pointer-types.
@@ -11,11 +12,13 @@ export class ComponentStorage
     private set_: SparseSet<T>;
     private pool_: ObjectPool<T>;
     private id_: number = 0;
+    private cls: ClassType<T>
 
-    constructor(cap = ECS_DEFAULTS.MAX_ENTITY_COUNT, factory: () => T) {
+    constructor(cap = ECS_DEFAULTS.MAX_ENTITY_COUNT, factory: () => T, cls: ClassType<T>) {
         this.set_ = new SparseSet(cap);
         this.bits_ = new Bitmap(cap);
         this.pool_ = new ObjectPool(factory, cap);
+        this.cls = cls;
     }
     public bitmap(): Bitmap {
         return this.bits_;
@@ -52,7 +55,7 @@ export class ComponentStorage
     public tryGet(id: number): T {
         const x = this.set_.get(id);
         if (!x)
-            throw new Error(`Requesting non-existing item with ID ${id}.`);
+            throw new Error(`[ComponentStorage "${this.cls.name}"]: Requesting non-existing item with ID ${id}.`);
         return x;
     }
 
