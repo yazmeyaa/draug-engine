@@ -8,10 +8,12 @@ export type RenderingSnapshotEntry = {
     zIndex: number;
 };
 export type RenderingSnapshot = RenderingSnapshotEntry[];
-export type Camera = {
-    x: number;
-    y: number;
-    zoom: number;
-    width: number;
-    height: number;
+export class Camera {
+    constructor(
+        public x: number,
+        public y: number,
+        public zoom: number,
+        public width: number,
+        public height: number,
+    ) { }
 };

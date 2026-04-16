@@ -1,10 +1,11 @@
 import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
-import type { QueryParameters, World } from "@amber-game/engine/ecs/world";
+import type { World } from "@amber-game/engine/ecs/world";
 import { ColliderRectangle } from "../components/collider";
 import type { IStorage } from "@amber-game/engine/ecs/components";
 import { Transform } from "../components/transform";
 import { COLLISION_EVENT_KEY, type CollisionEvent } from "../events/collision";
 import type { EventBuffer } from "@amber-game/engine/ecs/events-buffer";
+import type { QueryParameters } from "@amber-game/engine/ecs/query";
 
 type Box = { top: number; right: number; bottom: number; left: number; };
 

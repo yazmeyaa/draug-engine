@@ -1,5 +1,5 @@
 export class WorldPhysicsResource {
     constructor(
-        public worldGravity = 9.8,
+        public worldGravity = 20,
     ){}
 };

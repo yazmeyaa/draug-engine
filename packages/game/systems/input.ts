@@ -2,7 +2,7 @@ import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system
 import { Velocity } from "../components/physics/velocity";
 import { PlayerTag } from "../components/tags/player-tag";
 import { PlayerActions } from "../resources/player-actions";
-import type { QueryParameters } from "@amber-game/engine/ecs/world";
+import type { QueryParameters } from "@amber-game/engine/ecs/query";
 
 export class InputSystem extends System {
     public readonly query: QueryParameters = {

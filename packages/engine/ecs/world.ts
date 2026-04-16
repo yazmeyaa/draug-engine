@@ -28,9 +28,9 @@ import { QueryManager, type QueryParameters } from "./query";
 export class World {
     public readonly entities = new EntitiesManager();
     public readonly components = new ComponentsManager();
+    public readonly systems = new SystemsManager(this);
     public readonly events = new EventBus();
     public readonly resources = new ResourcesManager();
-    public readonly systems = new SystemsManager(this);
     public readonly commands = new Commands(this);
     public readonly queryManager = new QueryManager(this);
 

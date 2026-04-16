@@ -1,9 +1,10 @@
 import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
-import type { QueryParameters, World } from "@amber-game/engine/ecs/world";
+import type { World } from "@amber-game/engine/ecs/world";
 import type { IStorage } from "@amber-game/engine/ecs/components";
 import { WorldPhysicsResource } from "../resources/physics";
 import { Acceleration } from "../components/acceleration";
 import { Velocity } from "../components/velocity";
+import type { QueryParameters } from "@amber-game/engine/ecs/query";
 
 export class ApplyGravitySystem extends System {
     public query: Readonly<QueryParameters> = {
@@ -14,7 +15,7 @@ export class ApplyGravitySystem extends System {
     private accelerationStore!: IStorage<Acceleration>;
 
     public override onInit(world: World): void {
-        this.worldPhysics = world.resources.getOrInsert(WorldPhysicsResource, () => new WorldPhysicsResource(9.8));
+        this.worldPhysics = world.resources.getOrInsert(WorldPhysicsResource, () => new WorldPhysicsResource());
         this.velocityStore = world.components.getStorage(Velocity);
         this.accelerationStore = world.components.getStorage(Acceleration);
     }
