@@ -1,32 +1,7 @@
 {
-  "name": "amber-game",
-  "version": "0.0.1",
-  "description": "Draft of simple web game",
-  "homepage": "https://github.com/yazmeyaa/game_draft#readme",
-  "bugs": {
-    "url": "https://github.com/yazmeyaa/game_draft/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/yazmeyaa/game_draft.git"
-  },
-  "license": "MIT",
-  "author": {
-    "email": "evgenijantonenkov456@gmail.com",
-    "name": "future_undefined",
-    "url": "https://github.com/yazmeyaa"
-  },
-  "main": "src/index.js",
-  "scripts": {
-    "test:all": "yarn workspaces foreach --all -pt run test",
-    "test": "echo Hello!"
-  },
+  "name": "game",
+  "packageManager": "yarn@4.14.0",
   "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
-  "devDependencies": {
-    "typescript": "^5.9.3"
-  },
-  "packageManager": "yarn@4.13.0"
+    "packages/*"
+  ]
 }

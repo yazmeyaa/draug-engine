@@ -111,7 +111,7 @@ const game = new BrowserGame(world, (world) => {
   for (const entry of snapshot) {
     const debug = debugStore.get(entry.entityId);
     const r = rStore.tryGet(entry.entityId);
-    const data = game.runtime.resources.tryGetStorage(ImageResource).tryGet(r.spriteId).getData();
+    const data = game.runtime.assets.tryGetStorage(ImageResource).tryGet(r.spriteId).getData();
     const t = tStore.tryGet(entry.entityId);
 
     ctx.save();
@@ -177,7 +177,7 @@ const playerActions = new PlayerActions();
 game.runtime.world.resources.insert(PlayerActions, playerActions);
 
 class ImageResource extends Asset<HTMLImageElement> { }
-const imageResourceStore = game.runtime.resources.register(ImageResource, (url) => {
+const imageResourceStore = game.runtime.assets.register(ImageResource, (url) => {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
 

@@ -14,14 +14,26 @@ import { Transform } from "./components/transform";
 import { GameActions } from "./resources/actions";
 import { InputSystem } from "./systems/input";
 import { BindCameraSystem } from "./systems/bind-camera";
+import { COLLISION_EVENT_KEY } from "./events/collision";
 
 const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d")!;
 
-
-
-
 const game = new BrowserGame((world) => {
+    const colisions = world.events.getBuffer(COLLISION_EVENT_KEY);
+    const fStore = world.components.getStorage(FlappyTag);
+    const evts = colisions.read();
+    for (const evt of evts) {
+        fStore.forEach(birdId => {
+            if(evt.objA.colliderId === birdId || evt.objB.colliderId === birdId) 
+            {
+                alert("Game over");
+                window.location.reload();
+            }
+        })
+        console.log(evt);
+    }
+
     const renderView = new RenderView(game.runtime.world, camera)
     const rStore = world.components.getStorage(Renderable);
     const snapshot = renderView.snapshot().sort((a, b) => a.zIndex - b.zIndex);
@@ -31,7 +43,7 @@ const game = new BrowserGame((world) => {
     const tStore = world.components.getStorage(Transform);
     for (const entry of snapshot) {
         const r = rStore.tryGet(entry.entityId);
-        const data = game.runtime.resources.tryGetStorage(ImageAsset).tryGet(r.spriteId).getData();
+        const data = game.runtime.assets.tryGetStorage(ImageAsset).tryGet(r.spriteId).getData();
         const t = tStore.tryGet(entry.entityId);
 
         ctx.save();
@@ -39,8 +51,6 @@ const game = new BrowserGame((world) => {
         const rad = t.rotate * Math.PI / 180;
 
         ctx.translate(entry.x, entry.y);
-
-
         ctx.rotate(rad);
         ctx.drawImage(data, -50, -50, 100, 100);
 
@@ -49,7 +59,7 @@ const game = new BrowserGame((world) => {
 
 })
 
-const camera = game.world.resources.insert(Camera, new Camera(0,0,1.2,800,600));
+const camera = game.world.resources.insert(Camera, new Camera(0, 0, 1.2, 800, 600));
 function resizeCanvas() {
     const dpr = window.devicePixelRatio ?? 1;
     const w = canvas.clientWidth;
@@ -96,7 +106,7 @@ game.world.systems.build();
 
 
 class ImageAsset extends Asset<HTMLImageElement> { }
-const imageResourceStore = game.runtime.resources.register(ImageAsset, (url) => {
+const imageResourceStore = game.runtime.assets.register(ImageAsset, (url) => {
     return new Promise<HTMLImageElement>((resolve, reject) => {
         const img = new Image();
 
@@ -109,7 +119,7 @@ const imageResourceStore = game.runtime.resources.register(ImageAsset, (url) => 
 
 const birdSprite = imageResourceStore.add('/assets/bird.png');
 const boxSprite = imageResourceStore.add('/assets/box.png');
-imageResourceStore.loadAll().then(() => {
+game.runtime.assets.loadAll().then(() => {
     game.start();
 
     createBird(game.world, {

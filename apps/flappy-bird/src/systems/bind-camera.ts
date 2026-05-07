@@ -1,11 +1,11 @@
-import type { QueryParameters } from "@amber-game/engine/ecs/query";
 import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
 import { FlappyTag } from "../components/flappy-tag";
 import { Transform } from "../components/transform";
-import type { World } from "@amber-game/engine/ecs/world";
-import type { IStorage } from "@amber-game/engine/ecs/components";
 import { Camera } from "../render/types";
 import { MovementSystem } from "./movement";
+import type { World } from "@amber-game/engine/ecs/world";
+import type { QueryParameters } from "@amber-game/engine/ecs/query";
+import type { IStorage } from "@amber-game/engine/ecs/components";
 
 export class BindCameraSystem extends System {
     public query: Readonly<QueryParameters> = {
@@ -21,11 +21,9 @@ export class BindCameraSystem extends System {
         this.transformStore = world.components.getStorage(Transform);
     }
     public compute(ctx: SystemComputeContext): void {
-        for(const id of ctx.entities) 
-        {
+        for (const id of ctx.entities) {
             const t = this.transformStore.tryGet(id);
-            this.camera.x = t.x;
-            this.camera.y = t.y;
+            this.camera.x = t.x + 500;
         }
     }
 }
