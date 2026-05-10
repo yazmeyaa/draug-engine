@@ -70,8 +70,9 @@ export abstract class System {
 export class SystemsManager {
     private systems_ = new Map<SystemCtor, System>();
     private executionOrder_: System[] = [];
-    private built_ = false;
     private requiredComponents_: Set<ComponentType> = new Set();
+
+    private dirty_ = true;
 
     constructor(
         private readonly world: World,
@@ -82,8 +83,6 @@ export class SystemsManager {
     }
 
     public register<T extends System>(sys: T): void {
-        if (this.built_) throw new Error("Cannot register after build");
-
         const ctor = sys.constructor as SystemCtor<T>;
         if (this.systems_.has(ctor)) throw new Error("Duplicate system");
 
@@ -107,9 +106,11 @@ export class SystemsManager {
         this.buildSystemsArray();
         for (const sys of this.systems_.values())
             sys.onInit?.(this.world);
-        
-        this.built_ = true;
     }
+
+    private rebuild(): void {
+        this.build();
+    };
 
     public get<T extends System>(ctor: SystemCtor<T>): T {
         const s = this.systems_.get(ctor);
@@ -120,7 +121,9 @@ export class SystemsManager {
     }
 
     public update(dt: number): void {
-        if (!this.built_) throw new Error("Systems not built");
+        if (this.dirty_)
+            this.rebuild();
+
         this.world.events.swapAll();
 
         for (const s of this.executionOrder_) {
