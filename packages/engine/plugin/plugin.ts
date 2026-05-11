@@ -11,27 +11,22 @@ export type PluginDependencies = {
 export interface PluginMetadata {
     id: string;
     version: string;
+    name: string;
     dependencies?: PluginDependencies;
 }
 
 const PluginMetadataSymbol = Symbol();
-export function Plugin(metadata: PluginMetadata): ClassDecorator {
+export function Plugin<T>(metadata: PluginMetadata): ClassDecorator {
     return (target) => {
         target.prototype[PluginMetadataSymbol] = metadata;
     };
 }
 
-const NOT_AN_PLUGIN_ERROR_MESSAGE = (ctor: Function) => `Provided constructor [${ctor.name}] is not a Plugin. Every plugin must be registered via "@Plugin({...})" decorator.`;
-
-function newErrorNotAnPlugin(ctor: Function): Error {
-    return new Error(NOT_AN_PLUGIN_ERROR_MESSAGE(ctor));
-}
-
-export function getPluginMetadata(plugin: Function): PluginMetadata {
+export function getPluginMetadata(plugin: ClassType<PluginBase>): PluginMetadata {
     if (hasMetadata(plugin)) {
         return plugin[PluginMetadataSymbol] as PluginMetadata;
     }
-    throw newErrorNotAnPlugin(plugin);
+    throw new ErrMissingPluginMetadata(plugin);
 }
 
 type FunctionWithMetadata = Function & { [PluginMetadataSymbol]: PluginMetadata };
@@ -45,29 +40,77 @@ export function isPlugin(ctor: Function): boolean {
 }
 
 export abstract class PluginBase {
-    public abstract readonly name: string;
-
     public onPluginLoad?: (world: World) => void;
     public onPluginUnload?: (world: World) => void;
-
     public onAfterWorldInit?: (world: World) => void;
 }
 
+type PluginManagerInternalPluginStorageItem<T extends ClassType<PluginBase>> = {
+    ctor: T;
+    ctorParams: ConstructorParameters<T>;
+    instance?: InstanceType<T>;
+};
+
+export class PluginError extends Error {
+    constructor(plugin: ClassType<PluginBase>) {
+        super(`Plugin error! Plugin [${plugin.name}]`);
+    }
+}
+export class ErrMissingPluginMetadata extends PluginError {
+    constructor(plugin: ClassType<PluginBase>) {
+        super(plugin);
+        this.message = `${super.message}: Missing plugin metadata! Define plugin class with @Plugin decorator.`
+    }
+};
+
+export class ErrUnknownPlugin extends PluginError { };
+export class ErrPluginNotInit extends PluginError {
+    constructor(plugin: ClassType<PluginBase>) {
+        super(plugin);
+        const msg = "Plugin not initiated yet. You must use PluginsManager.init() before getting instance of plugin.";
+        this.message = [this.message, msg].join(': ');
+    }
+};
 
 export class PluginsManager {
-    private plugins_: Map<ClassType<PluginBase>, PluginBase> = new Map();
+    private plugins_: Map<ClassType<PluginBase>, PluginManagerInternalPluginStorageItem<any>> = new Map();
+    private isInitiated_ = false;
 
-    public install(plugin: ClassType<PluginBase>): void {
+    public install<T extends ClassType<PluginBase>>(plugin: T, ...constructorProps: ConstructorParameters<T>): void {
         if (!isPlugin(plugin))
-            throw newErrorNotAnPlugin(plugin);
+            throw new ErrMissingPluginMetadata(plugin);
 
         if (this.plugins_.has(plugin))
             return;
-
-        this.plugins_.set(plugin, new plugin());
+        const entry: PluginManagerInternalPluginStorageItem<T> = {
+            ctor: plugin,
+            ctorParams: constructorProps,
+        };
+        this.plugins_.set(plugin, entry);
     }
 
-    static getPluginMetadata(plugin: ClassType<PluginBase>): PluginMetadata {
-        return getPluginMetadata(plugin.constructor);
+    public init(): void {
+        for (const entry of this.plugins_.values()) {
+            const { ctor, ctorParams } = entry;
+            entry.instance = new ctor(...ctorParams);
+        }
+
+        this.isInitiated_ = true;
+    }
+
+    public getPluginMetadata(plugin: ClassType<PluginBase>): PluginMetadata {
+        return getPluginMetadata(plugin);
+    }
+
+    public getPluginInstance<T extends PluginBase>(plugin: ClassType<T>): T {
+        if (!this.isInitiated_)
+            throw new Error("Plugin instance is not initiated yet. Use PluginManager.init() before use plugins.");
+
+        const entry = this.plugins_.get(plugin);
+        if (!entry)
+            throw new ErrUnknownPlugin(plugin);
+        if (!entry.instance)
+            throw new ErrPluginNotInit(plugin);
+        return entry.instance as T;
     }
 };
