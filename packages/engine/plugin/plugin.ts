@@ -198,24 +198,3 @@ export class PluginsManager {
         return getPluginMetadata(pluginOrId).id;
     }
 };
-
-
-@Plugin({
-    id: "physics.plugin",
-    name: "Physics plugin",
-    version: "1.0.0",
-})
-export class PhysicsPlugin extends PluginBase { };
-
-@Plugin({
-    id: "example.plugin",
-    name: "Just an example plugin",
-    version: "1.0.0",
-    dependencies: {
-        components: [],
-        resources: [],
-        systems: [],
-        plugins: [{ id: "physics.plugin", version: "1.0.0" }],
-    }
-})
-export class ExamplePlugin extends PluginBase { };

@@ -15,20 +15,22 @@ class TimeSource implements TS {
 
 export class BrowserGame {
     public readonly runtime: Runtime;
-    public readonly world = new World();
+    public get world(): World {
+        return this.runtime.world;
+    }
     constructor(
         private onWorldUpdate?: (world: World) => void,
-
     ) {
         const res = new AssetsManager();
-        this.runtime = new Runtime(this.world, res);
+        this.runtime = new Runtime(new World(), res);
     };
+
     public start(): void {
         const ts = new TimeSource();
         const clock = new Clock(ts);
         const loop = new GameLoop(clock, (dt) => {
             this.runtime.update(dt);
-            this.onWorldUpdate?.(this.world);
+            this.onWorldUpdate?.(this.runtime.world);
         });
         loop.start(window.requestAnimationFrame);
     };

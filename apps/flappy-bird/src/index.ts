@@ -15,7 +15,6 @@ import { GameActions } from "./resources/actions";
 import { InputSystem } from "./systems/input";
 import { BindCameraSystem } from "./systems/bind-camera";
 import { COLLISION_EVENT_KEY } from "./events/collision";
-import { ExamplePlugin, PhysicsPlugin } from "@amber-game/engine/plugin/plugin";
 
 const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d")!;
@@ -58,9 +57,6 @@ const game = new BrowserGame((world) => {
     }
 
 })
-
-game.world.plugins.install(ExamplePlugin);
-game.world.plugins.install(PhysicsPlugin);
 game.world.build();
 
 
