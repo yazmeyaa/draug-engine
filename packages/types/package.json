@@ -3,5 +3,8 @@
   "packageManager": "yarn@4.13.0",
   "scripts": {
     "test": "echo Hello types!"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
   }
 }

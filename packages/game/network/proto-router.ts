@@ -1,7 +1,5 @@
-// ! Very bad! Need to create safe abstraction
-
-import { RawData } from "@amber-game/types/ws";
-import { MessageFns } from "./shared";
+import { type RawData } from "@amber-game/types/ws";
+import { type MessageFns } from "./shared";
 import { MessageHandler } from "./message-handler";
 
 function concatArrayBuffers(buffers: ArrayBuffer[]): Uint8Array {

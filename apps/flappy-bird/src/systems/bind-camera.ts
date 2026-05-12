@@ -1,10 +1,14 @@
-import { System, SystemBase, type SystemComputeContext } from "@amber-game/engine/ecs/system";
 import { FlappyTag } from "../components/flappy-tag";
 import { Transform } from "../components/transform";
 import { Camera } from "../render/types";
 import { MovementSystem } from "./movement";
-import type { World } from "@amber-game/engine/ecs/world";
-import type { IStorage } from "@amber-game/engine/ecs/components";
+import {
+    System,
+    SystemBase,
+    type World,
+    type IStorage,
+    type SystemComputeContext,
+} from "@amber-game/engine";
 
 
 @System({

@@ -20,6 +20,7 @@
     "test": "echo Hello from engine!"
   },
   "devDependencies": {
-    "@amber-game/types": "workspace:^"
+    "@amber-game/types": "workspace:^",
+    "typescript": "^6.0.3"
   }
 }

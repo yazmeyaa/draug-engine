@@ -1,9 +1,13 @@
-import { System, SystemBase, type SystemComputeContext } from "@amber-game/engine/ecs/system";
-import type { World } from "@amber-game/engine/ecs/world";
-import type { IStorage } from "@amber-game/engine/ecs/components";
 import { WorldPhysicsResource } from "../resources/physics";
 import { Acceleration } from "../components/acceleration";
 import { Velocity } from "../components/velocity";
+import {
+    System,
+    SystemBase,
+    type World,
+    type IStorage,
+    type SystemComputeContext,
+} from "@amber-game/engine";
 
 @System({
     query: {

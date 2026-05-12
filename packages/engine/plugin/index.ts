@@ -1,0 +1,15 @@
+export {
+    Plugin,
+    isPlugin,
+    getPluginMetadata,
+    PluginBase,
+    PluginsManager,
+    PluginError,
+    ErrMissingPluginMetadata,
+    ErrNotAPlugin,
+    ErrPluginNotInit,
+    ErrUnknownPlugin,
+    type PluginID,
+    type PluginMetadata,
+    type PluginDependencies,
+} from './plugin'

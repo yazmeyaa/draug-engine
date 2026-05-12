@@ -1,8 +1,14 @@
 import { AssetsManager } from "@amber-game/assets/assets";
 import { World } from "@amber-game/engine/ecs/world";
-import { Clock } from "@amber-game/engine/runtime/clock";
+import { Clock, type TimeSource as TS } from "@amber-game/engine/runtime/clock";
 import { GameLoop } from "@amber-game/engine/runtime/game-loop";
 import { Runtime } from '@amber-game/engine/runtime/runtime'
+
+class TimeSource implements TS {
+    public now(): number {
+        return performance.now();
+    }
+}
 
 export class BrowserGame {
     public readonly runtime: Runtime;
@@ -15,7 +21,8 @@ export class BrowserGame {
         this.runtime = new Runtime(this.world, res);
     };
     public start(): void {
-        const clock = new Clock();
+        const ts = new TimeSource();
+        const clock = new Clock(ts);
         const loop = new GameLoop(clock, (dt) => {
             this.runtime.update(dt);
             this.onWorldUpdate?.(this.world);

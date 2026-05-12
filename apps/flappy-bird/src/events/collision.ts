@@ -1,4 +1,4 @@
-import { createEventKey } from "@amber-game/engine/ecs/events-buffer";
+import { createEventKey } from "@amber-game/engine";
 
 type CollisionObject = {
     colliderId: number;

@@ -30,7 +30,7 @@ export class EntryPoint {
             getUserData: () => {
                 const entity = createPlayer(this.world, { transform: { x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1 }, baseSpeed: { speed: 120 } });
                 console.log(entity)
-                return new GameUserData(entity.id);
+                return new GameUserData(entity);
             },
         });
 

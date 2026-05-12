@@ -1,0 +1,1 @@
+export { ResourcesManager } from './resources'

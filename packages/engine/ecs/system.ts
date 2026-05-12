@@ -86,7 +86,7 @@ export function hasMetadata(ctor: Function): ctor is Required<FunctionWithMetada
     return SystemMetadataSymbol in ctor;
 }
 
-export function isPlugin(ctor: Function): boolean {
+export function isSystem(ctor: Function): boolean {
     return hasMetadata(ctor);
 }
 

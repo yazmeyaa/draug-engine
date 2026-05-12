@@ -97,7 +97,7 @@ window.addEventListener('keydown', event => {
     if (event.code === 'Space')
         inputResource.jump = true;
 })
-window.addEventListener('keyup', event => {
+window.addEventListener('keyup', () => {
     inputResource.jump = false;
 })
 

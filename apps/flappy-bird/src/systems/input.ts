@@ -1,9 +1,13 @@
-import { System, SystemBase, type SystemComputeContext } from "@amber-game/engine/ecs/system";
 import { FlappyTag } from "../components/flappy-tag";
-import type { World } from "@amber-game/engine/ecs/world";
 import { GameActions } from "../resources/actions";
-import type { IStorage } from "@amber-game/engine/ecs/components";
 import { Velocity } from "../components/velocity";
+import {
+    System,
+    SystemBase,
+    type IStorage,
+    type World,
+    type SystemComputeContext,
+} from "@amber-game/engine";
 
 @System({
     query: {
