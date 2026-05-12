@@ -1,18 +1,18 @@
-import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
+import { System, SystemBase, type SystemComputeContext } from "@amber-game/engine/ecs/system";
 import type { World } from "@amber-game/engine/ecs/world";
 import { ColliderRectangle } from "../components/collider";
 import type { IStorage } from "@amber-game/engine/ecs/components";
 import { Transform } from "../components/transform";
 import { COLLISION_EVENT_KEY, type CollisionEvent } from "../events/collision";
 import type { EventBuffer } from "@amber-game/engine/ecs/events-buffer";
-import type { QueryParameters } from "@amber-game/engine/ecs/query";
 
 type Box = { top: number; right: number; bottom: number; left: number; };
-
-export class CollisionSystem extends System {
-    public query: Readonly<QueryParameters> = {
+@System({
+    query: {
         include: [Transform, ColliderRectangle],
-    };
+    }
+})
+export class CollisionSystem extends SystemBase {
     private colliderStore!: IStorage<ColliderRectangle>;
     private transformStore!: IStorage<Transform>;
     private collisionEvents!: EventBuffer<CollisionEvent>;

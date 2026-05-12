@@ -1,19 +1,20 @@
-import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
+import { System, SystemBase, type SystemComputeContext } from "@amber-game/engine/ecs/system";
 import { FlappyTag } from "../components/flappy-tag";
 import { Transform } from "../components/transform";
 import { Camera } from "../render/types";
 import { MovementSystem } from "./movement";
 import type { World } from "@amber-game/engine/ecs/world";
-import type { QueryParameters } from "@amber-game/engine/ecs/query";
 import type { IStorage } from "@amber-game/engine/ecs/components";
 
-export class BindCameraSystem extends System {
-    public query: Readonly<QueryParameters> = {
+
+@System({
+    computeAfter: [MovementSystem],
+    query: {
         include: [FlappyTag, Transform]
-    };
-    constructor() {
-        super(MovementSystem);
-    }
+    },
+    requiredComponents: []
+})
+export class BindCameraSystem extends SystemBase {
     private transformStore!: IStorage<Transform>;
     private camera!: Camera;
     public onInit(world: World): void {

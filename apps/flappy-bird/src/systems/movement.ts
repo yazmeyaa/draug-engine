@@ -1,16 +1,15 @@
-import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
+import { System, SystemBase, type SystemComputeContext } from "@amber-game/engine/ecs/system";
 import { Velocity } from "../components/velocity";
 import { Transform } from "../components/transform";
-import type { QueryParameters } from "@amber-game/engine/ecs/query";
 import { InputSystem } from "./input";
 
-export class MovementSystem extends System {
-    public query: Readonly<QueryParameters> = {
+@System({
+    query: {
         include: [Transform, Velocity],
-    };
-    constructor() {
-        super(InputSystem)
-    }
+    },
+    computeAfter: [InputSystem]
+})
+export class MovementSystem extends SystemBase {
     public compute(ctx: SystemComputeContext): void {
         const { entities } = ctx;
 

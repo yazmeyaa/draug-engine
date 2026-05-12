@@ -1,13 +1,14 @@
-import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
+import { System, SystemBase, type SystemComputeContext } from "@amber-game/engine/ecs/system";
 import { Velocity } from "../components/physics/velocity";
 import { PlayerTag } from "../components/tags/player-tag";
 import { PlayerActions } from "../resources/player-actions";
-import type { QueryParameters } from "@amber-game/engine/ecs/query";
 
-export class InputSystem extends System {
-    public readonly query: QueryParameters = {
+@System({
+    query: {
         include: [Velocity, PlayerTag]
-    };
+    }
+})
+export class InputSystem extends SystemBase {
     public compute(ctx: SystemComputeContext): void {
         const { world } = ctx;
         const actions = world.resources.get(PlayerActions);

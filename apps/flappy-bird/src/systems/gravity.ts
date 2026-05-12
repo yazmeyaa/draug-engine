@@ -1,15 +1,16 @@
-import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
+import { System, SystemBase, type SystemComputeContext } from "@amber-game/engine/ecs/system";
 import type { World } from "@amber-game/engine/ecs/world";
 import type { IStorage } from "@amber-game/engine/ecs/components";
 import { WorldPhysicsResource } from "../resources/physics";
 import { Acceleration } from "../components/acceleration";
 import { Velocity } from "../components/velocity";
-import type { QueryParameters } from "@amber-game/engine/ecs/query";
 
-export class ApplyGravitySystem extends System {
-    public query: Readonly<QueryParameters> = {
+@System({
+    query: {
         include: [Velocity, Acceleration],
-    };
+    }
+})
+export class ApplyGravitySystem extends SystemBase {
     private worldPhysics!: WorldPhysicsResource;
     private velocityStore!: IStorage<Velocity>;
     private accelerationStore!: IStorage<Acceleration>;

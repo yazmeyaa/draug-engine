@@ -1,4 +1,4 @@
-import type { System } from "@amber-game/engine/ecs/system";
+import type { SystemBase } from "@amber-game/engine/ecs/system";
 import { BrowserGame } from "./browser-game";
 import { ApplyGravitySystem } from "./systems/gravity";
 import { CollisionSystem } from "./systems/collision";
@@ -75,7 +75,7 @@ resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
 
-const systems: System[] = [
+const systems: SystemBase[] = [
     new ApplyGravitySystem(),
     new CollisionSystem(),
     new MovementSystem(),

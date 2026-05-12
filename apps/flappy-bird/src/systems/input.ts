@@ -1,15 +1,16 @@
-import type { QueryParameters } from "@amber-game/engine/ecs/query";
-import { System, type SystemComputeContext } from "@amber-game/engine/ecs/system";
+import { System, SystemBase, type SystemComputeContext } from "@amber-game/engine/ecs/system";
 import { FlappyTag } from "../components/flappy-tag";
 import type { World } from "@amber-game/engine/ecs/world";
 import { GameActions } from "../resources/actions";
 import type { IStorage } from "@amber-game/engine/ecs/components";
 import { Velocity } from "../components/velocity";
 
-export class InputSystem extends System {
-    public query: Readonly<QueryParameters> = {
+@System({
+    query: {
         include: [FlappyTag, Velocity]
-    };
+    }
+})
+export class InputSystem extends SystemBase {
     private actionsResource!: GameActions;
     private velocityStore!: IStorage<Velocity>;
 

@@ -1,5 +1,5 @@
 import type { ClassType, ComponentType } from "@amber-game/types/class";
-import { System } from "../ecs/system";
+import { SystemBase } from "../ecs/system";
 import type { World } from "../ecs/world"
 
 export type PluginID = string;
@@ -7,7 +7,7 @@ export type PluginID = string;
 export type PluginDependencies = {
     components?: ComponentType[];
     resources?: ClassType<any>[];
-    systems?: ClassType<System>[];
+    systems?: ClassType<SystemBase>[];
     plugins?: Array<Pick<PluginMetadata, "id" | "version">>
 }
 
@@ -18,7 +18,7 @@ export interface PluginMetadata {
     dependencies?: PluginDependencies;
 }
 
-const PluginMetadataSymbol = Symbol();
+const PluginMetadataSymbol = Symbol("plugin");
 export function Plugin(metadata: PluginMetadata): ClassDecorator {
     return (target) => {
         if ('__proto__' in target && target.__proto__ !== PluginBase)
