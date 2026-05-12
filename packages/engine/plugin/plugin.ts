@@ -2,22 +2,28 @@ import type { ClassType, ComponentType } from "@amber-game/types/class";
 import { System } from "../ecs/system";
 import type { World } from "../ecs/world"
 
+export type PluginID = string;
+
 export type PluginDependencies = {
     components?: ComponentType[];
     resources?: ClassType<any>[];
     systems?: ClassType<System>[];
+    plugins?: Array<Pick<PluginMetadata, "id" | "version">>
 }
 
 export interface PluginMetadata {
-    id: string;
+    id: PluginID;
     version: string;
     name: string;
     dependencies?: PluginDependencies;
 }
 
 const PluginMetadataSymbol = Symbol();
-export function Plugin<T>(metadata: PluginMetadata): ClassDecorator {
+export function Plugin(metadata: PluginMetadata): ClassDecorator {
     return (target) => {
+        if ('__proto__' in target && target.__proto__ !== PluginBase)
+            throw new ErrNotAPlugin(target);
+
         target.prototype[PluginMetadataSymbol] = metadata;
     };
 }
@@ -56,6 +62,11 @@ export class PluginError extends Error {
         super(`Plugin error! Plugin [${plugin.name}]`);
     }
 }
+export class ErrNotAPlugin extends Error {
+    constructor(target: Function) {
+        super(`Provided class ${target.name} is not a Plugin! Every plugin must extends of PluginBase class.`);
+    }
+};
 export class ErrMissingPluginMetadata extends PluginError {
     constructor(plugin: ClassType<PluginBase>) {
         super(plugin);
