@@ -24,6 +24,7 @@ import { ComponentsManager } from "./components";
 import { ResourcesManager } from "./resources/resources";
 import { Commands } from "./command";
 import { QueryManager, type QueryParameters } from "./query";
+import { PluginsManager } from "../plugin";
 
 export class World {
     public readonly entities = new EntitiesManager();
@@ -32,7 +33,8 @@ export class World {
     public readonly events = new EventBus();
     public readonly resources = new ResourcesManager();
     public readonly commands = new Commands(this);
-    public readonly queryManager = new QueryManager(this);
+    public readonly queries = new QueryManager(this);
+    public readonly plugins = new PluginsManager();
 
     private entityRefs_ = new Map<number, EntityRef>();
 
@@ -49,7 +51,7 @@ export class World {
         return ref;
     }
     public query(params: QueryParameters): number[] {
-        return this.queryManager.get(params);
+        return this.queries.get(params);
     }
 
     public removeComponent<T extends object>(ref: EntityRef, component: ComponentType<T>): void;
@@ -63,7 +65,7 @@ export class World {
         const storage = this.components.getStorage(component);
         storage.remove(id);
 
-        this.queryManager.invalidate(component);
+        this.queries.invalidate(component);
     }
 
     public addComponent<T extends object>(id: EntityID, component: ClassType<T>, initFn?: (obj: T) => void): T;
@@ -82,12 +84,16 @@ export class World {
             }
             return o;
         });
-        this.queryManager.invalidate(component);
+        this.queries.invalidate(component);
         return c;
     };
 
     public update(dt: number): void {
         this.systems.update(dt);
         this.commands.flush(this);
+    }
+
+    public build(): void {
+        this.plugins.build();
     }
 };

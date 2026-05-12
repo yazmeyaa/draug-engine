@@ -1,4 +1,4 @@
-import { DAGNode, VisitedState } from '@amber-game/core/graph/dag';
+import { DAGNode, topologicalSort } from '@amber-game/core/graph/dag';
 import type { ClassType, ComponentType } from '@amber-game/types/class'
 import type { World } from "./world";
 import type { QueryParameters } from './query';
@@ -189,35 +189,6 @@ export class SystemsManager {
         }
     }
 
-    private topoSort(nodes: Iterable<DAGNode<SystemBase>>): SystemBase[] {
-        const visited = new Map<DAGNode<SystemBase>, VisitedState>();
-        const result: SystemBase[] = [];
-
-        const dfs = (node: DAGNode<SystemBase>) => {
-            const state = visited.get(node) ?? VisitedState.Unvisited;
-
-            if (state === VisitedState.Visited) return;
-            if (state === VisitedState.Visiting) {
-                throw new Error("Cycle detected");
-            }
-
-            visited.set(node, VisitedState.Visiting);
-
-            for (const child of node.vertices) {
-                dfs(child);
-            }
-
-            visited.set(node, VisitedState.Visited);
-            result.push(node.data);
-        };
-
-        for (const node of nodes) {
-            dfs(node);
-        }
-
-        return result.reverse();
-    }
-
     private buildSystemsArray(): void {
         const map = new Map<SystemCtor, DAGNode<SystemBase>>();
 
@@ -238,6 +209,6 @@ export class SystemsManager {
             }
         }
 
-        this.executionOrder_ = this.topoSort(map.values());
+        this.executionOrder_ = topologicalSort(map.values()).map(x => x.data);
     }
 }

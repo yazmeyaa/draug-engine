@@ -16,7 +16,6 @@ import {
     query: {
         include: [FlappyTag, Transform]
     },
-    requiredComponents: []
 })
 export class BindCameraSystem extends SystemBase {
     private transformStore!: IStorage<Transform>;
