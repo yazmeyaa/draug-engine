@@ -1,5 +1,3 @@
-import { type EntityID } from "@amber-game/engine/ecs/entity";
-import { World } from "@amber-game/engine/ecs/world";
 import { createPlayer } from "@amber-game/game/archetypes/players";
 import { createServerSideWorld } from "@amber-game/game/create-world";
 import { PositionChange, MovementDirectionChange, MotionUpdate, ServerMessage } from "@amber-game/game/network/generated/server";
@@ -8,6 +6,7 @@ import { GameUserData } from "./types";
 import { NodeLoop } from "./loop";
 import { Transform } from "@amber-game/game/components/render/transform";
 import { PlayerTag } from "@amber-game/game/components/tags/player-tag";
+import type { World, EntityID } from "@amber-game/engine";
 
 type UpdEntry = {
     pos?: PositionChange;

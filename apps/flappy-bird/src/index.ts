@@ -1,4 +1,4 @@
-import type { SystemBase } from "@amber-game/engine/ecs/system";
+import type { SystemBase } from "@amber-game/engine";
 import { BrowserGame } from "./browser-game";
 import { ApplyGravitySystem } from "./systems/gravity";
 import { CollisionSystem } from "./systems/collision";

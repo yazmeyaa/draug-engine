@@ -1,4 +1,4 @@
-import { System, SystemBase, type SystemComputeContext } from "@amber-game/engine/ecs/system";
+import { System, SystemBase, type SystemComputeContext } from "@amber-game/engine";
 import { Velocity } from "../components/physics/velocity";
 import { PlayerTag } from "../components/tags/player-tag";
 import { PlayerActions } from "../resources/player-actions";

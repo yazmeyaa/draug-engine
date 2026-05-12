@@ -62,3 +62,13 @@ export {
     EventBus,
     createEventKey,
 } from './ecs/events-buffer';
+
+export {
+    Clock,
+    type TimeSource,
+} from './runtime/clock';
+
+export { GameLoop, type StepFunction } from './runtime/game-loop';
+export {
+    Runtime
+} from './runtime/runtime';

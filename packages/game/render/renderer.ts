@@ -1,4 +1,4 @@
-import type { World } from "@amber-game/engine/ecs/world";
+import type { World } from "@amber-game/engine";
 import type { Camera, RenderingSnapshot, RenderingSnapshotEntry } from "./types";
 import { Transform } from "../components/render/transform";
 import { Renderable } from "../components/render/renderable";

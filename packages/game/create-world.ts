@@ -1,7 +1,7 @@
 import { MovementSystem } from "./systems/movement";
 import { AttractionSystem } from "./systems/world-attraction";
 import { PlayerTag } from "./components/tags/player-tag";
-import { World } from "@amber-game/engine/ecs/world";
+import { World } from "@amber-game/engine";
 import { Acceleration } from "./components/physics/acceleration";
 import { CircleCollider } from "./components/collision/circle-collider";
 import { RectangleCollider } from "./components/collision/rectangle-collider";

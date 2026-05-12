@@ -1,5 +1,3 @@
-import { EntityRef } from "@amber-game/engine/ecs/entity";
-import { World } from "@amber-game/engine/ecs/world";
 import { Acceleration } from "../components/physics/acceleration";
 import { Damage } from "../components/gameplay/damage";
 import { Transform } from "../components/render/transform";
@@ -8,6 +6,7 @@ import { Renderable } from "../components/render/renderable";
 import { EntityDebug } from "../components/debug/entity-debug";
 import { applyComponent } from "./shared";
 import { BaseSpeed } from "../components/gameplay/base-speed";
+import { type World, EntityRef } from "@amber-game/engine";
 
 type FireballInitialData = {
     transform: Transform;

@@ -1,4 +1,4 @@
-import { System, SystemBase, type SystemComputeContext } from "@amber-game/engine/ecs/system";
+import { System, SystemBase, type SystemComputeContext } from "@amber-game/engine";
 import { CircleCollider } from "../components/collision/circle-collider";
 import { RectangleCollider } from "../components/collision/rectangle-collider";
 import { Transform } from "../components/render/transform";

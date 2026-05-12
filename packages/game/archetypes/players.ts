@@ -1,4 +1,3 @@
-import { World } from "@amber-game/engine/ecs/world";
 import { NetworkEntity } from "../components/network/network-entity";
 import { PlayerTag } from "../components/tags/player-tag";
 import { Transform } from "../components/render/transform";
@@ -8,7 +7,7 @@ import { CircleCollider } from "../components/collision/circle-collider";
 import { EntityDebug } from "../components/debug/entity-debug";
 import { applyComponent } from "./shared";
 import { BaseSpeed } from "../components/gameplay/base-speed";
-import { entry, type CreateEntityComponentEntry } from "@amber-game/engine/ecs/command";
+import { type World, type CreateEntityComponentEntry, entry, type EntityID } from "@amber-game/engine";
 
 
 export type PlayerInitialData = {
@@ -19,7 +18,7 @@ export type PlayerInitialData = {
     isLocal?: boolean;
     baseSpeed: BaseSpeed;
 };
-export function createPlayer(world: World, initData: PlayerInitialData): number {
+export function createPlayer(world: World, initData: PlayerInitialData): EntityID {
     const entries: CreateEntityComponentEntry[] = [];
 
     entries.push(
