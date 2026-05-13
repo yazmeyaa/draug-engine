@@ -1,4 +1,4 @@
-import type { SystemBase } from "@amber-game/engine";
+import type { SystemBase } from "@draug/engine";
 import { BrowserGame } from "./browser-game";
 import { ApplyGravitySystem } from "./systems/gravity";
 import { CollisionSystem } from "./systems/collision";
@@ -7,7 +7,7 @@ import { createBird } from "./prefabs/bird";
 import { FlappyTag } from "./components/flappy-tag";
 import { Renderable } from "./components/renderable";
 import { createBox } from "./prefabs/box";
-import { Asset } from "@amber-game/assets/assets";
+import { Asset } from "@draug/assets/assets";
 import { RenderView } from "./render/renderer";
 import { Camera } from "./render/types";
 import { Transform } from "./components/transform";

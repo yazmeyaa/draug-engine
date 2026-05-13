@@ -15,7 +15,7 @@ ECS World implementation
 ⠀⠀⠀⠀⠀⠈⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠁⠀⠀⠀
 */
 
-import { type ClassType, type ComponentType } from "@amber-game/types/class";
+import { type ClassType, type ComponentType } from "@draug/types/class";
 import { EntitiesManager, type EntityID, EntityRef } from "./entity";
 import { SystemsManager } from "./system";
 import { ECS_DEFAULTS } from "./constant";

@@ -1,9 +1,9 @@
-import { type CaseName, type CasePayload, type ClientPayload, MessageHandler } from '@amber-game/game/network/message-handler'
+import { type CaseName, type CasePayload, type ClientPayload, MessageHandler } from '@draug/game/network/message-handler'
 import { type Data } from "ws";
 import { type ClientConnectContext, type ClientDisconnectContext, type ClientMessageContext, WebsocketServer, type WebsocketServerConstructorOptions } from "./websocket-server";
 import { GameUserData } from "../types";
-import { ClientMessage } from "@amber-game/game/network/generated/client";
-import { ProtoMessageRouter } from "@amber-game/game/network/proto-router";
+import { ClientMessage } from "@draug/game/network/generated/client";
+import { ProtoMessageRouter } from "@draug/game/network/proto-router";
 import { normalizeWsData } from './helpers';
 
 /**

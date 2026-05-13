@@ -6,7 +6,7 @@ import { Renderable } from "../components/render/renderable";
 import { EntityDebug } from "../components/debug/entity-debug";
 import { applyComponent } from "./shared";
 import { BaseSpeed } from "../components/gameplay/base-speed";
-import { type World, EntityRef } from "@amber-game/engine";
+import { type World, EntityRef } from "@draug/engine";
 
 type FireballInitialData = {
     transform: Transform;

@@ -7,7 +7,7 @@ import {
     type IStorage,
     type World,
     type SystemComputeContext,
-} from "@amber-game/engine";
+} from "@draug/engine";
 
 @System({
     query: {

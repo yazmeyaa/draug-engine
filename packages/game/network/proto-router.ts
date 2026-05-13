@@ -1,4 +1,4 @@
-import { type RawData } from "@amber-game/types/ws";
+import { type RawData } from "@draug/types/ws";
 import { type MessageFns } from "./shared";
 import { MessageHandler } from "./message-handler";
 

@@ -1,4 +1,4 @@
-import { Asset, AssetsManager, AssetStorage, type AssetLoader } from "@amber-game/assets/assets";
+import { Asset, AssetsManager, AssetStorage, type AssetLoader } from "@draug/assets/assets";
 
 export class TextureResource extends Asset<Uint8Array> { };
 

@@ -7,8 +7,8 @@
     "test": "echo Hello from browser!"
   },
   "dependencies": {
-    "@amber-game/assets": "workspace:^",
-    "@amber-game/engine": "workspace:^"
+    "@draug/assets": "workspace:^",
+    "@draug/engine": "workspace:^"
   },
   "devDependencies": {
     "typescript": "^6.0.2",

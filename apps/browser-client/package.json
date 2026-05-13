@@ -13,9 +13,9 @@
     "test": "echo Hello from browser!"
   },
   "dependencies": {
-    "@amber-game/assets": "workspace:^",
-    "@amber-game/engine": "workspace:^",
-    "@amber-game/game": "workspace:^"
+    "@draug/assets": "workspace:^",
+    "@draug/engine": "workspace:^",
+    "@draug/game": "workspace:^"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

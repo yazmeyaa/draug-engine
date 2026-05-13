@@ -1,5 +1,5 @@
-import { DAGNode, topologicalSort } from '@amber-game/core/graph/dag';
-import type { ClassType, ComponentType } from '@amber-game/types/class'
+import { DAGNode, topologicalSort } from '@draug/core';
+import type { ClassType, ComponentType } from '@draug/types/class'
 import type { World } from "./world";
 import type { QueryParameters } from './query';
 

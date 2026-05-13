@@ -1,17 +1,17 @@
-import { createPlayer } from "@amber-game/game/archetypes/players";
-import { createTrainingTarget } from "@amber-game/game/archetypes/traning-target";
-import { createFireball } from "@amber-game/game/archetypes/fireball";
-import { createClientSideWorld } from "@amber-game/game/create-world";
-import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@amber-game/game/network/generated/client";
-import { ServerMessage } from "@amber-game/game/network/generated/server";
+import { createPlayer } from "@draug/game/archetypes/players";
+import { createTrainingTarget } from "@draug/game/archetypes/traning-target";
+import { createFireball } from "@draug/game/archetypes/fireball";
+import { createClientSideWorld } from "@draug/game/create-world";
+import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@draug/game/network/generated/client";
+import { ServerMessage } from "@draug/game/network/generated/server";
 import { BrowserGame } from "./browser-game";
-import { Asset } from "@amber-game/assets/assets";
-import { RenderView } from "@amber-game/game/render/renderer"
-import type { Camera } from "@amber-game/game/render/types";
-import { PlayerActions } from '@amber-game/game/resources/player-actions'
-import { Renderable } from "@amber-game/game/components/render/renderable";
-import { Transform } from "@amber-game/game/components/render/transform";
-import { EntityDebug } from "@amber-game/game/components/debug/entity-debug";
+import { Asset } from "@draug/assets/assets";
+import { RenderView } from "@draug/game/render/renderer"
+import type { Camera } from "@draug/game/render/types";
+import { PlayerActions } from '@draug/game/resources/player-actions'
+import { Renderable } from "@draug/game/components/render/renderable";
+import { Transform } from "@draug/game/components/render/transform";
+import { EntityDebug } from "@draug/game/components/debug/entity-debug";
 
 const world = createClientSideWorld();
 world.systems.build();

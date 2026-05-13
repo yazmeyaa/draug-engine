@@ -1,7 +1,7 @@
-import type { ClassType, ComponentType } from "@amber-game/types/class";
+import type { ClassType, ComponentType } from "@draug/types/class";
 import { SystemBase } from "../ecs/system";
 import type { World } from "../ecs/world";
-import { DAGNode, topologicalSort, ErrDAGCycleDetected } from '@amber-game/core/graph/dag';
+import { DAGNode, topologicalSort, ErrDAGCycleDetected } from '@draug/core';
 
 export type PluginID = string;
 

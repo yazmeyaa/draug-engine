@@ -1,13 +1,13 @@
 import { MovementSystem } from "./systems/movement";
 import { AttractionSystem } from "./systems/world-attraction";
 import { PlayerTag } from "./components/tags/player-tag";
-import { World } from "@amber-game/engine";
+import { World } from "@draug/engine";
 import { Acceleration } from "./components/physics/acceleration";
 import { CircleCollider } from "./components/collision/circle-collider";
 import { RectangleCollider } from "./components/collision/rectangle-collider";
 import { CircleCollisionSystem } from "./systems/circle-collision";
 import { Damage } from "./components/gameplay/damage";
-import type { ComponentType } from "@amber-game/types/class";
+import type { ComponentType } from "@draug/types/class";
 import { Renderable } from "./components/render/renderable";
 import { EntityDebug } from "./components/debug/entity-debug";
 import { Health } from "./components/gameplay/health";

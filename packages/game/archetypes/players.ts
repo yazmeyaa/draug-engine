@@ -7,7 +7,7 @@ import { CircleCollider } from "../components/collision/circle-collider";
 import { EntityDebug } from "../components/debug/entity-debug";
 import { applyComponent } from "./shared";
 import { BaseSpeed } from "../components/gameplay/base-speed";
-import { type World, type CreateEntityComponentEntry, entry, type EntityID } from "@amber-game/engine";
+import { type World, type CreateEntityComponentEntry, entry, type EntityID } from "@draug/engine";
 
 
 export type PlayerInitialData = {

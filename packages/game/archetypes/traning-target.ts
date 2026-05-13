@@ -4,7 +4,7 @@ import { Health } from "../components/gameplay/health";
 import { Renderable } from "../components/render/renderable";
 import { EntityDebug } from "../components/debug/entity-debug";
 import { applyComponent } from "./shared";
-import type { World, EntityID } from "@amber-game/engine";
+import type { World, EntityID } from "@draug/engine";
 
 export type TrainingTargetInitialData = {
     transform: Transform;

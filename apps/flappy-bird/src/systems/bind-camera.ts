@@ -8,7 +8,7 @@ import {
     type World,
     type IStorage,
     type SystemComputeContext,
-} from "@amber-game/engine";
+} from "@draug/engine";
 
 
 @System({

@@ -1,5 +1,5 @@
-import type { AssetID } from "@amber-game/assets/assets";
-import { Component } from "@amber-game/engine";
+import type { AssetID } from "@draug/assets/assets";
+import { Component } from "@draug/engine";
 
 @Component()
 export class Renderable {

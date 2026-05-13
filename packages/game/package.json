@@ -1,5 +1,5 @@
 {
-  "name": "@amber-game/game",
+  "name": "@draug/game",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -16,8 +16,8 @@
     "test": "echo Hello from game!"
   },
   "dependencies": {
-    "@amber-game/assets": "workspace:^",
-    "@amber-game/engine": "workspace:^",
+    "@draug/assets": "workspace:^",
+    "@draug/engine": "workspace:^",
     "ts-proto": "^2.11.5"
   },
   "devDependencies": {

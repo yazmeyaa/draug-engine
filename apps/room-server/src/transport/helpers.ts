@@ -1,4 +1,4 @@
-import { type RawData } from "@amber-game/types/ws";
+import { type RawData } from "@draug/types/ws";
 
 export function normalizeWsData(data: any): RawData {
     if (typeof Buffer !== 'undefined' && Buffer.isBuffer(data)) {

@@ -3,7 +3,7 @@ import { ECS_DEFAULTS } from "../constant";
 import { ComponentStorage } from "./component-storage";
 import type { ComponentType, IStorage } from "./types";
 import { SingletonStorage } from "./singleton-storage";
-import { getComponentId } from "./";
+import { getComponentId } from ".";
 
 export enum ComponentStorageType {
     COMPONENT_STORAGE = 1,

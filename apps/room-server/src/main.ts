@@ -1,12 +1,12 @@
-import { createPlayer } from "@amber-game/game/archetypes/players";
-import { createServerSideWorld } from "@amber-game/game/create-world";
-import { PositionChange, MovementDirectionChange, MotionUpdate, ServerMessage } from "@amber-game/game/network/generated/server";
+import { createPlayer } from "@draug/game/archetypes/players";
+import { createServerSideWorld } from "@draug/game/create-world";
+import { PositionChange, MovementDirectionChange, MotionUpdate, ServerMessage } from "@draug/game/network/generated/server";
 import { GameServer } from "./transport/game-server";
 import { GameUserData } from "./types";
 import { NodeLoop } from "./loop";
-import { Transform } from "@amber-game/game/components/render/transform";
-import { PlayerTag } from "@amber-game/game/components/tags/player-tag";
-import type { World, EntityID } from "@amber-game/engine";
+import { Transform } from "@draug/game/components/render/transform";
+import { PlayerTag } from "@draug/game/components/tags/player-tag";
+import type { World, EntityID } from "@draug/engine";
 
 type UpdEntry = {
     pos?: PositionChange;

@@ -1,4 +1,4 @@
-import { Clock, type TimeSource, type World, GameLoop } from "@amber-game/engine";
+import { Clock, type TimeSource, type World, GameLoop } from "@draug/engine";
 
 export class NodeLoop {
     constructor(private world: World, private onWorldUpdate?: (world: World) => void) { }

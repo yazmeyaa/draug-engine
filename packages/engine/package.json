@@ -1,7 +1,6 @@
 {
-  "name": "@amber-game/engine",
-  "version": "1.0.0",
-  "private": true,
+  "name": "@draug/engine",
+  "version": "1.0.5",
   "type": "module",
   "author": {
     "name": "future_undefined",
@@ -12,15 +11,30 @@
   "license": "GPL-3.0-only",
   "readme": "README.md",
   "dependencies": {
-    "@amber-game/core": "workspace:^",
+    "@draug/core": "workspace:^",
     "bitmap-index": "^1.0.9",
     "ts-sparse-set": "^1.0.5"
   },
   "scripts": {
+    "build": "tsup",
     "test": "echo Hello from engine!"
   },
   "devDependencies": {
-    "@amber-game/types": "workspace:^",
+    "@draug/types": "workspace:^",
+    "tsup": "^8.5.1",
     "typescript": "^6.0.3"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
   }
 }

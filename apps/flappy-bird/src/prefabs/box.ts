@@ -6,7 +6,7 @@ import {
     entry,
     type World,
     type EntityID,
-} from "@amber-game/engine";
+} from "@draug/engine";
 
 export type CreateBoxParmas = {
     transform: Transform;

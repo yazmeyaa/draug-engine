@@ -1,4 +1,4 @@
-import type { AssetsManager } from "../../assets/assets";
+import type { AssetsManager } from "@draug/assets/assets";
 import type { World } from "../ecs/world";
 
 export class Runtime {

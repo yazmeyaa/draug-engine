@@ -1,5 +1,5 @@
 {
-  "name": "@amber-game/assets",
+  "name": "@draug/assets",
   "version": "1.0.0",
   "private": true,
   "packageManager": "yarn@4.13.0",

@@ -1,9 +1,9 @@
-import { ObjectPool } from "@amber-game/core/memory/pool";
+import { ObjectPool } from "@draug/core";
 import { Bitmap } from "bitmap-index";
 import { SparseSet } from "ts-sparse-set";
 import { ECS_DEFAULTS } from "../constant";
 import type { IStorage } from "./types";
-import type { ClassType } from "@amber-game/types/class";
+import type { ClassType } from "@draug/types/class";
 
 export class ComponentStorage
     // Only pointer-types.

@@ -1,11 +1,11 @@
-import { AssetsManager } from "@amber-game/assets/assets";
+import { AssetsManager } from "@draug/assets/assets";
 import {
     Runtime,
     World,
     GameLoop,
     Clock,
     type TimeSource as TS,
-} from "@amber-game/engine";
+} from "@draug/engine";
 
 class TimeSource implements TS {
     public now(): number {

@@ -1,4 +1,4 @@
-import { type AssetID } from '@amber-game/assets/assets'
+import { type AssetID } from '@draug/assets/assets'
 
 export type RenderingSnapshotEntry = {
     entityId: number;

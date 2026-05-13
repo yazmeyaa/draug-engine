@@ -1,4 +1,4 @@
-import { System, SystemBase, type SystemComputeContext } from "@amber-game/engine";
+import { System, SystemBase, type SystemComputeContext } from "@draug/engine";
 import { Transform } from "../components/render/transform";
 import { Velocity } from "../components/physics/velocity";
 import { BaseSpeed } from "../components/gameplay/base-speed";

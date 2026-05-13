@@ -13,7 +13,7 @@
     "dev": ""
   },
   "dependencies": {
-    "@amber-game/game": "workspace:^",
+    "@draug/game": "workspace:^",
     "ws": "^8.19.0"
   },
   "devDependencies": {

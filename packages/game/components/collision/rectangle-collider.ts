@@ -1,4 +1,4 @@
-import { Component } from "@amber-game/engine";
+import { Component } from "@draug/engine";
 
 @Component()
 export class RectangleCollider {

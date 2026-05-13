@@ -1,4 +1,4 @@
-import type { ClassType } from "@amber-game/types/class";
+import type { ClassType } from "@draug/types/class";
 
 export class ResourcesManager {
     private readonly items_ = new Map<ClassType<any>, unknown>();

@@ -1,4 +1,4 @@
-import { createEventKey } from "@amber-game/engine";
+import { createEventKey } from "@draug/engine";
 
 type CollisionObject = {
     colliderId: number;

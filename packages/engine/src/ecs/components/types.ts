@@ -1,4 +1,4 @@
-import type { ClassType } from "@amber-game/types/class";
+import type { ClassType } from "@draug/types/class";
 import type { Bitmap } from "bitmap-index";
 
 export type ComponentType<T extends object = object> = ClassType<T>;
