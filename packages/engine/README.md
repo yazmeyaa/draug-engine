@@ -1,5 +1,8 @@
 # @draug/engine
 
+![NPM Version](https://img.shields.io/npm/v/%40draug%2Fengine?style=flat)
+[![Socket Badge](https://badge.socket.dev/npm/package/@draug/engine/1.0.6)](https://badge.socket.dev/npm/package/@draug/engine/1.0.6)
+
 Small ECS-first game skeleton for TypeScript: a `World` holds entities, components (plain data), systems (per-frame logic), double-buffered events, typed resources, and optional plugins. A thin `Runtime` plus `GameLoop` / `Clock` help you step simulation on a steady timer instead of growing everything inside one giant class.
 
 ## Features
