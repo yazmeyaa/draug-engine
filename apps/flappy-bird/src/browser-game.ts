@@ -1,4 +1,4 @@
-import { AssetsManager } from "@draug/assets/assets";
+import { AssetsManager } from "@draug/engine";
 import {
     Clock,
     GameLoop,

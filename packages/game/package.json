@@ -16,8 +16,8 @@
     "test": "echo Hello from game!"
   },
   "dependencies": {
-    "@draug/assets": "workspace:^",
     "@draug/engine": "workspace:^",
+    "@draug/types": "workspace:^",
     "ts-proto": "^2.11.5"
   },
   "devDependencies": {

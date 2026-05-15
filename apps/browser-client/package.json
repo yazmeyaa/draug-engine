@@ -13,7 +13,6 @@
     "test": "echo Hello from browser!"
   },
   "dependencies": {
-    "@draug/assets": "workspace:^",
     "@draug/engine": "workspace:^",
     "@draug/game": "workspace:^"
   },

@@ -5,7 +5,7 @@ import { createClientSideWorld } from "@draug/game/create-world";
 import { ClientMovementDirection, ClientInputUpdate, ClientMessage } from "@draug/game/network/generated/client";
 import { ServerMessage } from "@draug/game/network/generated/server";
 import { BrowserGame } from "./browser-game";
-import { Asset } from "@draug/assets/assets";
+import { Asset } from "@draug/engine";
 import { RenderView } from "@draug/game/render/renderer"
 import type { Camera } from "@draug/game/render/types";
 import { PlayerActions } from '@draug/game/resources/player-actions'

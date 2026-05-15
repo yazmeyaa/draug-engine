@@ -1,7 +1,7 @@
-import type { ClassType } from "@draug/types/class";
+import type { ClassType, ComponentType } from "../../types/class";
 import type { Bitmap } from "bitmap-index";
 
-export type ComponentType<T extends object = object> = ClassType<T>;
+export type { ClassType, ComponentType };
 export interface IStorage <T extends object> {
     add(id: number, initFn?: (obj: T) => T): T;
     remove(id: number): void;

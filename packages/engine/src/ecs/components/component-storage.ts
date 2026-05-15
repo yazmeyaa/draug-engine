@@ -1,9 +1,9 @@
-import { ObjectPool } from "@draug/core";
+import { ObjectPool } from "../../core/memory/pool";
 import { Bitmap } from "bitmap-index";
 import { SparseSet } from "ts-sparse-set";
 import { ECS_DEFAULTS } from "../constant";
 import type { IStorage } from "./types";
-import type { ClassType } from "@draug/types/class";
+import type { ClassType } from "../../types/class";
 
 export class ComponentStorage
     // Only pointer-types.

@@ -245,7 +245,7 @@ In Node, `performance.now()` is available on modern versions; otherwise pass `{ 
 
 ### Runtime (optional)
 
-`Runtime` is a tiny wrapper: `update(dt)` forwards to `world.update(dt)`. In the Amber workspace it is usually constructed together with `@draug/assets`’s `AssetsManager` for loading textures and similar; for a headless server or a toy sim you can ignore `Runtime` and call `world.update` directly from your own driver.
+`Runtime` is a tiny wrapper: `update(dt)` forwards to `world.update(dt)`. In the Amber workspace it is usually constructed together with `AssetsManager` from this package for loading textures and similar; for a headless server or a toy sim you can ignore `Runtime` and call `world.update` directly from your own driver.
 
 ## Configuration
 
@@ -269,7 +269,7 @@ Issues and PRs are welcome in the [GitHub repository](https://github.com/yazmeya
 
 - **Author:** future_undefined — [GitHub @yazmeyaa](https://github.com/yazmeyaa) · [evgenijantonenkov456@gmail.com](mailto:evgenijantonenkov456@gmail.com)
 
-Related workspace packages: `@draug/core` (DAG sort, object pools, etc.) and `@draug/types` (shared `ClassType` helpers). Everything this library exposes to apps is listed in `src/index.ts` in the repository.
+Related workspace packages: `@draug/types` (WebSocket `RawData` helper for networking code). Everything this library exposes to apps is listed in `src/index.ts` in the repository.
 
 ## License
 

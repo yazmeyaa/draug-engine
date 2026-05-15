@@ -72,3 +72,24 @@ export { GameLoop, type StepFunction } from './runtime/game-loop';
 export {
     Runtime
 } from './runtime/runtime';
+
+export type { ClassType, ComponentType } from './types/class';
+
+export {
+    DAGNode,
+    ErrDAGCycleDetected,
+    VisitedState,
+    topologicalSort,
+} from './core/graph/dag';
+export { ObjectPool } from './core/memory/pool';
+
+export {
+    AssetState,
+    Asset,
+    AssetStorage,
+    AssetsManager,
+    type AssetLoader,
+    type AssetDisposer,
+    type AssetID,
+    type AssetIDGenerator,
+} from './assets/assets';

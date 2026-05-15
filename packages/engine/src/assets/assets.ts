@@ -1,4 +1,4 @@
-import type { ClassType } from "@draug/types/class";
+import type { ClassType } from "../types/class";
 
 export enum AssetState {
     NOT_READY = 1,

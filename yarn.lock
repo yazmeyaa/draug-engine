@@ -21,27 +21,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@draug/assets@workspace:^, @draug/assets@workspace:packages/assets":
-  version: 0.0.0-use.local
-  resolution: "@draug/assets@workspace:packages/assets"
-  languageName: unknown
-  linkType: soft
-
-"@draug/core@workspace:^, @draug/core@workspace:packages/core":
-  version: 0.0.0-use.local
-  resolution: "@draug/core@workspace:packages/core"
-  dependencies:
-    tsup: "npm:^8.5.1"
-    typescript: "npm:^6.0.3"
-  languageName: unknown
-  linkType: soft
-
 "@draug/engine@workspace:^, @draug/engine@workspace:packages/engine":
   version: 0.0.0-use.local
   resolution: "@draug/engine@workspace:packages/engine"
   dependencies:
-    "@draug/core": "workspace:^"
-    "@draug/types": "workspace:^"
     bitmap-index: "npm:^1.0.9"
     ts-sparse-set: "npm:^1.0.5"
     tsup: "npm:^8.5.1"
@@ -53,8 +36,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@draug/game@workspace:packages/game"
   dependencies:
-    "@draug/assets": "workspace:^"
     "@draug/engine": "workspace:^"
+    "@draug/types": "workspace:^"
     ts-proto: "npm:^2.11.5"
     typescript: "npm:^6.0.2"
   languageName: unknown
@@ -759,7 +742,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "browser-client@workspace:apps/browser-client"
   dependencies:
-    "@draug/assets": "workspace:^"
     "@draug/engine": "workspace:^"
     "@draug/game": "workspace:^"
     typescript: "npm:^5.9.3"
@@ -879,6 +861,12 @@ __metadata:
   checksum: 10c0/39c1f8511833226cde773129afc5862dfd05babe062375e6b1f5824e221a5743a4d9c48626f32f7c2080113566270fe80521a50acb9029a20a2e80a3cd5e4106
   languageName: node
   linkType: hard
+
+"draug-engine@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "draug-engine@workspace:."
+  languageName: unknown
+  linkType: soft
 
 "env-paths@npm:^2.2.0":
   version: 2.2.1
@@ -1010,7 +998,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "flappy-bird@workspace:apps/flappy-bird"
   dependencies:
-    "@draug/assets": "workspace:^"
     "@draug/engine": "workspace:^"
     typescript: "npm:^6.0.2"
     vite: "npm:^8.0.8"
@@ -1035,12 +1022,6 @@ __metadata:
   conditions: os=darwin
   languageName: node
   linkType: hard
-
-"game@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "game@workspace:."
-  languageName: unknown
-  linkType: soft
 
 "graceful-fs@npm:^4.2.6":
   version: 4.2.11
@@ -1560,6 +1541,7 @@ __metadata:
   resolution: "room-server@workspace:apps/room-server"
   dependencies:
     "@draug/game": "workspace:^"
+    "@draug/types": "workspace:^"
     "@types/node": "npm:^25.5.0"
     "@types/ws": "npm:^8"
     ts-node: "npm:^10.9.2"

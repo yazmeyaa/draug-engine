@@ -1,4 +1,4 @@
-import type { AssetID } from "@draug/assets/assets";
+import type { AssetID } from "@draug/engine";
 import { Component } from "@draug/engine";
 
 @Component()

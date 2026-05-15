@@ -1,4 +1,4 @@
-import { Asset, AssetsManager, AssetStorage, type AssetLoader } from "@draug/assets/assets";
+import { Asset, AssetsManager, AssetStorage, type AssetLoader } from "@draug/engine";
 
 export class TextureResource extends Asset<Uint8Array> { };
 

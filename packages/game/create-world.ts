@@ -7,7 +7,7 @@ import { CircleCollider } from "./components/collision/circle-collider";
 import { RectangleCollider } from "./components/collision/rectangle-collider";
 import { CircleCollisionSystem } from "./systems/circle-collision";
 import { Damage } from "./components/gameplay/damage";
-import type { ComponentType } from "@draug/types/class";
+import type { ComponentType } from "@draug/engine";
 import { Renderable } from "./components/render/renderable";
 import { EntityDebug } from "./components/debug/entity-debug";
 import { Health } from "./components/gameplay/health";
