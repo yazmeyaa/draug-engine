@@ -1,5 +1,5 @@
-PROTO_SRC = packages/game/network/proto
-PROTO_OUT = packages/game/network/generated
+PROTO_SRC = network/proto
+PROTO_OUT = network/generated
 
 .PHONY: proto clear-proto-gen
 
