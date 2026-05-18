@@ -19,6 +19,6 @@
     "vitest": "^4.1.6"
   },
   "dependencies": {
-    "@draug/engine": "1.0.14"
+    "@draug/engine": "1.0.15"
   }
 }

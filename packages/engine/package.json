@@ -1,11 +1,16 @@
 {
   "name": "@draug/engine",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "type": "module",
   "author": {
     "name": "future_undefined",
     "email": "evgenijantonenkov456@gmail.com",
     "url": "https://github.com/yazmeyaa"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yazmeyaa/draug-engine.git",
+    "directory": "packages/engine"
   },
   "description": "Amber game engine. Based on ECS architecture.",
   "license": "GPL-3.0-only",
