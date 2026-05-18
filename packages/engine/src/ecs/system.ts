@@ -21,7 +21,7 @@ export class ErrMissingSystemMetadata extends SystemError {
     }
 };
 
-enum SystemPhase {
+export enum SystemPhase {
     PRE,
     MAIN,
     POST,

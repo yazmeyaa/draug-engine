@@ -7,7 +7,8 @@ export {
     isSystem,
     getSystemMetadata,
     SystemsManager,
-    type SystemComputeContext
+    type SystemComputeContext,
+    SystemPhase,
 } from './ecs/system';
 
 export {
