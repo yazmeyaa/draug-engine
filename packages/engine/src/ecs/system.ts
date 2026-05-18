@@ -21,7 +21,11 @@ export class ErrMissingSystemMetadata extends SystemError {
     }
 };
 
-type SystemPhase = 'pre' | 'main' | 'post';
+enum SystemPhase {
+    PRE,
+    MAIN,
+    POST,
+};
 
 export type SystemMetadata = {
     /**
@@ -71,7 +75,7 @@ export function System(props: SystemDecoratorProps): ClassDecorator {
         const query = { ...props.query };
         const requiredComponents = new Set(props.requiredComponents);
         const computeAfter = new Set(props.computeAfter);
-        const phase = props.phase ?? 'main';
+        const phase = props.phase ?? SystemPhase.MAIN;
         const metadata: SystemMetadata = { query, requiredComponents, computeAfter, phase };
 
         // Теперь TS позволяет записать значение
@@ -204,11 +208,11 @@ export class SystemsManager {
             const meta = getSystemMetadata(ctor);
 
             switch (meta.phase) {
-                case 'pre':
+                case SystemPhase.PRE:
                     pre.push(system);
                     break;
 
-                case 'post':
+                case SystemPhase.MAIN:
                     post.push(system);
                     break;
 
