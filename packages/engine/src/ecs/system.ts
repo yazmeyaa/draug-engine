@@ -21,6 +21,8 @@ export class ErrMissingSystemMetadata extends SystemError {
     }
 };
 
+type SystemPhase = 'pre' | 'main' | 'post';
+
 export type SystemMetadata = {
     /**
      * ECS query definition used to select entities for this system execution.
@@ -47,11 +49,13 @@ export type SystemMetadata = {
      * this instance. Used when {@link SystemsManager.build} computes a topological execution order.
      */
     computeAfter?: Set<SystemCtor>;
+    phase?: SystemPhase;
 };
 export type SystemDecoratorProps = {
     query: SystemMetadata['query'];
     requiredComponents?: ComponentType[];
     computeAfter?: SystemCtor[];
+    phase?: SystemPhase;
 };
 const SystemMetadataSymbol = Symbol("system");
 type FunctionWithMetadata = Function & { [SystemMetadataSymbol]?: SystemMetadata };
@@ -67,7 +71,8 @@ export function System(props: SystemDecoratorProps): ClassDecorator {
         const query = { ...props.query };
         const requiredComponents = new Set(props.requiredComponents);
         const computeAfter = new Set(props.computeAfter);
-        const metadata: SystemMetadata = { query, requiredComponents, computeAfter };
+        const phase = props.phase ?? 'main';
+        const metadata: SystemMetadata = { query, requiredComponents, computeAfter, phase };
 
         // Теперь TS позволяет записать значение
         systemTarget[SystemMetadataSymbol] = metadata;
@@ -190,13 +195,31 @@ export class SystemsManager {
     }
 
     private buildSystemsArray(): void {
+        const pre: SystemBase[] = [];
+        const main: SystemBase[] = [];
+        const post: SystemBase[] = [];
         const map = new Map<SystemCtor, DAGNode<SystemBase>>();
 
         for (const [ctor, system] of this.systems_.entries()) {
-            map.set(ctor, new DAGNode(system));
+            const meta = getSystemMetadata(ctor);
+
+            switch (meta.phase) {
+                case 'pre':
+                    pre.push(system);
+                    break;
+
+                case 'post':
+                    post.push(system);
+                    break;
+
+                default:
+                    main.push(system);
+                    map.set(ctor, new DAGNode(system));
+                    break;
+            }
         }
 
-        for (const ctor of this.systems_.keys()) {
+        for (const ctor of map.keys()) {
             const currentNode = map.get(ctor)!;
             const { computeAfter } = getSystemMetadata(ctor);
             for (const depCtor of computeAfter ?? []) {
@@ -209,6 +232,10 @@ export class SystemsManager {
             }
         }
 
-        this.executionOrder_ = topologicalSort(map.values()).map(x => x.data);
+        this.executionOrder_ = [
+            ...pre,
+            ...topologicalSort(map.values()).map(x => x.data),
+            ...post,
+        ];
     }
 }
