@@ -27,7 +27,7 @@ export class BindCameraSystem extends SystemBase {
     public compute(ctx: SystemComputeContext): void {
         for (const id of ctx.entities) {
             const t = this.transformStore.tryGet(id);
-            this.camera.x = t.x + 500;
+            this.camera.x = t.x + 250;
         }
     }
 }

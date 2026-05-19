@@ -1,8 +1,7 @@
-import { AssetsManager } from "@draug/engine";
 import {
     Clock,
-    GameLoop,
-    Runtime,
+    Engine,
+    Loop,
     World,
     type TimeSource as TS,
 } from "@draug/engine";
@@ -14,24 +13,26 @@ class TimeSource implements TS {
 }
 
 export class BrowserGame {
-    public readonly runtime: Runtime;
+    private readonly engine_: Engine;
+    private readonly world_ = new World();
     public get world(): World {
-        return this.runtime.world;
+        return this.world_;
+    }
+    public get engine(): Engine {
+        return this.engine_;
     }
     constructor(
         private onWorldUpdate?: (world: World) => void,
     ) {
-        const res = new AssetsManager();
-        this.runtime = new Runtime(new World(), res);
+        const clock = new Clock(new TimeSource());
+        const loop = new Loop(this.world, clock, (dt) => {
+            this.world.update(dt);
+            this.onWorldUpdate?.(this.world);
+        }, window.requestAnimationFrame.bind(window));
+        this.engine_ = new Engine({ loop });
     };
 
     public start(): void {
-        const ts = new TimeSource();
-        const clock = new Clock(ts);
-        const loop = new GameLoop(clock, (dt) => {
-            this.runtime.update(dt);
-            this.onWorldUpdate?.(this.runtime.world);
-        });
-        loop.start(window.requestAnimationFrame);
+        this.engine_.start();
     };
 };

@@ -33,7 +33,7 @@ const game = new BrowserGame((world) => {
         console.log(evt);
     }
 
-    const renderView = new RenderView(game.runtime.world, camera)
+    const renderView = new RenderView(game.world, camera)
     const rStore = world.components.getStorage(Renderable);
     const snapshot = renderView.snapshot().sort((a, b) => a.zIndex - b.zIndex);
 
@@ -42,7 +42,7 @@ const game = new BrowserGame((world) => {
     const tStore = world.components.getStorage(Transform);
     for (const entry of snapshot) {
         const r = rStore.tryGet(entry.entityId);
-        const data = game.runtime.assets.tryGetStorage(ImageAsset).tryGet(r.spriteId).getData();
+        const data = game.engine.assets.tryGetStorage(ImageAsset).tryGet(r.spriteId).getData();
         const t = tStore.tryGet(entry.entityId);
 
         ctx.save();
@@ -50,8 +50,16 @@ const game = new BrowserGame((world) => {
         const rad = t.rotate * Math.PI / 180;
 
         ctx.translate(entry.x, entry.y);
+        if (entry.entityId === 1)
+            console.log(entry.entityId, entry.x, entry.y)
         ctx.rotate(rad);
         ctx.drawImage(data, -50, -50, 100, 100);
+
+        ctx.font = '24px Arial'
+        ctx.fillStyle = 'white'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(`(${t.x.toFixed(1)}, ${t.y.toFixed(1)})`, 0, -75)
 
         ctx.restore();
     }
@@ -107,7 +115,7 @@ game.world.systems.build();
 
 
 class ImageAsset extends Asset<HTMLImageElement> { }
-const imageResourceStore = game.runtime.assets.register(ImageAsset, (url) => {
+const imageResourceStore = game.engine.assets.register(ImageAsset, (url) => {
     return new Promise<HTMLImageElement>((resolve, reject) => {
         const img = new Image();
 
@@ -120,7 +128,7 @@ const imageResourceStore = game.runtime.assets.register(ImageAsset, (url) => {
 
 const birdSprite = imageResourceStore.add('/assets/bird.png');
 const boxSprite = imageResourceStore.add('/assets/box.png');
-game.runtime.assets.loadAll().then(() => {
+game.engine.assets.loadAll().then(() => {
     game.start();
 
     createBird(game.world, {
