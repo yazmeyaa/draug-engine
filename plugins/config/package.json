@@ -9,16 +9,30 @@
     "email": "evgenijantonenkov456@gmail.com"
   },
   "license": "MIT",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "build": "tsup",
     "test": ""
   },
   "devDependencies": {
+    "tsup": "^8.5.1",
     "typescript": "^6.0.3",
     "vitest": "^4.1.6"
   },
   "dependencies": {
     "@draug/engine": "1.0.15"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
   }
 }

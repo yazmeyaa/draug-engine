@@ -1,10 +1,8 @@
 export class Configuration {
-    private current = new Map<string, unknown>();
+    private readonly current = new Map<string, unknown>();
     private readonly pending = new Map<string, unknown>();
 
     public commit(): void {
-        this.current = new Map(this.current);
-
         for (const [k, v] of this.pending) {
             this.current.set(k, v);
         }
@@ -12,9 +10,10 @@ export class Configuration {
         this.pending.clear();
     }
 
-    public get(key: string): unknown {
-        return this.current.get(key);
+    public get<T>(key: string): T | null {
+        return this.current.get(key) as T ?? null;
     };
+
     public set(key: string, value: unknown) {
         this.pending.set(key, value);
     }
