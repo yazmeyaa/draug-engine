@@ -24,7 +24,7 @@ import { ComponentsManager } from "./components";
 import { ResourcesManager } from "./resources/resources";
 import { Commands } from "./command";
 import { QueryManager, type QueryParameters } from "./query";
-import { PluginsManager } from "../plugin";
+import { PluginsManager } from "./plugin";
 
 export class World {
     public readonly entities = new EntitiesManager();

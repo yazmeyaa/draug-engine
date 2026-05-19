@@ -1,7 +1,7 @@
-import type { ClassType, ComponentType } from "../types/class";
-import { SystemBase } from "../ecs/system";
-import type { World } from "../ecs/world";
-import { DAGNode, topologicalSort, ErrDAGCycleDetected } from '../core/graph/dag';
+import type { ClassType, ComponentType } from "../../types/class";
+import { SystemBase } from "../system";
+import type { World } from "../world";
+import { DAGNode, topologicalSort, ErrDAGCycleDetected } from '../../core/graph/dag';
 
 export type PluginID = string;
 

@@ -56,7 +56,7 @@ export {
     type PluginID,
     type PluginMetadata,
     type PluginDependencies,
-} from './plugin';
+} from './ecs/plugin';
 
 export {
     EventBuffer,
@@ -69,7 +69,7 @@ export {
     type TimeSource,
 } from './runtime/clock';
 
-export { GameLoop, type StepFunction } from './runtime/game-loop';
+export { Loop, type StepFunction } from './runtime/loop';
 export {
     Runtime
 } from './runtime/runtime';
@@ -94,3 +94,8 @@ export {
     type AssetID,
     type AssetIDGenerator,
 } from './assets/assets';
+
+export {
+    Engine,
+    type EngineConstructor,
+} from './engine'
