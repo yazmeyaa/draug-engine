@@ -9,7 +9,7 @@ const configurationResourceFactory = () => new ConfigurationResource();
     version: "0.0.1",
 })
 export class ConfigPlugin extends PluginBase {
-    public onPluginLoad = (world: World) => {
+    public onAfterWorldInit = (world: World) => {
         world.resources.getOrInsert(ConfigurationResource, configurationResourceFactory);
     };
 };
