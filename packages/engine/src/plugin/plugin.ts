@@ -48,12 +48,12 @@ export function isPlugin(ctor: Function): boolean {
 }
 
 export abstract class PluginBase {
-    public onPluginLoad?: (world: World) => void;
+    public onPluginLoad?: () => void;
     public onPluginUnload?: (world: World) => void;
     public onAfterWorldInit?: (world: World) => void;
 }
 
-type PluginManagerInternalPluginStorageItem<T extends ClassType<PluginBase>> = {
+type PluginManagerInternalPluginStorageItem<T extends ClassType<PluginBase> = ClassType<PluginBase>> = {
     ctor: T;
     ctorParams: ConstructorParameters<T>;
     instance?: InstanceType<T>;
@@ -106,7 +106,7 @@ export class ErrDAGCycleDetectedPlugin extends Error {
 }
 
 export class PluginsManager {
-    private plugins_: Map<PluginID, PluginManagerInternalPluginStorageItem<any>> = new Map();
+    private plugins_: Map<PluginID, PluginManagerInternalPluginStorageItem> = new Map();
     private isInitiated_ = false;
 
     public install<T extends ClassType<PluginBase>>(plugin: T, ...constructorProps: ConstructorParameters<T>): void {
@@ -159,10 +159,19 @@ export class PluginsManager {
         for (const node of sortedNodes) {
             const entry = this.plugins_.get(node.data)!;
             const { ctor, ctorParams } = entry;
-            entry.instance = new ctor(...ctorParams);
+            const instance = new ctor(...ctorParams) as PluginBase; 
+            entry.instance = instance;
+            instance.onPluginLoad?.();
         }
 
         this.isInitiated_ = true;
+    }
+
+    public __internal__onAfterWorldInit(world: World) {
+        for (const p of this.plugins_.values()) {
+            p.instance?.onAfterWorldInit?.(world);
+        } 
+        
     }
 
     public getPluginMetadata(pluginOrId: ClassType<PluginBase> | PluginID): PluginMetadata {
