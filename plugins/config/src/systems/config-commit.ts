@@ -1,4 +1,4 @@
-import { System, SystemBase, SystemPhase, World } from "@draug/engine";
+import { System, SystemBase, SystemPhase, type SystemInitContext } from "@draug/engine";
 import { ConfigurationResource } from "../resources/config";
 
 @System({
@@ -7,7 +7,7 @@ import { ConfigurationResource } from "../resources/config";
 })
 export class ConfigCommitSystem extends SystemBase {
     private configResource!: ConfigurationResource;
-    public onInit(world: World): void {
+    public onInit({ world }: SystemInitContext): void {
         this.configResource = world.resources.get(ConfigurationResource);
     }
     public compute(): void {
