@@ -36,17 +36,41 @@ Enable legacy decorators in `tsconfig.json` (the library uses `experimentalDecor
 }
 ```
 
-Minimal world: register every component type once, register systems, call `systems.build()`, spawn entities, then step with `world.update(dt)`.
+### Creating an Engine instance
+
+The recommended way to set up your game is to create an `Engine` instance. The `Engine` class encapsulates the `World`, `Runtime`, `Logger`, and `AssetsManager`:
 
 ```typescript
-import {
-  World,
-  Component,
-  System,
-  SystemBase,
-  entry,
-  type SystemComputeContext,
-} from '@draug/engine';
+import { Engine, Loop } from '@draug/engine';
+
+// Create an engine with a game loop (e.g., using requestAnimationFrame on the web)
+const engine = new Engine({
+  loop: (callback) => {
+    const tick = () => {
+      callback();
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  },
+});
+
+// Build the engine and start the game loop
+engine.init();
+engine.start();
+```
+
+The `Engine` exposes:
+- **`world`** — the ECS world for registering components, systems, entities, resources, etc.
+- **`runtime`** — manages the simulation loop and stepping
+- **`assets`** — loads and manages game assets (textures, sprites, etc.)
+- **`logger`** — debug logging (you can pass a custom logger in the constructor)
+
+### Setting up components and systems
+
+Register components and systems on the `world` before calling `engine.init()`:
+
+```typescript
+import { Component, System, SystemBase, entry, type SystemComputeContext } from '@draug/engine';
 
 @Component()
 class Position {
@@ -65,34 +89,62 @@ class GravitySystem extends SystemBase {
   }
 }
 
-const world = new World();
+const engine = new Engine({
+  loop: (callback) => {
+    const tick = () => {
+      callback();
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  },
+});
 
-world.components.register(Position);
-world.systems.register(new GravitySystem());
-world.systems.build();
+// Register components and systems
+engine.world.components.register(Position);
+engine.world.systems.register(new GravitySystem());
 
-// Same-frame visibility: create entity, then attach components immediately.
-const player = world.entities.create();
-world.addComponent(player, Position, (p) => {
+// Build and start
+engine.init(); // calls world.build() internally
+engine.start();
+
+// Spawn entities after initialization
+const player = engine.world.entities.create();
+engine.world.addComponent(player, Position, (p) => {
   p.x = 0;
   p.y = 0;
 });
-
-// Or defer to end-of-frame (handy when spawning from inside a system):
-world.commands.createEntity(
-  entry(Position, (p) => {
-    p.x = 100;
-    p.y = 0;
-  }),
-);
-
-world.update(1 / 60);
-world.update(1 / 60);
 ```
 
 **Note:** `world.update` runs systems first, then flushes the command queue. Anything created with `commands.createEntity` only gets components after that flush, so it will not appear in queries until the *next* `update` unless you attach components synchronously.
 
 ## Usage / API
+
+### Engine
+
+`Engine` is the main entry point for your game. It encapsulates `World`, `Runtime`, `Logger`, and `AssetsManager`:
+
+```typescript
+import { Engine } from '@draug/engine';
+
+const engine = new Engine({
+  loop: (callback) => requestAnimationFrame(callback),
+  logger: customLogger, // optional; defaults to NoopLogger
+});
+
+// After registering components, systems, and plugins on engine.world:
+engine.init();    // calls world.build() to initialize systems
+engine.start();   // starts the runtime loop
+```
+
+Methods:
+- **`init()`** — builds the world (runs plugin initialization and system setup)
+- **`start()`** — starts the game loop
+
+Properties:
+- **`world`** — the ECS `World` instance for entities, components, systems, resources, events, commands, and queries
+- **`runtime`** — `Runtime` instance managing the simulation loop
+- **`assets`** — `AssetsManager` for loading and managing game assets
+- **`logger`** — `Logger` instance for debug logging
 
 ### World
 
@@ -109,15 +161,13 @@ Mark data classes with `@Component()` so the ECS can assign stable type ids:
 ```typescript
 import { Component, ComponentStorageType } from '@draug/engine';
 
-// `world` is your World instance from the quick start.
-
 @Component()
 class Health {
   current = 100;
   max = 100;
 }
 
-world.components.register(Health);
+engine.world.components.register(Health);
 ```
 
 Optional **singleton** storage (one instance, not per-entity):
@@ -132,7 +182,7 @@ class GlobalRNG {
   }
 }
 
-world.components.register(GlobalRNG, {
+engine.world.components.register(GlobalRNG, {
   storageType: ComponentStorageType.SINGLETON_STORAGE,
   factory: () => new GlobalRNG(),
 });
@@ -145,8 +195,6 @@ Extend `SystemBase`, implement `compute`, and decorate with `@System`:
 ```typescript
 import { System, SystemBase, type SystemComputeContext } from '@draug/engine';
 
-// `Position`, `Health`, `SomeTag`, `PhysicsSystem` are your own component/system types.
-
 @System({
   query: { include: [Position, Health] },
   requiredComponents: [SomeTag],
@@ -158,27 +206,29 @@ class ApplyDamageSystem extends SystemBase {
     // ...
   }
 }
+
+engine.world.systems.register(new ApplyDamageSystem());
 ```
 
 - **`query`** — drives which entity ids are passed into `compute`.
 - **`requiredComponents`** — ensures storages exist and documents extra reads that are not part of the query mask.
 - **`computeAfter`** — ordering edges between system classes (both must be registered).
 
-Call **`world.systems.build()`** after you finish registering systems so `onInit` hooks run and execution order is computed.
+Call **`engine.init()`** after registering all systems so `onInit` hooks run and execution order is computed.
 
 ### Commands
 
 ```typescript
 import { entry } from '@draug/engine';
 
-world.commands.add((w) => {
+engine.world.commands.add((w) => {
   const id = w.entities.create();
   w.addComponent(id, Health, (h) => {
     h.current = 50;
   });
 });
 
-const id = world.commands.createEntity(
+const id = engine.world.commands.createEntity(
   entry(Position, (p) => {
     p.x = 0;
   }),
@@ -192,11 +242,11 @@ import { createEventKey } from '@draug/engine';
 
 const DamageDealt = createEventKey<{ target: number; amount: number }>();
 
-const incoming = world.events.getBuffer(DamageDealt);
+const incoming = engine.world.events.getBuffer(DamageDealt);
 incoming.write({ target: 1, amount: 7 });
 
-// Normally you only read after the bus swaps at the start of `world.update`.
-world.events.swapAll();
+// Normally you only read after the bus swaps at the start of world.update.
+engine.world.events.swapAll();
 for (const e of incoming.read()) {
   console.log(e.amount);
 }
@@ -214,15 +264,36 @@ import { Plugin, PluginBase } from '@draug/engine';
 })
 class AudioPlugin extends PluginBase {}
 
-world.plugins.install(AudioPlugin /*, ...ctor args if any */);
-world.build(); // builds plugins, then call your own game bootstrap as needed
+engine.world.plugins.install(AudioPlugin /*, ...ctor args if any */);
+engine.init(); // builds plugins, then initializes world
 ```
 
-After `world.build()`, resolve instances with `world.plugins.getPluginInstance(AudioPlugin)` (or by string id). Lifecycle hooks (`onPluginLoad`, etc.) live on `PluginBase` for you to call from your game code if you want explicit phases—the engine focuses on construction order and DAG validation.
+After `engine.init()`, resolve instances with `engine.world.plugins.getPluginInstance(AudioPlugin)` (or by string id). Lifecycle hooks (`onPluginLoad`, etc.) live on `PluginBase` for you to call from your game code if you want explicit phases—the engine focuses on construction order and DAG validation.
 
-### Game loop
+### Game loop & Runtime
 
-`Clock` measures delta time from a `TimeSource`; `GameLoop` invokes your step function and asks the host for the next frame (`requestAnimationFrame`, `queueMicrotask` in tests, etc.).
+`Runtime` is integrated into the `Engine` class. The `Engine` manages the simulation loop and stepping based on the `Loop` function you provide:
+
+```typescript
+import { Engine } from '@draug/engine';
+
+const engine = new Engine({
+  loop: (callback) => {
+    // On the web with requestAnimationFrame:
+    const tick = () => {
+      callback();
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  },
+});
+
+engine.init();
+engine.start();
+// engine.runtime.stop() when shutting down
+```
+
+For custom time sources or advanced loop control, you can also use `Clock` and `GameLoop` directly (though this is less common with the `Engine` API):
 
 ```typescript
 import { Clock, GameLoop, World } from '@draug/engine';
@@ -243,23 +314,23 @@ loop.start((cb) => {
 
 In Node, `performance.now()` is available on modern versions; otherwise pass `{ now: () => Date.now() }` (millisecond resolution).
 
-### Runtime (optional)
-
-`Runtime` is a tiny wrapper: `update(dt)` forwards to `world.update(dt)`. In the Amber workspace it is usually constructed together with `AssetsManager` from this package for loading textures and similar; for a headless server or a toy sim you can ignore `Runtime` and call `world.update` directly from your own driver.
-
 ## Configuration
 
 | Area | What you can tune |
 |------|---------------------|
+| **Engine** | `new Engine({ loop, logger? })` — configure the game loop and optional debug logger. |
 | **World** | `new World(maxEntityCount?)` — caps sparse sets / bitmaps (default is large; lower for fixed small games if you care about memory). |
 | **Components** | `components.register(Type, { factory })` for pooled defaults; `ComponentStorageType.SINGLETON_STORAGE` + `factory` for global state. |
 | **Systems** | `@System({ query, requiredComponents, computeAfter })` for selection, extra storages, and ordering. |
-| **Clock / loop** | Inject any `TimeSource`; drive the loop with the scheduling primitive your platform gives you. |
+| **Assets** | `engine.assets.load(...)` for loading game assets (textures, sprites, etc.). |
+| **Logging** | Pass a custom logger to the `Engine` constructor to override the default `NoopLogger`. |
 
 ## Best practices
 
-1. **Register components before first `getStorage`** — registration is explicit; the world will throw if a system touches an unknown component type.
-2. **Treat commands as “end of frame”** — if something must exist in the same system pass, use `addComponent` / `entities.create` directly (or split into a later system).
+1. **Create an Engine instance once** — it manages your world, runtime, and assets. Reuse the same instance throughout your game session.
+2. **Register components before first `getStorage`** — registration is explicit; the world will throw if a system touches an unknown component type.
+3. **Treat commands as "end of frame"** — if something must exist in the same system pass, use `addComponent` / `entities.create` directly (or split into a later system).
+4. **Call `engine.init()` before `engine.start()`** — initialization builds the world and sets up plugins and systems.
 
 ## Contributing
 
