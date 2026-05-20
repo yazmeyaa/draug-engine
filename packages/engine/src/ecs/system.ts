@@ -2,6 +2,7 @@ import { DAGNode, topologicalSort } from '../core/graph/dag';
 import type { ClassType, ComponentType } from '../types/class'
 import type { World } from "./world";
 import type { QueryParameters } from './query';
+import type { Logger } from '../logger';
 
 
 export class SystemError extends Error {
@@ -107,11 +108,18 @@ export type SystemCtor<T extends SystemBase = SystemBase> = ClassType<T>;
  */
 export type SystemComputeContext = {
     /** Entity IDs from the query for this {@link SystemBase.compute} invocation. */
-    entities: number[];
+    readonly entities: number[];
     /** ECS world instance. */
-    world: World;
+    readonly world: World;
     /** Delta time (seconds or your engine's convention) since the previous update. */
-    dt: number;
+    readonly dt: number;
+    /** Logger instance for debugging and diagnostics. */
+    readonly logger: Logger;
+};
+
+export type SystemInitContext = {
+    world: World;
+    logger: Logger;
 };
 
 /**
@@ -127,7 +135,7 @@ export abstract class SystemBase {
      */
     public abstract compute(ctx: SystemComputeContext): void;
 
-    public onInit?(world: World): void;
+    public onInit?(ctx: SystemInitContext): void;
 };
 
 
@@ -140,6 +148,7 @@ export class SystemsManager {
 
     constructor(
         private readonly world: World,
+        private readonly logger: Logger,
     ) { }
 
     public getRequiredComponents(): ComponentType[] {
@@ -168,9 +177,12 @@ export class SystemsManager {
     }
 
     public build(): void {
+        this.logger.info(() => "Building systems...");
         this.buildSystemsArray();
         for (const sys of this.systems_.values())
-            sys.onInit?.(this.world);
+            sys.onInit?.({ world: this.world, logger: this.logger });
+        this.logger.info(() => "Systems sucessfully was built!");
+        this.dirty_ = false;
     }
 
     private rebuild(): void {
@@ -194,7 +206,12 @@ export class SystemsManager {
         for (const s of this.executionOrder_) {
             const { query } = getSystemMetadata(s.constructor as SystemCtor)
             const entities = this.world.query(query);
-            s.compute({ entities, world: this.world, dt });
+            s.compute({
+                world: this.world,
+                entities,
+                dt,
+                logger: this.logger,
+            });
         }
     }
 

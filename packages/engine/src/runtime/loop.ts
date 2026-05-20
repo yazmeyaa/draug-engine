@@ -8,20 +8,19 @@ export class Loop {
     private running = false;
 
     constructor(
-        private readonly world: World,
         private readonly clock: Clock,
         private readonly stepFn: StepFunction,
         private readonly platformLoop: PlatformLoop,
     ) { };
 
-    public start() {
+    public start(world: World) {
         this.running = true;
 
         const loop = () => {
             if (!this.running) return;
 
             this.clock.tick();
-            this.stepFn(this.clock.dt, this.world);
+            this.stepFn(this.clock.dt, world);
 
             this.platformLoop(loop);
         };

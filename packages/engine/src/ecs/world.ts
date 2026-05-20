@@ -25,21 +25,34 @@ import { ResourcesManager } from "./resources/resources";
 import { Commands } from "./command";
 import { QueryManager, type QueryParameters } from "./query";
 import { PluginsManager } from "./plugin";
+import type { Logger } from "../logger";
+
+export type WorldConstructor = {
+    maxEntityCount?: number;
+    logger: Logger;
+};
 
 export class World {
-    public readonly entities = new EntitiesManager();
-    public readonly components = new ComponentsManager();
-    public readonly systems = new SystemsManager(this);
-    public readonly events = new EventBus();
-    public readonly resources = new ResourcesManager();
-    public readonly commands = new Commands(this);
-    public readonly queries = new QueryManager(this);
-    public readonly plugins = new PluginsManager();
+    public readonly entities: EntitiesManager;
+    public readonly components: ComponentsManager;
+    public readonly systems: SystemsManager;
+    public readonly events: EventBus;
+    public readonly resources: ResourcesManager;
+    public readonly commands: Commands;
+    public readonly queries: QueryManager;
+    public readonly plugins: PluginsManager;
 
     private entityRefs_ = new Map<number, EntityRef>();
 
-    constructor(maxEntityCount: number = ECS_DEFAULTS.MAX_ENTITY_COUNT) {
-        this.components = new ComponentsManager(maxEntityCount);
+    constructor(params: WorldConstructor) {
+        this.components = new ComponentsManager(params.maxEntityCount ?? ECS_DEFAULTS.MAX_ENTITY_COUNT);
+        this.systems = new SystemsManager(this, params.logger);
+        this.entities = new EntitiesManager();
+        this.events = new EventBus();
+        this.resources = new ResourcesManager();
+        this.commands = new Commands(this);
+        this.queries = new QueryManager(this);
+        this.plugins = new PluginsManager();
     }
 
     public getEntityRef(id: number): EntityRef {

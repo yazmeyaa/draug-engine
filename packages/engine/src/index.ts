@@ -7,8 +7,9 @@ export {
     isSystem,
     getSystemMetadata,
     SystemsManager,
-    type SystemComputeContext,
     SystemPhase,
+    type SystemComputeContext,
+    type SystemInitContext,
 } from './ecs/system';
 
 export {
@@ -66,13 +67,12 @@ export {
 
 export {
     Clock,
+    Loop,
+    Runtime,
     type TimeSource,
-} from './runtime/clock';
-
-export { Loop, type StepFunction } from './runtime/loop';
-export {
-    Runtime
-} from './runtime/runtime';
+    type PlatformLoop,
+    type StepFunction
+} from './runtime';
 
 export type { ClassType, ComponentType } from './types/class';
 
@@ -99,3 +99,9 @@ export {
     Engine,
     type EngineConstructor,
 } from './engine'
+
+export {
+    type Logger,
+    LogLevel,
+    type LogMessage,
+} from './logger'
