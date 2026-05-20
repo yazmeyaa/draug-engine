@@ -10,6 +10,7 @@ import { Camera } from "./render/types";
 import { Renderable } from "./components/renderable";
 import { Transform } from "./components/transform";
 import { ImageAsset } from "./assets/image";
+import { HTMLLogger } from "./logger/html-logger";
 
 class TimeSource implements TS {
     public now(): number {
@@ -19,29 +20,35 @@ class TimeSource implements TS {
 
 export class BrowserGame {
     private readonly engine_: Engine;
-    private readonly world_ = new World();
     private readonly renderView: RenderView;
-    
+
     public get world(): World {
-        return this.world_;
+        return this.engine_.world;
     }
     public get engine(): Engine {
         return this.engine_;
     }
     constructor(
         ctx: CanvasRenderingContext2D,
+        logsContainer: HTMLElement,
         private onWorldUpdate?: (world: World) => void,
     ) {
         const clock = new Clock(new TimeSource());
-        const loop = new Loop(this.world, clock, (dt) => {
+        const loop = new Loop(clock, (dt) => {
             this.world.update(dt);
             this.onWorldUpdate?.(this.world);
             this.render(ctx);
         }, window.requestAnimationFrame.bind(window));
-        this.engine_ = new Engine({ loop });
+        const logger = new HTMLLogger(logsContainer);
+        logger.debug(() => "Test DEBUG log");
+        logger.info(() => "Test INFO log");
+        logger.warn(() => "Test WARN log");
+        logger.error(() => "Test ERROR log");
+        
+        this.engine_ = new Engine({ loop, logger });
 
         const camera = this.world.resources.insert(Camera, new Camera(0, 0, 1.2, 800, 600));
-        this.renderView = new RenderView(this.world_, camera)
+        this.renderView = new RenderView(this.world, camera)
     };
 
     private render(ctx: CanvasRenderingContext2D): void {

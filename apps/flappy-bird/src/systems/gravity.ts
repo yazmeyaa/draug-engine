@@ -4,9 +4,9 @@ import { Velocity } from "../components/velocity";
 import {
     System,
     SystemBase,
-    type World,
     type IStorage,
     type SystemComputeContext,
+    type SystemInitContext,
 } from "@draug/engine";
 
 @System({
@@ -19,7 +19,8 @@ export class ApplyGravitySystem extends SystemBase {
     private velocityStore!: IStorage<Velocity>;
     private accelerationStore!: IStorage<Acceleration>;
 
-    public override onInit(world: World): void {
+    public override onInit(ctx: SystemInitContext): void {
+        const { world } = ctx;
         this.worldPhysics = world.resources.getOrInsert(WorldPhysicsResource, () => new WorldPhysicsResource());
         this.velocityStore = world.components.getStorage(Velocity);
         this.accelerationStore = world.components.getStorage(Acceleration);

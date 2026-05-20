@@ -5,8 +5,8 @@ import {
     System,
     SystemBase,
     type IStorage,
-    type World,
     type SystemComputeContext,
+    type SystemInitContext,
 } from "@draug/engine";
 
 @System({
@@ -18,7 +18,7 @@ export class InputSystem extends SystemBase {
     private actionsResource!: GameActions;
     private velocityStore!: IStorage<Velocity>;
 
-    public onInit(world: World): void {
+    public onInit({world}: SystemInitContext): void {
         this.actionsResource = world.resources.getOrInsert(GameActions, () => new GameActions());
         this.velocityStore = world.components.getStorage(Velocity);
     }

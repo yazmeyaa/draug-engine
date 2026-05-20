@@ -8,6 +8,7 @@ import {
     type World,
     type IStorage,
     type SystemComputeContext,
+    type SystemInitContext,
 } from "@draug/engine";
 
 
@@ -20,7 +21,7 @@ import {
 export class BindCameraSystem extends SystemBase {
     private transformStore!: IStorage<Transform>;
     private camera!: Camera;
-    public onInit(world: World): void {
+    public onInit({ world }: SystemInitContext): void {
         this.camera = world.resources.get(Camera);
         this.transformStore = world.components.getStorage(Transform);
     }

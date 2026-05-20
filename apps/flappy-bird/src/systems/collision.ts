@@ -5,9 +5,9 @@ import {
     System,
     SystemBase,
     type EventBuffer,
-    type World,
     type IStorage,
-    type SystemComputeContext
+    type SystemComputeContext,
+    type SystemInitContext
 } from "@draug/engine";
 
 type Box = { top: number; right: number; bottom: number; left: number; };
@@ -20,7 +20,7 @@ export class CollisionSystem extends SystemBase {
     private colliderStore!: IStorage<ColliderRectangle>;
     private transformStore!: IStorage<Transform>;
     private collisionEvents!: EventBuffer<CollisionEvent>;
-    public override onInit(world: World): void {
+    public override onInit({ world }: SystemInitContext): void {
         this.colliderStore = world.components.getStorage(ColliderRectangle);
         this.transformStore = world.components.getStorage(Transform);
         this.collisionEvents = world.events.getBuffer(COLLISION_EVENT_KEY)

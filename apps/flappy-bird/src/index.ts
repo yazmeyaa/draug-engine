@@ -17,7 +17,11 @@ import { ImageAsset } from "./assets/image";
 const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d")!;
 
-const game = new BrowserGame(ctx, (world) => {
+const debugPanel = document.getElementById('debug-panel');
+if (!debugPanel)
+    throw new Error("no debug pannel HMTL element found!")
+
+const game = new BrowserGame(ctx, debugPanel, (world) => {
     const colisions = world.events.getBuffer(COLLISION_EVENT_KEY);
     const fStore = world.components.getStorage(FlappyTag);
     const evts = colisions.read();
@@ -76,7 +80,6 @@ window.addEventListener('keyup', () => {
     inputResource.jump = false;
 })
 
-game.world.systems.build();
 
 
 
