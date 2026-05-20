@@ -9,7 +9,7 @@
     "email": "evgenijantonenkov456@gmail.com"
   },
   "license": "MIT",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "scripts": {
     "build": "tsup",
     "test": ""
@@ -20,7 +20,7 @@
     "vitest": "^4.1.6"
   },
   "dependencies": {
-    "@draug/engine": "1.0.16"
+    "@draug/engine": "1.0.17"
   },
   "exports": {
     ".": {
