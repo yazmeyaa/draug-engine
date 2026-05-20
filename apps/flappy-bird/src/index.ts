@@ -7,19 +7,17 @@ import { createBird } from "./prefabs/bird";
 import { FlappyTag } from "./components/flappy-tag";
 import { Renderable } from "./components/renderable";
 import { createBox } from "./prefabs/box";
-import { Asset } from "@draug/engine";
-import { RenderView } from "./render/renderer";
 import { Camera } from "./render/types";
-import { Transform } from "./components/transform";
 import { GameActions } from "./resources/actions";
 import { InputSystem } from "./systems/input";
 import { BindCameraSystem } from "./systems/bind-camera";
 import { COLLISION_EVENT_KEY } from "./events/collision";
+import { ImageAsset } from "./assets/image";
 
 const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d")!;
 
-const game = new BrowserGame((world) => {
+const game = new BrowserGame(ctx, (world) => {
     const colisions = world.events.getBuffer(COLLISION_EVENT_KEY);
     const fStore = world.components.getStorage(FlappyTag);
     const evts = colisions.read();
@@ -32,43 +30,11 @@ const game = new BrowserGame((world) => {
         })
         console.log(evt);
     }
-
-    const renderView = new RenderView(game.world, camera)
-    const rStore = world.components.getStorage(Renderable);
-    const snapshot = renderView.snapshot().sort((a, b) => a.zIndex - b.zIndex);
-
-    ctx.clearRect(0, 0, camera.width, camera.height);
-
-    const tStore = world.components.getStorage(Transform);
-    for (const entry of snapshot) {
-        const r = rStore.tryGet(entry.entityId);
-        const data = game.engine.assets.tryGetStorage(ImageAsset).tryGet(r.spriteId).getData();
-        const t = tStore.tryGet(entry.entityId);
-
-        ctx.save();
-
-        const rad = t.rotate * Math.PI / 180;
-
-        ctx.translate(entry.x, entry.y);
-        if (entry.entityId === 1)
-            console.log(entry.entityId, entry.x, entry.y)
-        ctx.rotate(rad);
-        ctx.drawImage(data, -50, -50, 100, 100);
-
-        ctx.font = '24px Arial'
-        ctx.fillStyle = 'white'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.fillText(`(${t.x.toFixed(1)}, ${t.y.toFixed(1)})`, 0, -75)
-
-        ctx.restore();
-    }
-
-})
+});
 game.world.build();
 
 
-const camera = game.world.resources.insert(Camera, new Camera(0, 0, 1.2, 800, 600));
+const camera = game.world.resources.get(Camera);
 function resizeCanvas() {
     const dpr = window.devicePixelRatio ?? 1;
     const w = canvas.clientWidth;
@@ -114,7 +80,7 @@ game.world.systems.build();
 
 
 
-class ImageAsset extends Asset<HTMLImageElement> { }
+
 const imageResourceStore = game.engine.assets.register(ImageAsset, (url) => {
     return new Promise<HTMLImageElement>((resolve, reject) => {
         const img = new Image();

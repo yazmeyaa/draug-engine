@@ -6,11 +6,15 @@ import { Renderable } from "../components/renderable";
 export class RenderView {
     constructor(
         private world: World,
-        private camera: Camera,
+        private camera_: Camera,
     ) { }
 
+    public get camera(): Camera {
+        return this.camera_;
+    }
+
     public snapshot(): RenderingSnapshot {
-        const camera = this.camera;
+        const camera = this.camera_;
         const world = this.world;
 
         const entities = world.query({ include: [Transform, Renderable] });
