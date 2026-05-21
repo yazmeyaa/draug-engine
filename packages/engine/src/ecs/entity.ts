@@ -1,3 +1,4 @@
+import type { Logger } from "../logger";
 import type { ComponentType } from "./components";
 import { World } from "./world";
 
@@ -17,12 +18,17 @@ export class EntityMaskNotFoundError extends Error {
 
 export class EntitiesManager {
     private id_: EntityID = 0;
+    
+    constructor(private readonly logger: Logger) {}
+    
     private nextId(): EntityID {
         return ++this.id_;
     }
 
     public create(): EntityID {
-        return this.nextId();
+        const id = this.nextId();
+        this.logger.debug(() => `[Entities]: Created new entity with ID ${id}`);
+        return id;
     }
 };
 

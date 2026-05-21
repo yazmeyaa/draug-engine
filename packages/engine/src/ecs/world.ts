@@ -41,18 +41,20 @@ export class World {
     public readonly commands: Commands;
     public readonly queries: QueryManager;
     public readonly plugins: PluginsManager;
+    private readonly logger: Logger;
 
     private entityRefs_ = new Map<number, EntityRef>();
 
     constructor(params: WorldConstructor) {
+        this.entities = new EntitiesManager(params.logger);
         this.components = new ComponentsManager(params.maxEntityCount ?? ECS_DEFAULTS.MAX_ENTITY_COUNT);
         this.systems = new SystemsManager(this, params.logger);
-        this.entities = new EntitiesManager();
         this.events = new EventBus();
-        this.resources = new ResourcesManager();
-        this.commands = new Commands(this);
+        this.resources = new ResourcesManager(params.logger);
+        this.commands = new Commands(this, params.logger);
         this.queries = new QueryManager(this);
-        this.plugins = new PluginsManager();
+        this.plugins = new PluginsManager(params.logger);
+        this.logger = params.logger;
     }
 
     public getEntityRef(id: number): EntityRef {
@@ -98,6 +100,7 @@ export class World {
             return o;
         });
         this.queries.invalidate(component);
+
         return c;
     };
 
@@ -108,5 +111,6 @@ export class World {
 
     public build(): void {
         this.plugins.build();
+        this.logger.debug(() => "World was built successfully");
     }
 };

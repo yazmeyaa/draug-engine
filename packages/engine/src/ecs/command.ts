@@ -1,3 +1,4 @@
+import type { Logger } from "../logger";
 import type { ComponentType } from "./components";
 import { World } from "./world";
 
@@ -19,7 +20,8 @@ export class Commands {
     private readonly commandsQueue_: WorldCommand[] = [];
 
     constructor(
-        private readonly world: World
+        private readonly world: World,
+        private readonly logger: Logger,
     ) { }
 
     public add(cmd: WorldCommand): void {
@@ -39,6 +41,7 @@ export class Commands {
             }
         }
         this.add(cmd);
+        this.logger.debug(() => `[Commands.createEntity]: Created new entity with ID ${id}. Linked components: [${entries.map(x => x[0].name).join(", ")}]`);
         return id;
     }
 };

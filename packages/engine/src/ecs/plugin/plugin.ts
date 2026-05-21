@@ -2,6 +2,7 @@ import type { ClassType, ComponentType } from "../../types/class";
 import { SystemBase } from "../system";
 import type { World } from "../world";
 import { DAGNode, topologicalSort, ErrDAGCycleDetected } from '../../core/graph/dag';
+import type { Logger } from "../../logger";
 
 export type PluginID = string;
 
@@ -108,6 +109,7 @@ export class ErrDAGCycleDetectedPlugin extends Error {
 export class PluginsManager {
     private plugins_: Map<PluginID, PluginManagerInternalPluginStorageItem> = new Map();
     private isInitiated_ = false;
+    constructor(private readonly logger: Logger) {}
 
     public install<T extends ClassType<PluginBase>>(plugin: T, ...constructorProps: ConstructorParameters<T>): void {
         if (!isPlugin(plugin))
@@ -125,6 +127,7 @@ export class PluginsManager {
         };
 
         this.plugins_.set(metadata.id, entry);
+        this.logger.debug(() => `[Plugins]: Installed plugin ${metadata.name} (${metadata.version})`);
     }
 
     public build(): void {
@@ -165,8 +168,12 @@ export class PluginsManager {
         }
 
         this.isInitiated_ = true;
+        this.logger.debug(() => `[Plugins]: Plugins built successfully!`);
     }
 
+    /**
+     * @internal
+     */
     public __internal__onAfterWorldInit(world: World) {
         for (const p of this.plugins_.values()) {
             p.instance?.onAfterWorldInit?.(world);

@@ -138,7 +138,6 @@ export abstract class SystemBase {
     public onInit?(ctx: SystemInitContext): void;
 };
 
-
 export class SystemsManager {
     private systems_ = new Map<SystemCtor, SystemBase>();
     private executionOrder_: SystemBase[] = [];
@@ -174,14 +173,17 @@ export class SystemsManager {
             this.requiredComponents_.add(c);
         for (const c of requiredComponents)
             this.requiredComponents_.add(c);
+
+        this.logger.debug(() => `[Systems]: "${ctor.name}" was registered`);
     }
 
     public build(): void {
-        this.logger.info(() => "Building systems...");
         this.buildSystemsArray();
         for (const sys of this.systems_.values())
+        {
             sys.onInit?.({ world: this.world, logger: this.logger });
-        this.logger.info(() => "Systems sucessfully was built!");
+        }
+        this.logger.debug(() => `Built ${this.systems_.size} systems`);
         this.dirty_ = false;
     }
 
