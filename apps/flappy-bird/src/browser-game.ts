@@ -1,6 +1,7 @@
 import {
     Clock,
     Engine,
+    LogLevel,
     Loop,
     World,
     type TimeSource as TS,
@@ -39,7 +40,7 @@ export class BrowserGame {
             this.onWorldUpdate?.(this.world);
             this.render(ctx);
         }, window.requestAnimationFrame.bind(window));
-        const logger = new HTMLLogger(logsContainer);
+        const logger = new HTMLLogger(logsContainer, LogLevel.Debug);
         logger.debug(() => "Test DEBUG log");
         logger.info(() => "Test INFO log");
         logger.warn(() => "Test WARN log");
