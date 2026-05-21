@@ -109,7 +109,7 @@ export class ErrDAGCycleDetectedPlugin extends Error {
 export class PluginsManager {
     private plugins_: Map<PluginID, PluginManagerInternalPluginStorageItem> = new Map();
     private isInitiated_ = false;
-    constructor(private readonly logger: Logger) {}
+    constructor(private readonly logger: Logger) { }
 
     public install<T extends ClassType<PluginBase>>(plugin: T, ...constructorProps: ConstructorParameters<T>): void {
         if (!isPlugin(plugin))
@@ -131,6 +131,9 @@ export class PluginsManager {
     }
 
     public build(): void {
+        if (this.plugins_.size === 0) {
+            return;
+        }
         const nodes = new Map<PluginID, DAGNode<PluginID>>();
         for (const id of this.plugins_.keys()) {
             nodes.set(id, new DAGNode(id));
@@ -162,7 +165,7 @@ export class PluginsManager {
         for (const node of sortedNodes) {
             const entry = this.plugins_.get(node.data)!;
             const { ctor, ctorParams } = entry;
-            const instance = new ctor(...ctorParams) as PluginBase; 
+            const instance = new ctor(...ctorParams) as PluginBase;
             entry.instance = instance;
             instance.onPluginLoad?.();
         }
@@ -177,8 +180,8 @@ export class PluginsManager {
     public __internal__onAfterWorldInit(world: World) {
         for (const p of this.plugins_.values()) {
             p.instance?.onAfterWorldInit?.(world);
-        } 
-        
+        }
+
     }
 
     public getPluginMetadata(pluginOrId: ClassType<PluginBase> | PluginID): PluginMetadata {

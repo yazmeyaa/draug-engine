@@ -3,18 +3,17 @@ export class ObjectPool<T extends object> {
     private factory_: () => T;
     private cursor_: number;
 
-    constructor(factory: () => T, initialSize = 1024) {
+    constructor(factory: () => T, initialSize = 0) {
         this.pool_ = new Array(initialSize);
-        for(let i = 0; i < initialSize; i++) {
-            this.pool_[i] = factory();
-        }
         this.factory_ = factory;
         this.cursor_ = initialSize - 1;
     }
 
     acquire(): T {
-        if (this.cursor_ < 0) this.grow();
-        return this.pool_[this.cursor_--]!;
+        if (this.cursor_ >= 0) {
+            return this.pool_[this.cursor_--]!;
+        }
+        return this.factory_();
     }
 
     release(obj: T) {

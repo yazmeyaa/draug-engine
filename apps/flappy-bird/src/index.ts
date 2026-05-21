@@ -35,7 +35,6 @@ const game = new BrowserGame(ctx, debugPanel, (world) => {
         console.log(evt);
     }
 });
-game.world.build();
 
 
 const camera = game.world.resources.get(Camera);
@@ -95,6 +94,7 @@ const imageResourceStore = game.engine.assets.register(ImageAsset, (url) => {
     });
 });
 
+game.world.build();
 const birdSprite = imageResourceStore.add('/assets/bird.png');
 const boxSprite = imageResourceStore.add('/assets/box.png');
 game.engine.assets.loadAll().then(() => {
@@ -113,7 +113,7 @@ game.engine.assets.loadAll().then(() => {
             layer: 1
         },
         velocity: {
-            vx: 4,
+            vx: 9,
             vy: 0
         },
         collider: {

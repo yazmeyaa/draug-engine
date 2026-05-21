@@ -5,7 +5,6 @@ import { MovementSystem } from "./movement";
 import {
     System,
     SystemBase,
-    type World,
     type IStorage,
     type SystemComputeContext,
     type SystemInitContext,
@@ -29,6 +28,7 @@ export class BindCameraSystem extends SystemBase {
         for (const id of ctx.entities) {
             const t = this.transformStore.tryGet(id);
             this.camera.x = t.x + 250;
+            this.camera.y = t.y;
         }
     }
 }

@@ -27,15 +27,15 @@ export class ApplyGravitySystem extends SystemBase {
     }
 
     public compute(ctx: SystemComputeContext): void {
-        const { dt, entities } = ctx;
+        const { time, entities } = ctx;
 
         for (const id of entities) {
             const v = this.velocityStore.tryGet(id);
             const a = this.accelerationStore.tryGet(id);
 
-            v.vy += this.worldPhysics.worldGravity * (dt / 1000);
-            v.vx += a.ax * (dt / 1000);
-            v.vy += a.ay * (dt / 1000);
+            v.vy += this.worldPhysics.worldGravity * (time.delta);
+            v.vx += a.ax * (time.delta);
+            v.vy += a.ay * (time.delta);
 
             a.ax = 0;
             a.ay = 0;

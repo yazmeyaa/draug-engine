@@ -1,6 +1,6 @@
 {
   "name": "@draug/engine",
-  "version": "1.0.17",
+  "version": "1.0.19",
   "type": "module",
   "author": {
     "name": "future_undefined",
@@ -16,16 +16,16 @@
   "license": "GPL-3.0-only",
   "readme": "README.md",
   "dependencies": {
-    "bitmap-index": "^1.0.9",
-    "ts-sparse-set": "^1.0.5"
+    "bitmap-index": "^1.0.9"
   },
   "scripts": {
     "build": "tsup",
-    "test": "echo Hello from engine!"
+    "test": "vitest run"
   },
   "devDependencies": {
     "tsup": "^8.5.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.6"
   },
   "exports": {
     ".": {

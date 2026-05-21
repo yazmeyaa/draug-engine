@@ -26,6 +26,7 @@ import { Commands } from "./command";
 import { QueryManager, type QueryParameters } from "./query";
 import { PluginsManager } from "./plugin";
 import type { Logger } from "../logger";
+import type { Clock } from "../runtime";
 
 export type WorldConstructor = {
     maxEntityCount?: number;
@@ -104,8 +105,8 @@ export class World {
         return c;
     };
 
-    public update(dt: number): void {
-        this.systems.update(dt);
+    public update(clock: Clock): void {
+        this.systems.update(clock.getTime());
         this.commands.flush(this);
     }
 

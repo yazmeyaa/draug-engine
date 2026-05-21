@@ -35,8 +35,8 @@ export class BrowserGame {
         private onWorldUpdate?: (world: World) => void,
     ) {
         const clock = new Clock(new TimeSource());
-        const loop = new Loop(clock, (dt) => {
-            this.world.update(dt);
+        const loop = new Loop(clock, () => {
+            this.world.update(clock);
             this.onWorldUpdate?.(this.world);
             this.render(ctx);
         }, window.requestAnimationFrame.bind(window));
@@ -45,8 +45,8 @@ export class BrowserGame {
         logger.info(() => "Test INFO log");
         logger.warn(() => "Test WARN log");
         logger.error(() => "Test ERROR log");
-        
-        this.engine_ = new Engine({ loop, logger });
+
+        this.engine_ = new Engine({ loop, logger, maxEntityCount: 2048, });
 
         const camera = this.world.resources.insert(Camera, new Camera(0, 0, 1.2, 800, 600));
         this.renderView = new RenderView(this.world, camera)
@@ -73,8 +73,6 @@ export class BrowserGame {
             const rad = t.rotate * Math.PI / 180;
 
             ctx.translate(entry.x, entry.y);
-            if (entry.entityId === 1)
-                console.log(entry.entityId, entry.x, entry.y)
             ctx.rotate(rad);
             ctx.drawImage(data, -50, -50, 100, 100);
 

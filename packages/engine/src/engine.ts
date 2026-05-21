@@ -1,4 +1,5 @@
 import { AssetsManager } from "./assets/assets";
+import { ECS_DEFAULTS } from "./ecs/constant";
 import { World } from "./ecs/world";
 import { NoopLogger, type Logger } from "./logger/logger";
 import { Loop, Runtime } from "./runtime";
@@ -6,6 +7,7 @@ import { Loop, Runtime } from "./runtime";
 export type EngineConstructor = {
     loop: Loop;
     logger?: Logger;
+    maxEntityCount?: number;
 };
 
 export class Engine {
@@ -18,6 +20,7 @@ export class Engine {
         this.logger = params.logger ?? new NoopLogger();
         this.world = new World({
             logger: this.logger,
+            maxEntityCount: params.maxEntityCount ?? ECS_DEFAULTS.MAX_ENTITY_COUNT,
         });
     }
 

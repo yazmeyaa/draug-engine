@@ -20,7 +20,7 @@
     "vitest": "^4.1.6"
   },
   "dependencies": {
-    "@draug/engine": "1.0.17"
+    "@draug/engine": "1.0.19"
   },
   "exports": {
     ".": {

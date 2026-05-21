@@ -9,21 +9,21 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@draug/config-plugin@workspace:plugins/config"
   dependencies:
-    "@draug/engine": "npm:1.0.17"
+    "@draug/engine": "npm:1.0.19"
     tsup: "npm:^8.5.1"
     typescript: "npm:^6.0.3"
     vitest: "npm:^4.1.6"
   languageName: unknown
   linkType: soft
 
-"@draug/engine@npm:1.0.17, @draug/engine@workspace:^, @draug/engine@workspace:packages/engine":
+"@draug/engine@npm:1.0.19, @draug/engine@workspace:^, @draug/engine@workspace:packages/engine":
   version: 0.0.0-use.local
   resolution: "@draug/engine@workspace:packages/engine"
   dependencies:
     bitmap-index: "npm:^1.0.9"
-    ts-sparse-set: "npm:^1.0.5"
     tsup: "npm:^8.5.1"
     typescript: "npm:^6.0.3"
+    vitest: "npm:^4.1.6"
   languageName: unknown
   linkType: soft
 
@@ -1874,13 +1874,6 @@ __metadata:
   version: 0.1.13
   resolution: "ts-interface-checker@npm:0.1.13"
   checksum: 10c0/232509f1b84192d07b81d1e9b9677088e590ac1303436da1e92b296e9be8e31ea042e3e1fd3d29b1742ad2c959e95afe30f63117b8f1bc3a3850070a5142fea7
-  languageName: node
-  linkType: hard
-
-"ts-sparse-set@npm:^1.0.5":
-  version: 1.0.5
-  resolution: "ts-sparse-set@npm:1.0.5"
-  checksum: 10c0/8d93aa721a4bc15c566b790f93e81e3dbd115f652037bd48fe754356a5635ba6cb83134a7958688554ed33f3c246f39ddc9aba128d1102eb38993976b1f3b04a
   languageName: node
   linkType: hard
 

@@ -4,8 +4,12 @@ export interface TimeSource {
 
 export class Clock {
     private lastTimeMs_: number;
-    private elapsedTime_: number = 0;
-    private dt_: number = 0;
+    private ellapsedTime_: number = 0;
+    private delta_: number = 0;
+    private readonly time_: Time = {
+        delta: 0,
+        elapsed: 0,
+    };
 
     public constructor(
         private readonly timeSource_: TimeSource,
@@ -14,18 +18,31 @@ export class Clock {
     }
 
 
-    public get dt(): number {
-        return this.dt_;
+    public get deltaMs(): number {
+        return this.delta_;
     }
     public get ellapsedTime(): number {
-        return this.elapsedTime_;
+        return this.ellapsedTime_;
     }
 
     public tick(): void {
         const now = this.timeSource_.now();
-        const dt = now - this.lastTimeMs_;
-        this.dt_ = dt;
-        this.elapsedTime_ += dt;
+        const dt = Math.min(now - this.lastTimeMs_, 100);
+        this.delta_ =
+            this.time_.delta =
+            dt / 1000;
+        this.ellapsedTime_ =
+            this.time_.elapsed +=
+            dt / 1000;
         this.lastTimeMs_ = now;
     }
+
+    public getTime(): Readonly<Time> {
+        return this.time_;
+    }
+};
+
+export type Time = {
+    delta: number;
+    elapsed: number;
 };

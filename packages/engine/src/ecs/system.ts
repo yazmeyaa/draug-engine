@@ -3,6 +3,7 @@ import type { ClassType, ComponentType } from '../types/class'
 import type { World } from "./world";
 import type { QueryParameters } from './query';
 import type { Logger } from '../logger';
+import type { Time } from '../runtime/clock';
 
 
 export class SystemError extends Error {
@@ -112,7 +113,7 @@ export type SystemComputeContext = {
     /** ECS world instance. */
     readonly world: World;
     /** Delta time (seconds or your engine's convention) since the previous update. */
-    readonly dt: number;
+    readonly time: Time;
     /** Logger instance for debugging and diagnostics. */
     readonly logger: Logger;
 };
@@ -199,7 +200,7 @@ export class SystemsManager {
         return s as T;
     }
 
-    public update(dt: number): void {
+    public update(time: Time): void {
         if (this.dirty_)
             this.rebuild();
 
@@ -211,7 +212,7 @@ export class SystemsManager {
             s.compute({
                 world: this.world,
                 entities,
-                dt,
+                time,
                 logger: this.logger,
             });
         }

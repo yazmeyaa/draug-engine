@@ -20,7 +20,7 @@ export class Loop {
             if (!this.running) return;
 
             this.clock.tick();
-            this.stepFn(this.clock.dt, world);
+            this.stepFn(this.clock.deltaMs, world);
 
             this.platformLoop(loop);
         };

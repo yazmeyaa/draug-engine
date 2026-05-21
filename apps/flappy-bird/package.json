@@ -4,6 +4,7 @@
   "scripts": {
     "build": "tsc && vite build",
     "dev": "vite",
+    "preview": "vite preview",
     "test": "echo Hello from browser!"
   },
   "dependencies": {
