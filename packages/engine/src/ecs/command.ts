@@ -1,5 +1,6 @@
 import type { Logger } from "../logger";
 import type { ComponentType } from "./components";
+import { getComponentMetadata } from "./components/utils";
 import { World } from "./world";
 
 export type WorldCommand = (world: World) => void;
@@ -41,7 +42,10 @@ export class Commands {
             }
         }
         this.add(cmd);
-        this.logger.debug(() => `[Commands.createEntity]: Created new entity with ID ${id}. Linked components: [${entries.map(x => x[0].name).join(", ")}]`);
+        this.logger.debug(() => {
+            const components = entries.map(x => getComponentMetadata(x[0]).name).join(", ")
+            return `[Commands.createEntity]: Created new entity with ID ${id}. Linked components: [${components}]`;
+        });
         return id;
     }
 };

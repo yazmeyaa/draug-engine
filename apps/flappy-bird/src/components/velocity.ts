@@ -1,6 +1,6 @@
 import { Component } from "@draug/engine";
 
-@Component()
+@Component({name: "Velocity"})
 export class Velocity {
     constructor(
         public vx = 0,

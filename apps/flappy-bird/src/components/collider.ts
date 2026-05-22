@@ -1,6 +1,6 @@
 import { Component } from "@draug/engine";
 
-@Component()
+@Component({name: "ColliderRectangle"})
 export class ColliderRectangle {
     constructor(
         public width: number,

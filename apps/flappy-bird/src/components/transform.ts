@@ -1,6 +1,6 @@
 import { Component } from "@draug/engine";
 
-@Component()
+@Component({name: "Transform"})
 export class Transform {
     constructor(
         public x: number,

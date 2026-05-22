@@ -3,6 +3,8 @@ import { ECS_DEFAULTS } from "../constant";
 import { ComponentStorage } from "./component-storage";
 import type { ComponentType } from "./types";
 import { getComponentId } from ".";
+import type { Logger } from "../../logger";
+import { getComponentMetadata } from "./utils";
 
 type RegisterComponentStorageOptions<T extends object> = {
     factory?: () => T;
@@ -24,6 +26,7 @@ export class ComponentsManager {
     }
 
     constructor(
+        private readonly logger: Logger,
         private maxEntityCount: number = ECS_DEFAULTS.MAX_ENTITY_COUNT
     ) { }
 
@@ -37,6 +40,8 @@ export class ComponentsManager {
         const store: ComponentStorage<T> = this.createComponentStore(component, opts);
 
         this.storages_.set(component, store);
+        const meta = getComponentMetadata(component);
+        this.logger.debug(() => `[Components]: Registered component "${meta.name}"`);
         return store;
     }
 

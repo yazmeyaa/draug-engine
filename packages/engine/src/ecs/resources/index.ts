@@ -1,1 +1,1 @@
-export { ResourcesManager } from './resources'
+export { ResourcesManager, Resource, type ResourceMetadata, getResourceMetadata } from './resources'

@@ -23,7 +23,12 @@ export {
     ComponentsManager,
 } from './ecs/components';
 
-export { ResourcesManager } from './ecs/resources';
+export {
+    ResourcesManager,
+    Resource,
+    type ResourceMetadata,
+    getResourceMetadata
+} from './ecs/resources';
 
 export {
     entry,

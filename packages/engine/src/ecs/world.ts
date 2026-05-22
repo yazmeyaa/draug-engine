@@ -45,10 +45,14 @@ export class World {
     private readonly logger: Logger;
 
     private entityRefs_ = new Map<number, EntityRef>();
+    private updatesCount_ = 0;
+    public get updatesCount(): number {
+        return this.updatesCount_;
+    }
 
     constructor(params: WorldConstructor) {
         this.entities = new EntitiesManager(params.logger);
-        this.components = new ComponentsManager(params.maxEntityCount ?? ECS_DEFAULTS.MAX_ENTITY_COUNT);
+        this.components = new ComponentsManager(params.logger, params.maxEntityCount ?? ECS_DEFAULTS.MAX_ENTITY_COUNT);
         this.systems = new SystemsManager(this, params.logger);
         this.events = new EventBus();
         this.resources = new ResourcesManager(params.logger);
@@ -108,6 +112,7 @@ export class World {
     public update(clock: Clock): void {
         this.systems.update(clock.getTime());
         this.commands.flush(this);
+        this.updatesCount_++;
     }
 
     public build(): void {

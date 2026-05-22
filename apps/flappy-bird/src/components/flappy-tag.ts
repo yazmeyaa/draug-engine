@@ -1,4 +1,4 @@
 import { Component } from "@draug/engine";
 
-@Component()
+@Component({"name": "FlappyTag"})
 export class FlappyTag { };

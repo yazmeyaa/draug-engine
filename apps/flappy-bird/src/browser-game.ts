@@ -40,13 +40,16 @@ export class BrowserGame {
             this.onWorldUpdate?.(this.world);
             this.render(ctx);
         }, window.requestAnimationFrame.bind(window));
-        const logger = new HTMLLogger(logsContainer, LogLevel.Debug);
+        const logger = new HTMLLogger(logsContainer, () => this.engine.world.updatesCount, LogLevel.Debug);
+        this.engine_ = new Engine({ loop, logger, maxEntityCount: 2048 });
         logger.debug(() => "Test DEBUG log");
         logger.info(() => "Test INFO log");
         logger.warn(() => "Test WARN log");
         logger.error(() => "Test ERROR log");
 
-        this.engine_ = new Engine({ loop, logger, maxEntityCount: 2048, });
+        setInterval(() => {
+            logger.debug(() => 'tick')
+        }, 1000);
 
         const camera = this.world.resources.insert(Camera, new Camera(0, 0, 1.2, 800, 600));
         this.renderView = new RenderView(this.world, camera)
