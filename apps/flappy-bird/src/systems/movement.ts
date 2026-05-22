@@ -4,6 +4,7 @@ import { Transform } from "../components/transform";
 import { InputSystem } from "./input";
 
 @System({
+    name: "MovementSystem",
     query: {
         include: [Transform, Velocity],
     },

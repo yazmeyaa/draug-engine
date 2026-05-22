@@ -1,12 +1,11 @@
 import { ObjectPool } from "../../core/memory/pool";
 import { Bitmap } from "bitmap-index";
 import { ECS_DEFAULTS } from "../constant";
-import type { IStorage } from "./types";
 import type { ClassType } from "../../types/class";
 
 export class ComponentStorage
     // Only pointer-types.
-    <T extends object> implements IStorage<T> {
+    <T extends object> {
     private bits_: Bitmap;
     private data_: T[] = [];
     private entityIds_: number[] = [];

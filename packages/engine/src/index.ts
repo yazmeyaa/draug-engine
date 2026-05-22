@@ -21,8 +21,6 @@ export {
     ComponentAlreadyRegisteredError,
     ComponentStorage,
     ComponentsManager,
-    type IStorage,
-    SingletonStorage,
 } from './ecs/components';
 
 export { ResourcesManager } from './ecs/resources';

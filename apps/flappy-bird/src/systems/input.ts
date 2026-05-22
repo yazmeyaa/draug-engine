@@ -4,19 +4,20 @@ import { Velocity } from "../components/velocity";
 import {
     System,
     SystemBase,
-    type IStorage,
+    type ComponentStorage,
     type SystemComputeContext,
     type SystemInitContext,
 } from "@draug/engine";
 
 @System({
+    name: "InputSystem",
     query: {
         include: [FlappyTag, Velocity]
     }
 })
 export class InputSystem extends SystemBase {
     private actionsResource!: GameActions;
-    private velocityStore!: IStorage<Velocity>;
+    private velocityStore!: ComponentStorage<Velocity>;
 
     public onInit({world}: SystemInitContext): void {
         this.actionsResource = world.resources.getOrInsert(GameActions, () => new GameActions());

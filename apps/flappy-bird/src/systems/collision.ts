@@ -5,20 +5,21 @@ import {
     System,
     SystemBase,
     type EventBuffer,
-    type IStorage,
+    type ComponentStorage,
     type SystemComputeContext,
     type SystemInitContext
 } from "@draug/engine";
 
 type Box = { top: number; right: number; bottom: number; left: number; };
 @System({
+    name: "CollisionSystem",
     query: {
         include: [Transform, ColliderRectangle],
     }
 })
 export class CollisionSystem extends SystemBase {
-    private colliderStore!: IStorage<ColliderRectangle>;
-    private transformStore!: IStorage<Transform>;
+    private colliderStore!: ComponentStorage<ColliderRectangle>;
+    private transformStore!: ComponentStorage<Transform>;
     private collisionEvents!: EventBuffer<CollisionEvent>;
     public override onInit({ world }: SystemInitContext): void {
         this.colliderStore = world.components.getStorage(ColliderRectangle);

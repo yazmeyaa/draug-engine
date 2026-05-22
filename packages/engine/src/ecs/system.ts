@@ -56,12 +56,14 @@ export type SystemMetadata = {
      */
     computeAfter?: Set<SystemCtor>;
     phase?: SystemPhase;
+    name: string;
 };
 export type SystemDecoratorProps = {
     query: SystemMetadata['query'];
     requiredComponents?: ComponentType[];
     computeAfter?: SystemCtor[];
     phase?: SystemPhase;
+    name: SystemMetadata['name'];
 };
 const SystemMetadataSymbol = Symbol("system");
 type FunctionWithMetadata = Function & { [SystemMetadataSymbol]?: SystemMetadata };
@@ -78,9 +80,9 @@ export function System(props: SystemDecoratorProps): ClassDecorator {
         const requiredComponents = new Set(props.requiredComponents);
         const computeAfter = new Set(props.computeAfter);
         const phase = props.phase ?? SystemPhase.MAIN;
-        const metadata: SystemMetadata = { query, requiredComponents, computeAfter, phase };
+        const name = props.name ?? target.name;
+        const metadata: SystemMetadata = { query, requiredComponents, computeAfter, phase, name };
 
-        // Теперь TS позволяет записать значение
         systemTarget[SystemMetadataSymbol] = metadata;
     };
 }
@@ -175,13 +177,14 @@ export class SystemsManager {
         for (const c of requiredComponents)
             this.requiredComponents_.add(c);
 
-        this.logger.debug(() => `[Systems]: "${ctor.name}" was registered`);
+        const meta = getSystemMetadata(ctor);
+
+        this.logger.debug(() => `[Systems]: system "${meta.name}" was registered`);
     }
 
     public build(): void {
         this.buildSystemsArray();
-        for (const sys of this.systems_.values())
-        {
+        for (const sys of this.systems_.values()) {
             sys.onInit?.({ world: this.world, logger: this.logger });
         }
         this.logger.debug(() => `Built ${this.systems_.size} systems`);

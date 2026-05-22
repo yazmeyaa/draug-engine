@@ -5,20 +5,21 @@ import { MovementSystem } from "./movement";
 import {
     System,
     SystemBase,
-    type IStorage,
+    type ComponentStorage,
     type SystemComputeContext,
     type SystemInitContext,
 } from "@draug/engine";
 
 
 @System({
+    name: "BindCameraSystem",
     computeAfter: [MovementSystem],
     query: {
         include: [FlappyTag, Transform]
     },
 })
 export class BindCameraSystem extends SystemBase {
-    private transformStore!: IStorage<Transform>;
+    private transformStore!: ComponentStorage<Transform>;
     private camera!: Camera;
     public onInit({ world }: SystemInitContext): void {
         this.camera = world.resources.get(Camera);

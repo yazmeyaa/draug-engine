@@ -4,20 +4,21 @@ import { Velocity } from "../components/velocity";
 import {
     System,
     SystemBase,
-    type IStorage,
+    type ComponentStorage,
     type SystemComputeContext,
     type SystemInitContext,
 } from "@draug/engine";
 
 @System({
+    name: "GravitySystem",
     query: {
         include: [Velocity, Acceleration],
     }
 })
 export class ApplyGravitySystem extends SystemBase {
     private worldPhysics!: WorldPhysicsResource;
-    private velocityStore!: IStorage<Velocity>;
-    private accelerationStore!: IStorage<Acceleration>;
+    private velocityStore!: ComponentStorage<Velocity>;
+    private accelerationStore!: ComponentStorage<Acceleration>;
 
     public override onInit(ctx: SystemInitContext): void {
         const { world } = ctx;
