@@ -5,16 +5,17 @@ import { DAGNode, topologicalSort, ErrDAGCycleDetected } from '../../core/graph/
 import type { Logger } from "../../logger";
 
 export type PluginID = string;
+export type PluginConstructor = ClassType<PluginBase>;
 
 export type PluginDependencies = {
     components?: ComponentType[];
     resources?: ClassType<any>[];
     systems?: ClassType<SystemBase>[];
-    plugins?: Array<{ id: PluginID; version?: string }>;
+    plugins?: Array<{ plugin: PluginConstructor; version?: string }>;
 }
 
 export interface PluginMetadata {
-    id: PluginID;
+    id?: PluginID;
     version: string;
     name: string;
     dependencies?: PluginDependencies;
@@ -31,7 +32,7 @@ export function Plugin(metadata: PluginMetadata): ClassDecorator {
     };
 }
 
-export function getPluginMetadata(plugin: ClassType<PluginBase>): PluginMetadata {
+export function getPluginMetadata(plugin: PluginConstructor): PluginMetadata {
     if (hasMetadata(plugin)) {
         return plugin[PluginMetadataSymbol] as PluginMetadata;
     }
@@ -54,7 +55,7 @@ export abstract class PluginBase {
     public onAfterWorldInit?: (world: World) => void;
 }
 
-type PluginManagerInternalPluginStorageItem<T extends ClassType<PluginBase> = ClassType<PluginBase>> = {
+type PluginManagerInternalPluginStorageItem<T extends PluginConstructor = PluginConstructor> = {
     ctor: T;
     ctorParams: ConstructorParameters<T>;
     instance?: InstanceType<T>;
@@ -62,7 +63,7 @@ type PluginManagerInternalPluginStorageItem<T extends ClassType<PluginBase> = Cl
 };
 
 export class PluginError extends Error {
-    constructor(pluginId: string) {
+    constructor(pluginId: PluginConstructor) {
         super(`Plugin error! Plugin [${pluginId}]`);
     }
 }
@@ -74,27 +75,27 @@ export class ErrNotAPlugin extends Error {
 }
 
 export class ErrMissingPluginMetadata extends Error {
-    constructor(plugin: ClassType<PluginBase>) {
+    constructor(plugin: PluginConstructor) {
         super(`Provided class ${plugin.name}: Missing plugin metadata! Define plugin class with @Plugin decorator.`);
     }
 }
 
 export class ErrUnknownPlugin extends PluginError {
-    constructor(pluginId: string) {
+    constructor(pluginId: PluginConstructor) {
         super(pluginId);
         this.message = `${super.message}: Plugin not found in manager.`;
     }
 }
 
 export class ErrPluginNotInit extends PluginError {
-    constructor(pluginId: string) {
+    constructor(pluginId: PluginConstructor) {
         super(pluginId);
         this.message = `${super.message}: Plugin not initiated yet. You must use PluginsManager.build() before getting instance.`;
     }
 }
 
 export class ErrMissingPluginDependency extends PluginError {
-    constructor(pluginId: string, missingDepId: string) {
+    constructor(pluginId: PluginConstructor, missingDepId: PluginConstructor) {
         super(pluginId);
         this.message = `${super.message}: Missing required dependency [${missingDepId}]. Install it first.`;
     }
@@ -107,17 +108,17 @@ export class ErrDAGCycleDetectedPlugin extends Error {
 }
 
 export class PluginsManager {
-    private plugins_: Map<PluginID, PluginManagerInternalPluginStorageItem> = new Map();
+    private plugins_: Map<PluginConstructor, PluginManagerInternalPluginStorageItem> = new Map();
     private isInitiated_ = false;
     constructor(private readonly logger: Logger) { }
 
-    public install<T extends ClassType<PluginBase>>(plugin: T, ...constructorProps: ConstructorParameters<T>): void {
+    public install<T extends PluginConstructor>(plugin: T, ...constructorProps: ConstructorParameters<T>): void {
         if (!isPlugin(plugin))
             throw new ErrMissingPluginMetadata(plugin);
 
         const metadata = getPluginMetadata(plugin);
 
-        if (this.plugins_.has(metadata.id))
+        if (this.plugins_.has(plugin))
             return;
 
         const entry: PluginManagerInternalPluginStorageItem<T> = {
@@ -126,7 +127,7 @@ export class PluginsManager {
             metadata,
         };
 
-        this.plugins_.set(metadata.id, entry);
+        this.plugins_.set(plugin, entry);
         this.logger.debug(() => `[Plugins]: Installed plugin ${metadata.name} (${metadata.version})`);
     }
 
@@ -134,25 +135,25 @@ export class PluginsManager {
         if (this.plugins_.size === 0) {
             return;
         }
-        const nodes = new Map<PluginID, DAGNode<PluginID>>();
+        const nodes = new Map<PluginConstructor, DAGNode<PluginConstructor>>();
         for (const id of this.plugins_.keys()) {
             nodes.set(id, new DAGNode(id));
         }
 
-        for (const [id, entry] of this.plugins_) {
-            const node = nodes.get(id)!;
+        for (const [plugin, entry] of this.plugins_) {
+            const node = nodes.get(plugin)!;
             const depPlugins = entry.metadata.dependencies?.plugins ?? [];
 
             for (const dep of depPlugins) {
-                const depNode = nodes.get(dep.id);
+                const depNode = nodes.get(dep.plugin);
                 if (!depNode) {
-                    throw new ErrMissingPluginDependency(id, dep.id);
+                    throw new ErrMissingPluginDependency(plugin, dep.plugin);
                 }
-                node.vertices.push(depNode);
+                depNode.vertices.push(node);
             }
         }
 
-        let sortedNodes: DAGNode<PluginID>[];
+        let sortedNodes: DAGNode<PluginConstructor>[];
         try {
             sortedNodes = topologicalSort(nodes.values());
         } catch (e) {
@@ -184,36 +185,21 @@ export class PluginsManager {
 
     }
 
-    public getPluginMetadata(pluginOrId: ClassType<PluginBase> | PluginID): PluginMetadata {
-        const id = this.resolveId(pluginOrId);
-        const entry = this.plugins_.get(id);
-        if (!entry) throw new ErrUnknownPlugin(id);
+    public getPluginMetadata(plugin: PluginConstructor): PluginMetadata {
+        const entry = this.plugins_.get(plugin);
+        if (!entry) throw new ErrUnknownPlugin(plugin);
         return entry.metadata;
     }
 
-    public getPluginInstance<T extends PluginBase>(pluginOrId: ClassType<T> | PluginID): T {
+    public getPluginInstance<T extends PluginBase>(plugin: ClassType<T>): T {
+        const entry = this.plugins_.get(plugin);
+        if (!entry) throw new ErrUnknownPlugin(plugin);
+        if (!entry.instance) throw new ErrPluginNotInit(plugin);
+
         if (!this.isInitiated_) {
-            throw new Error("Plugin instance is not initiated yet. Use PluginManager.build() before use plugins.");
+            throw new ErrPluginNotInit(plugin);
         }
-
-        const id = this.resolveId(pluginOrId);
-
-        const entry = this.plugins_.get(id);
-        if (!entry) throw new ErrUnknownPlugin(id);
-        if (!entry.instance) throw new ErrPluginNotInit(id);
 
         return entry.instance as T;
-    }
-
-    private resolveId(pluginOrId: ClassType<PluginBase> | PluginID): PluginID {
-        if (typeof pluginOrId === 'string') {
-            return pluginOrId;
-        }
-
-        if (!isPlugin(pluginOrId)) {
-            throw new ErrMissingPluginMetadata(pluginOrId);
-        }
-
-        return getPluginMetadata(pluginOrId).id;
     }
 };

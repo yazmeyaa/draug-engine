@@ -2,6 +2,7 @@ import { System, SystemBase, SystemPhase, type SystemInitContext } from "@draug/
 import { ConfigurationResource } from "../resources/config";
 
 @System({
+    name: "ConfigCommitSystem",
     query: {},
     phase: SystemPhase.POST,
 })
