@@ -9,7 +9,7 @@
     "email": "evgenijantonenkov456@gmail.com"
   },
   "license": "MIT",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "scripts": {
     "build": "tsup",
     "test": ""
