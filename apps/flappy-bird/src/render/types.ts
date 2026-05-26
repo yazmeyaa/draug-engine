@@ -1,4 +1,4 @@
-import { Resource, type AssetID } from '@draug/engine'
+import { Resource, type AssetID } from "@draug/engine";
 
 export type RenderingSnapshotEntry = {
     entityId: number;
@@ -8,7 +8,8 @@ export type RenderingSnapshotEntry = {
     zIndex: number;
 };
 export type RenderingSnapshot = RenderingSnapshotEntry[];
-@Resource({name: "Camera"})
+
+@Resource({ name: "Camera" })
 export class Camera {
     constructor(
         public x: number,
@@ -16,5 +17,5 @@ export class Camera {
         public zoom: number,
         public width: number,
         public height: number,
-    ) { }
-};
+    ) {}
+}

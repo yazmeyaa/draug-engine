@@ -42,10 +42,6 @@ export class Commands {
             }
         }
         this.add(cmd);
-        this.logger.debug(() => {
-            const components = entries.map(x => getComponentMetadata(x[0]).name).join(", ")
-            return `[Commands.createEntity]: Created new entity with ID ${id}. Linked components: [${components}]`;
-        });
         return id;
     }
 };

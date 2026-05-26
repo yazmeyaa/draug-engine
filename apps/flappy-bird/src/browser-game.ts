@@ -6,12 +6,16 @@ import {
     World,
     type TimeSource as TS,
 } from "@draug/engine";
+import { worldSizeToScreen, worldToScreen } from "./render/camera-transform";
+import { drawHitboxes } from "./render/draw-hitboxes";
 import { RenderView } from "./render/renderer";
 import { Camera } from "./render/types";
+import { ColliderRectangle } from "./components/collider";
 import { Renderable } from "./components/renderable";
 import { ImageAsset } from "./assets/image";
 import { HTMLLogger } from "./logger/html-logger";
 import { Position, Rotation } from "@draug/engine/std-components";
+import { GameStateResource, GameState } from "./resources/game-state";
 
 class TimeSource implements TS {
     public now(): number {
@@ -26,77 +30,122 @@ export class BrowserGame {
     public get world(): World {
         return this.engine_.world;
     }
+
     public get engine(): Engine {
         return this.engine_;
     }
+
     constructor(
         ctx: CanvasRenderingContext2D,
         logsContainer: HTMLElement,
-        private onWorldUpdate?: (world: World) => void,
     ) {
         const clock = new Clock(new TimeSource());
         const loop = new Loop(clock, () => {
             this.world.update(clock);
-            this.onWorldUpdate?.(this.world);
             this.render(ctx);
         }, window.requestAnimationFrame.bind(window));
 
-        const engine = new Engine({ loop, maxEntityCount: 2048 });
-        const logger = new HTMLLogger(logsContainer, engine, LogLevel.Debug);
-        this.engine_ = engine
+        const engineHolder: { current: Engine | null } = { current: null };
+        const logger = new HTMLLogger(
+            logsContainer,
+            { getTick: () => engineHolder.current?.getTick() ?? 0 },
+            LogLevel.Debug,
+        );
+        const engine = new Engine({ loop, maxEntityCount: 2048, logger });
+        engineHolder.current = engine;
+        this.engine_ = engine;
 
-        logger.debug(() => "Test DEBUG log");
-        logger.info(() => "Test INFO log");
-        logger.warn(() => "Test WARN log");
-        logger.error(() => "Test ERROR log");
-
-        setInterval(() => {
-            logger.debug(() => 'tick')
-        }, 1000);
-
-        const camera = this.world.resources.insert(Camera, new Camera(0, 0, 1.2, 800, 600));
-        this.renderView = new RenderView(this.world, camera)
-    };
+        const camera = this.world.resources.insert(Camera, new Camera(0, 0, 1.4, 800, 600));
+        this.renderView = new RenderView(this.world, camera);
+    }
 
     private render(ctx: CanvasRenderingContext2D): void {
         const world = this.world;
         const renderView = this.renderView;
         const camera = world.resources.get(Camera);
+        const gameState = world.resources.get(GameStateResource);
 
         const rStore = world.components.getStorage(Renderable);
+        const positionStore = world.components.getStorage(Position);
+        const colliderStore = world.components.getStorage(ColliderRectangle);
         const snapshot = renderView.snapshot().sort((a, b) => a.zIndex - b.zIndex);
 
         ctx.clearRect(0, 0, camera.width, camera.height);
 
-        const tStore = world.components.getStorage(Position);
         const rotStore = world.components.getStorage(Rotation);
         for (const entry of snapshot) {
             const r = rStore.tryGet(entry.entityId);
             const data = this.engine.assets.tryGetStorage(ImageAsset).tryGet(r.spriteId).getData();
-            const t = tStore.tryGet(entry.entityId);
+            const collider = colliderStore.tryGet(entry.entityId);
+            const position = positionStore.tryGet(entry.entityId);
+
+            const topLeft = worldToScreen(
+                camera,
+                position.value.x + collider.offsetX,
+                position.value.y + collider.offsetY,
+            );
+            const w = worldSizeToScreen(camera, collider.width);
+            const h = worldSizeToScreen(camera, collider.height);
 
             ctx.save();
 
             const rot = rotStore.get(entry.entityId);
             if (rot) {
                 const rad = rot.value.mulScalar(Math.PI / 180);
+                ctx.translate(topLeft.x + w / 2, topLeft.y + h / 2);
                 ctx.rotate(rad.x);
+                ctx.drawImage(data, -w / 2, -h / 2, w, h);
+            } else {
+                ctx.drawImage(data, topLeft.x, topLeft.y, w, h);
             }
 
-            ctx.translate(entry.x, entry.y);
-            ctx.drawImage(data, -50, -50, 100, 100);
-
-            ctx.font = '24px Arial'
-            ctx.fillStyle = 'white'
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'middle'
-            ctx.fillText(`(${t.value.x.toFixed(1)}, ${t.value.y.toFixed(1)})`, 0, -75)
-
             ctx.restore();
+        }
+
+        drawHitboxes(ctx, world, camera);
+        this.drawHud(ctx, camera, gameState);
+    }
+
+    private drawHud(
+        ctx: CanvasRenderingContext2D,
+        camera: Camera,
+        gameState: GameStateResource,
+    ): void {
+        ctx.font = "bold 32px Arial";
+        ctx.fillStyle = "#fff";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(`Score: ${gameState.score}`, 20, 20);
+
+        if (gameState.state === GameState.Start) {
+            ctx.font = "bold 48px Arial";
+            ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("FLAPPY BIRD", camera.width / 2, camera.height / 2 - 60);
+
+            ctx.font = "24px Arial";
+            ctx.fillText("Press SPACE to start", camera.width / 2, camera.height / 2 + 40);
+            return;
+        }
+
+        if (gameState.state === GameState.GameOver) {
+            ctx.font = "bold 48px Arial";
+            ctx.fillStyle = "rgba(255, 50, 50, 0.9)";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("GAME OVER", camera.width / 2, camera.height / 2 - 60);
+
+            ctx.font = "28px Arial";
+            ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+            ctx.fillText(`Final Score: ${gameState.score}`, camera.width / 2, camera.height / 2);
+
+            ctx.font = "20px Arial";
+            ctx.fillText("Press SPACE to restart", camera.width / 2, camera.height / 2 + 60);
         }
     }
 
     public start(): void {
         this.engine_.start();
-    };
-};
+    }
+}

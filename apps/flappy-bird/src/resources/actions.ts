@@ -1,6 +1,6 @@
 import { Resource } from "@draug/engine";
 
-@Resource({name: "GameActions"})
+@Resource({ name: "GameActions" })
 export class GameActions {
-    public jump: boolean = false;
-};
+    public jump = false;
+}

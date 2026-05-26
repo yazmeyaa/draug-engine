@@ -28,9 +28,7 @@ export class EntitiesManager {
     }
 
     public create(): EntityID {
-        const id = this.nextId();
-        this.logger.debug(() => `[Entities]: Created new entity with ID ${id}`);
-        return id;
+        return this.nextId()
     }
 };
 

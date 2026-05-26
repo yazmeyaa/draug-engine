@@ -54,7 +54,7 @@ export class HTMLLogger implements Logger {
             case LogLevel.Error:
                 return 'error';
             default:
-                return 'unknown;'
+                return "unknown";
         }
     }
 

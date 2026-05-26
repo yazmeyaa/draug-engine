@@ -2,39 +2,32 @@ import type { SystemBase } from "@draug/engine";
 import { BrowserGame } from "./browser-game";
 import { ApplyGravitySystem } from "./systems/gravity";
 import { CollisionSystem } from "./systems/collision";
+import { PipeSpawnerSystem } from "./systems/pipe-spawner";
+import { ScoreSystem } from "./systems/score";
 import { createBird } from "./prefabs/bird";
 import { FlappyTag } from "./components/flappy-tag";
+import { PipeTag } from "./components/pipe-tag";
+import { PipeGapId } from "./components/pipe-gap-id";
 import { Renderable } from "./components/renderable";
-import { createBox } from "./prefabs/box";
 import { Camera } from "./render/types";
 import { GameActions } from "./resources/actions";
+import { GameStateResource } from "./resources/game-state";
+import { PipeSpawnerResource } from "./resources/pipe-spawner";
+import { WorldPhysicsResource } from "./resources/physics";
 import { InputSystem } from "./systems/input";
 import { BindCameraSystem } from "./systems/bind-camera";
-import { COLLISION_EVENT_KEY } from "./events/collision";
 import { ImageAsset } from "./assets/image";
+import { BIRD_START, resetPipeSpawner } from "./game/reset";
 
 const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d")!;
 
-const debugPanel = document.getElementById('debug-panel');
-if (!debugPanel)
-    throw new Error("no debug pannel HMTL element found!")
+const debugPanel = document.getElementById("debug-panel");
+if (!debugPanel) {
+    throw new Error("no debug panel HTML element found!");
+}
 
-const game = new BrowserGame(ctx, debugPanel, (world) => {
-    const colisions = world.events.getBuffer(COLLISION_EVENT_KEY);
-    const fStore = world.components.getStorage(FlappyTag);
-    const evts = colisions.read();
-    for (const evt of evts) {
-        fStore.forEach(birdId => {
-            if (evt.objA.colliderId === birdId || evt.objB.colliderId === birdId) {
-                alert("Game over");
-                window.location.reload();
-            }
-        })
-        console.log(evt);
-    }
-});
-
+const game = new BrowserGame(ctx, debugPanel);
 
 const camera = game.world.resources.get(Camera);
 function resizeCanvas() {
@@ -51,91 +44,88 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
-
+const pipeSpawnerSystem = new PipeSpawnerSystem();
 const systems: SystemBase[] = [
+    new InputSystem(),
     new ApplyGravitySystem(),
     new CollisionSystem(),
-    new InputSystem(),
+    new ScoreSystem(),
+    pipeSpawnerSystem,
     new BindCameraSystem(),
 ];
 systems.forEach(s => {
-    game.world.systems.register(s)
+    game.world.systems.register(s);
 });
-console.log(game.world.systems.getRequiredComponents())
+
 for (const c of game.world.systems.getRequiredComponents()) {
-    console.log(c)
     game.world.components.register(c);
 }
 
-game.world.components.register(FlappyTag)
-game.world.components.register(Renderable)
+game.world.components.register(FlappyTag);
+game.world.components.register(PipeTag);
+game.world.components.register(PipeGapId);
+game.world.components.register(Renderable);
 
-const inputResource = game.world.resources.insert(GameActions, new GameActions);
-window.addEventListener('keydown', event => {
-    if (event.code === 'Space')
-        inputResource.jump = true;
-})
-window.addEventListener('keyup', () => {
-    inputResource.jump = false;
-})
+const inputResource = game.world.resources.insert(GameActions, new GameActions());
+game.world.resources.insert(GameStateResource, new GameStateResource());
+game.world.resources.insert(PipeSpawnerResource, new PipeSpawnerResource());
+game.world.resources.insert(WorldPhysicsResource, new WorldPhysicsResource());
 
+function onJumpInput(): void {
+    inputResource.jump = true;
+}
 
+window.addEventListener("keydown", event => {
+    if (event.code === "Space" || event.code === "ArrowUp") {
+        event.preventDefault();
+        onJumpInput();
+    }
+});
 
+canvas.addEventListener("pointerdown", () => {
+    onJumpInput();
+});
 
-
-const imageResourceStore = game.engine.assets.register(ImageAsset, (url) => {
+const imageResourceStore = game.engine.assets.register(ImageAsset, url => {
     return new Promise<HTMLImageElement>((resolve, reject) => {
         const img = new Image();
-
         img.onload = () => resolve(img);
         img.onerror = reject;
-
         img.src = url;
     });
 });
 
 game.engine.init();
-const birdSprite = imageResourceStore.add('/assets/bird.png');
-const boxSprite = imageResourceStore.add('/assets/box.png');
+const birdSprite = imageResourceStore.add("/assets/bird.png");
+const boxSprite = imageResourceStore.add("/assets/box.png");
+
 game.engine.assets.loadAll().then(() => {
     game.start();
 
-    createBird(game.world, {
+    pipeSpawnerSystem.setSpriteId(boxSprite.id);
+
+    const gameState = game.world.resources.get(GameStateResource);
+    gameState.birdId = createBird(game.world, {
         transform: {
-            x: 0,
-            y: 200,
+            x: BIRD_START.x,
+            y: BIRD_START.y,
         },
         renderable: {
             spriteId: birdSprite.id,
-            layer: 1
+            layer: 1,
         },
         velocity: {
-            x: 9,
-            y: 0
+            x: BIRD_START.vx,
+            y: BIRD_START.vy,
         },
         collider: {
-            width: 64,
-            height: 64,
-            offsetX: 0,
-            offsetY: 0
-        }
-    })
-    for (let i = 0; i < 10; i++) {
-        createBox(game.world, {
-            collider: {
-                width: 64,
-                height: 64,
-                offsetX: 0,
-                offsetY: 0
-            },
-            renderable: {
-                spriteId: boxSprite.id,
-                layer: 1
-            },
-            transform: {
-                x: i * 400,
-                y: i * 82,
-            },
-        });
-    }
-})
+            width: 34,
+            height: 34,
+            offsetX: -17,
+            offsetY: -17,
+        },
+    });
+
+    resetPipeSpawner(game.world);
+    camera.y = 0;
+});
