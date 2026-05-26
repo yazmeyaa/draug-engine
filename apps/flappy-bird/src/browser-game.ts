@@ -11,7 +11,7 @@ import { Camera } from "./render/types";
 import { Renderable } from "./components/renderable";
 import { ImageAsset } from "./assets/image";
 import { HTMLLogger } from "./logger/html-logger";
-import { Transform } from "@draug/engine/std-components";
+import { Position, Rotation } from "@draug/engine/std-components";
 
 class TimeSource implements TS {
     public now(): number {
@@ -68,7 +68,8 @@ export class BrowserGame {
 
         ctx.clearRect(0, 0, camera.width, camera.height);
 
-        const tStore = world.components.getStorage(Transform);
+        const tStore = world.components.getStorage(Position);
+        const rotStore = world.components.getStorage(Rotation);
         for (const entry of snapshot) {
             const r = rStore.tryGet(entry.entityId);
             const data = this.engine.assets.tryGetStorage(ImageAsset).tryGet(r.spriteId).getData();
@@ -76,17 +77,20 @@ export class BrowserGame {
 
             ctx.save();
 
-            const rad = t.rotation.mulScalar(Math.PI / 180);
+            const rot = rotStore.get(entry.entityId);
+            if (rot) {
+                const rad = rot.value.mulScalar(Math.PI / 180);
+                ctx.rotate(rad.x);
+            }
 
             ctx.translate(entry.x, entry.y);
-            ctx.rotate(rad.x);
             ctx.drawImage(data, -50, -50, 100, 100);
 
             ctx.font = '24px Arial'
             ctx.fillStyle = 'white'
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
-            ctx.fillText(`(${t.position.x.toFixed(1)}, ${t.position.y.toFixed(1)})`, 0, -75)
+            ctx.fillText(`(${t.value.x.toFixed(1)}, ${t.value.y.toFixed(1)})`, 0, -75)
 
             ctx.restore();
         }

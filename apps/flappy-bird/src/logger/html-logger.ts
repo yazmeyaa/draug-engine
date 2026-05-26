@@ -40,7 +40,7 @@ export class HTMLLogger implements Logger {
     }
 
     private formatMessage(prefix: string, msg: () => string): string {
-        return `[${prefix}] | Tick #[${this.tick.getTick()}] |: ${msg()}`;
+        return `[${prefix}] | Tick #${this.tick.getTick()} |: ${msg()}`;
     }
 
     private logLevelToClassName(lvl: LogLevel): string {

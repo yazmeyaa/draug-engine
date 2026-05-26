@@ -1,9 +1,10 @@
 import type { World } from "../ecs/world";
-import { Transform, Velocity } from "./components";
+import type { ComponentType } from "../types/class";
+import { Position, Velocity, Rotation } from "./components";
 import { MovementSystem } from "./systems";
 
 export function injectStd(world: World): void {
-    world.components.register(Transform);
-    world.components.register(Velocity);
+    for (const p of [Position, Velocity, Rotation] as ComponentType[])
+        world.components.register(p);
     world.systems.register(new MovementSystem());
 }

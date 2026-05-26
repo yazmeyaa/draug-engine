@@ -1,4 +1,4 @@
-import { Transform } from "@draug/engine/std-components";
+import { Position } from "@draug/engine/std-components";
 import { ColliderRectangle } from "../components/collider";
 import { Renderable } from "../components/renderable";
 import { applyComponent } from "./shared";
@@ -19,7 +19,7 @@ export type CreateBoxParmas = {
 
 export function createBox(world: World, params: CreateBoxParmas): EntityID {
     return world.commands.createEntity(
-        entry(Transform, t => t.position.set(params.transform.x, params.transform.y, 0)),
+        entry(Position, t => t.value.set(params.transform.x, params.transform.y, 0)),
         entry(ColliderRectangle, c => applyComponent(c, params.collider)),
         entry(Renderable, r => applyComponent(r, params.renderable)),
     );

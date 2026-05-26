@@ -1,4 +1,4 @@
-import { Transform } from "@draug/engine/std-components";
+import { Position } from "@draug/engine/std-components";
 import { ColliderRectangle } from "../components/collider";
 import { COLLISION_EVENT_KEY, type CollisionEvent } from "../events/collision";
 import {
@@ -14,16 +14,16 @@ type Box = { top: number; right: number; bottom: number; left: number; };
 @System({
     name: "CollisionSystem",
     query: {
-        include: [Transform, ColliderRectangle],
+        include: [Position, ColliderRectangle],
     }
 })
 export class CollisionSystem extends SystemBase {
     private colliderStore!: ComponentStorage<ColliderRectangle>;
-    private transformStore!: ComponentStorage<Transform>;
+    private transformStore!: ComponentStorage<Position>;
     private collisionEvents!: EventBuffer<CollisionEvent>;
     public override onInit({ world }: SystemInitContext): void {
         this.colliderStore = world.components.getStorage(ColliderRectangle);
-        this.transformStore = world.components.getStorage(Transform);
+        this.transformStore = world.components.getStorage(Position);
         this.collisionEvents = world.events.getBuffer(COLLISION_EVENT_KEY)
     }
 
@@ -57,12 +57,12 @@ export class CollisionSystem extends SystemBase {
         }
     }
 
-    private getBox(t: Readonly<Transform>, c: Readonly<ColliderRectangle>): Box {
+    private getBox(t: Readonly<Position>, c: Readonly<ColliderRectangle>): Box {
         return {
-            top: t.position.y + c.offsetY,
-            right: t.position.x + c.width + c.offsetX,
-            bottom: t.position.y + c.height + c.offsetY,
-            left: t.position.x + c.offsetX
+            top: t.value.y + c.offsetY,
+            right: t.value.x + c.width + c.offsetX,
+            bottom: t.value.y + c.height + c.offsetY,
+            left: t.value.x + c.offsetX
         }
     }
 

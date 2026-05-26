@@ -8,7 +8,7 @@ import {
     type World,
     type EntityID,
 } from "@draug/engine";
-import { Transform, Velocity } from "@draug/engine/std-components";
+import { Position, Velocity } from "@draug/engine/std-components";
 
 export type CreateBirdParams = {
     transform: {
@@ -25,7 +25,7 @@ export type CreateBirdParams = {
 
 export function createBird(world: World, params: CreateBirdParams): EntityID {
     return world.commands.createEntity(
-        entry(Transform, t => t.position.set(params.transform.x, params.transform.y, 0)),
+        entry(Position, t => t.value.set(params.transform.x, params.transform.y, 0)),
         entry(Renderable, r => applyComponent(r, params.renderable)),
         entry(Velocity, v => v.linear.set(params.velocity.x, params.velocity.y, 0)),
         entry(ColliderRectangle, c => applyComponent(c, params.collider)),
