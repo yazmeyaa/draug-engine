@@ -1,7 +1,6 @@
+import { Transform } from "@draug/engine/std-components";
 import { FlappyTag } from "../components/flappy-tag";
-import { Transform } from "../components/transform";
 import { Camera } from "../render/types";
-import { MovementSystem } from "./movement";
 import {
     System,
     SystemBase,
@@ -9,6 +8,7 @@ import {
     type SystemComputeContext,
     type SystemInitContext,
 } from "@draug/engine";
+import { MovementSystem } from "@draug/engine/std-systems";
 
 
 @System({
@@ -28,8 +28,8 @@ export class BindCameraSystem extends SystemBase {
     public compute(ctx: SystemComputeContext): void {
         for (const id of ctx.entities) {
             const t = this.transformStore.tryGet(id);
-            this.camera.x = t.x + 250;
-            this.camera.y = t.y;
+            this.camera.x = t.position.x + 250;
+            this.camera.y = t.position.y;
         }
     }
 }

@@ -1,5 +1,5 @@
+import { Transform } from "@draug/engine/std-components";
 import { ColliderRectangle } from "../components/collider";
-import { Transform } from "../components/transform";
 import { COLLISION_EVENT_KEY, type CollisionEvent } from "../events/collision";
 import {
     System,
@@ -59,10 +59,10 @@ export class CollisionSystem extends SystemBase {
 
     private getBox(t: Readonly<Transform>, c: Readonly<ColliderRectangle>): Box {
         return {
-            top: t.y + c.offsetY,
-            right: t.x + c.width + c.offsetX,
-            bottom: t.y + c.height + c.offsetY,
-            left: t.x + c.offsetX
+            top: t.position.y + c.offsetY,
+            right: t.position.x + c.width + c.offsetX,
+            bottom: t.position.y + c.height + c.offsetY,
+            left: t.position.x + c.offsetX
         }
     }
 

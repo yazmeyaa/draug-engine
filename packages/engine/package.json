@@ -1,6 +1,6 @@
 {
   "name": "@draug/engine",
-  "version": "1.0.21",
+  "version": "1.0.23",
   "type": "module",
   "author": {
     "name": "future_undefined",
@@ -31,6 +31,18 @@
     ".": {
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./std-components": {
+      "import": "./dist/std/components/index.js",
+      "require": "./dist/std/components/index.cjs"
+    },
+    "./std-math": {
+      "import": "./dist/std/math/index.js",
+      "require": "./dist/std/math/index.cjs"
+    },
+    "./std-systems": {
+      "import": "./dist/std/systems/index.js",
+      "require": "./dist/std/systems/index.cjs"
     }
   },
   "files": [

@@ -1,12 +1,14 @@
 import type { Logger } from "../logger";
 import type { ComponentType } from "./components";
+import { getComponentMetadata } from "./components/utils";
 import { World } from "./world";
 
 export type EntityID = number;
 
 export class UnregisteredComponentStorageError extends Error {
     constructor(component: ComponentType) {
-        super(`Cannot get storage for component ${component.name}. Seems like it's not registered in world.`);
+        const meta = getComponentMetadata(component);
+        super(`Cannot get storage for component ${meta.name}. Seems like it's not registered in world.`);
     }
 }
 
@@ -18,9 +20,9 @@ export class EntityMaskNotFoundError extends Error {
 
 export class EntitiesManager {
     private id_: EntityID = 0;
-    
-    constructor(private readonly logger: Logger) {}
-    
+
+    constructor(private readonly logger: Logger) { }
+
     private nextId(): EntityID {
         return ++this.id_;
     }

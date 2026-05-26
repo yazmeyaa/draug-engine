@@ -1,7 +1,7 @@
 import type { World } from "@draug/engine";
 import type { Camera, RenderingSnapshot, RenderingSnapshotEntry } from "./types";
-import { Transform } from "../components/transform";
 import { Renderable } from "../components/renderable";
+import { Transform } from "@draug/engine/std-components";
 
 export class RenderView {
     constructor(
@@ -23,8 +23,8 @@ export class RenderView {
             const entity = world.getEntityRef(entities[i]!);
             const [r, p] = entity.with(Renderable, Transform);
 
-            const cx = (p.x - camera.x) * camera.zoom + camera.width / 2;
-            const cy = (p.y - camera.y) * camera.zoom + camera.height / 2;
+            const cx = (p.position.x - camera.x) * camera.zoom + camera.width / 2;
+            const cy = (p.position.y - camera.y) * camera.zoom + camera.height / 2;
 
             const snapshot = {
                 x: cx,

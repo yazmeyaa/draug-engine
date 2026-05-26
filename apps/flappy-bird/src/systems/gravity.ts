@@ -1,6 +1,5 @@
 import { WorldPhysicsResource } from "../resources/physics";
 import { Acceleration } from "../components/acceleration";
-import { Velocity } from "../components/velocity";
 import {
     System,
     SystemBase,
@@ -8,6 +7,7 @@ import {
     type SystemComputeContext,
     type SystemInitContext,
 } from "@draug/engine";
+import { Velocity } from "@draug/engine/std-components";
 
 @System({
     name: "GravitySystem",
@@ -34,9 +34,9 @@ export class ApplyGravitySystem extends SystemBase {
             const v = this.velocityStore.tryGet(id);
             const a = this.accelerationStore.tryGet(id);
 
-            v.vy += this.worldPhysics.worldGravity * (time.delta);
-            v.vx += a.ax * (time.delta);
-            v.vy += a.ay * (time.delta);
+            v.linear.y += this.worldPhysics.worldGravity * (time.delta);
+            v.linear.x += a.ax * (time.delta);
+            v.linear.y += a.ay * (time.delta);
 
             a.ax = 0;
             a.ay = 0;

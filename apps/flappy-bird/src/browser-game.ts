@@ -9,9 +9,9 @@ import {
 import { RenderView } from "./render/renderer";
 import { Camera } from "./render/types";
 import { Renderable } from "./components/renderable";
-import { Transform } from "./components/transform";
 import { ImageAsset } from "./assets/image";
 import { HTMLLogger } from "./logger/html-logger";
+import { Transform } from "@draug/engine/std-components";
 
 class TimeSource implements TS {
     public now(): number {
@@ -40,8 +40,11 @@ export class BrowserGame {
             this.onWorldUpdate?.(this.world);
             this.render(ctx);
         }, window.requestAnimationFrame.bind(window));
-        const logger = new HTMLLogger(logsContainer, () => this.engine.world.updatesCount, LogLevel.Debug);
-        this.engine_ = new Engine({ loop, logger, maxEntityCount: 2048 });
+
+        const engine = new Engine({ loop, maxEntityCount: 2048 });
+        const logger = new HTMLLogger(logsContainer, engine, LogLevel.Debug);
+        this.engine_ = engine
+
         logger.debug(() => "Test DEBUG log");
         logger.info(() => "Test INFO log");
         logger.warn(() => "Test WARN log");
@@ -73,17 +76,17 @@ export class BrowserGame {
 
             ctx.save();
 
-            const rad = t.rotate * Math.PI / 180;
+            const rad = t.rotation.mulScalar(Math.PI / 180);
 
             ctx.translate(entry.x, entry.y);
-            ctx.rotate(rad);
+            ctx.rotate(rad.x);
             ctx.drawImage(data, -50, -50, 100, 100);
 
             ctx.font = '24px Arial'
             ctx.fillStyle = 'white'
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
-            ctx.fillText(`(${t.x.toFixed(1)}, ${t.y.toFixed(1)})`, 0, -75)
+            ctx.fillText(`(${t.position.x.toFixed(1)}, ${t.position.y.toFixed(1)})`, 0, -75)
 
             ctx.restore();
         }

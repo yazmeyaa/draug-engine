@@ -153,8 +153,8 @@ export class SystemsManager {
         private readonly logger: Logger,
     ) { }
 
-    public getRequiredComponents(): ComponentType[] {
-        return Array.from(this.requiredComponents_);
+    public getRequiredComponents(): Set<ComponentType> {
+        return this.requiredComponents_;
     }
 
     public register<T extends SystemBase>(sys: T): void {

@@ -1,6 +1,6 @@
+import { Velocity } from "@draug/engine/std-components";
 import { FlappyTag } from "../components/flappy-tag";
 import { GameActions } from "../resources/actions";
-import { Velocity } from "../components/velocity";
 import {
     System,
     SystemBase,
@@ -26,7 +26,7 @@ export class InputSystem extends SystemBase {
     public compute(ctx: SystemComputeContext): void {
         for (const id of ctx.entities) {
             if (this.actionsResource.jump) {
-                this.velocityStore.tryGet(id).vy = -8;
+                this.velocityStore.tryGet(id).linear.y = -15;
                 this.actionsResource.jump = false;
             }
         }

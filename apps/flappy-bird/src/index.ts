@@ -2,7 +2,6 @@ import type { SystemBase } from "@draug/engine";
 import { BrowserGame } from "./browser-game";
 import { ApplyGravitySystem } from "./systems/gravity";
 import { CollisionSystem } from "./systems/collision";
-import { MovementSystem } from "./systems/movement";
 import { createBird } from "./prefabs/bird";
 import { FlappyTag } from "./components/flappy-tag";
 import { Renderable } from "./components/renderable";
@@ -56,14 +55,15 @@ window.addEventListener("resize", resizeCanvas);
 const systems: SystemBase[] = [
     new ApplyGravitySystem(),
     new CollisionSystem(),
-    new MovementSystem(),
     new InputSystem(),
     new BindCameraSystem(),
 ];
 systems.forEach(s => {
     game.world.systems.register(s)
 });
+console.log(game.world.systems.getRequiredComponents())
 for (const c of game.world.systems.getRequiredComponents()) {
+    console.log(c)
     game.world.components.register(c);
 }
 
@@ -94,7 +94,7 @@ const imageResourceStore = game.engine.assets.register(ImageAsset, (url) => {
     });
 });
 
-game.world.build();
+game.engine.init();
 const birdSprite = imageResourceStore.add('/assets/bird.png');
 const boxSprite = imageResourceStore.add('/assets/box.png');
 game.engine.assets.loadAll().then(() => {
@@ -104,17 +104,14 @@ game.engine.assets.loadAll().then(() => {
         transform: {
             x: 0,
             y: 200,
-            rotate: 0,
-            scaleX: 1,
-            scaleY: 1
         },
         renderable: {
             spriteId: birdSprite.id,
             layer: 1
         },
         velocity: {
-            vx: 9,
-            vy: 0
+            x: 9,
+            y: 0
         },
         collider: {
             width: 64,
@@ -138,9 +135,6 @@ game.engine.assets.loadAll().then(() => {
             transform: {
                 x: i * 400,
                 y: i * 82,
-                rotate: 0,
-                scaleX: 0,
-                scaleY: 0
             },
         });
     }

@@ -1,18 +1,18 @@
-import { LogLevel, type Logger } from "@draug/engine";
+import { LogLevel, type Logger, type TickProvider } from "@draug/engine";
 
-export type GetTickCountFn = () => number;
+
 export class HTMLLogger implements Logger {
     private readonly htmlUList: HTMLUListElement;
     private readonly root: HTMLElement;
     private logLevel: LogLevel;
-    private readonly countFn: GetTickCountFn;
-    constructor(target: HTMLElement, countFn: GetTickCountFn, logLevel: LogLevel = LogLevel.Info) {
+    private readonly tick: TickProvider;
+    constructor(target: HTMLElement, tick: TickProvider, logLevel: LogLevel = LogLevel.Info) {
         this.logLevel = logLevel;
         this.root = target;
         const root = document.createElement("ul");
         this.htmlUList = root;
         target.appendChild(root);
-        this.countFn = countFn;
+        this.tick = tick;
     }
     public debug(message: () => string): void {
         if (LogLevel.Debug < this.logLevel)
@@ -40,7 +40,7 @@ export class HTMLLogger implements Logger {
     }
 
     private formatMessage(prefix: string, msg: () => string): string {
-        return `[${prefix}] | Tick #[${this.countFn()}] |: ${msg()}`;
+        return `[${prefix}] | Tick #[${this.tick.getTick()}] |: ${msg()}`;
     }
 
     private logLevelToClassName(lvl: LogLevel): string {

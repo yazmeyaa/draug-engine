@@ -101,10 +101,11 @@ export {
 export {
     Engine,
     type EngineConstructor,
-} from './engine'
+    type TickProvider,
+} from './engine';
 
 export {
     type Logger,
     LogLevel,
     type LogMessage,
-} from './logger'
+} from './logger';
