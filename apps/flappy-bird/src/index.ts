@@ -61,15 +61,7 @@ for (const c of game.world.systems.getRequiredComponents()) {
     game.world.components.register(c);
 }
 
-game.world.components.register(FlappyTag);
-game.world.components.register(PipeTag);
-game.world.components.register(PipeGapId);
-game.world.components.register(Renderable);
-
-const inputResource = game.world.resources.insert(GameActions, new GameActions());
-game.world.resources.insert(GameStateResource, new GameStateResource());
-game.world.resources.insert(PipeSpawnerResource, new PipeSpawnerResource());
-game.world.resources.insert(WorldPhysicsResource, new WorldPhysicsResource());
+const inputResource = game.world.resources.get(GameActions);
 
 function onJumpInput(): void {
     inputResource.jump = true;

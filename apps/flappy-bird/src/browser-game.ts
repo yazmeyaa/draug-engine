@@ -16,6 +16,12 @@ import { ImageAsset } from "./assets/image";
 import { HTMLLogger } from "./logger/html-logger";
 import { Position, Rotation } from "@draug/engine/std-components";
 import { GameStateResource, GameState } from "./resources/game-state";
+import { FlappyTag } from "./components/flappy-tag";
+import { PipeTag } from "./components/pipe-tag";
+import { PipeGapId } from "./components/pipe-gap-id";
+import { GameActions } from "./resources/actions";
+import { PipeSpawnerResource } from "./resources/pipe-spawner";
+import { WorldPhysicsResource } from "./resources/physics";
 
 class TimeSource implements TS {
     public now(): number {
@@ -54,9 +60,22 @@ export class BrowserGame {
         const engine = new Engine({ loop, maxEntityCount: 2048, logger });
         engineHolder.current = engine;
         this.engine_ = engine;
-
+        
         const camera = this.world.resources.insert(Camera, new Camera(0, 0, 1.4, 800, 600));
+        this.setupWorld();
         this.renderView = new RenderView(this.world, camera);
+    }
+
+    private setupWorld(): void {
+        this.world.components.register(FlappyTag);
+        this.world.components.register(PipeTag);
+        this.world.components.register(PipeGapId);
+        this.world.components.register(Renderable);
+
+        this.world.resources.insert(GameActions, new GameActions());
+        this.world.resources.insert(GameStateResource, new GameStateResource());
+        this.world.resources.insert(PipeSpawnerResource, new PipeSpawnerResource());
+        this.world.resources.insert(WorldPhysicsResource, new WorldPhysicsResource());
     }
 
     private render(ctx: CanvasRenderingContext2D): void {
