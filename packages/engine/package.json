@@ -1,6 +1,6 @@
 {
   "name": "@draug/engine",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "type": "module",
   "author": {
     "name": "future_undefined",
@@ -13,7 +13,7 @@
     "directory": "packages/engine"
   },
   "description": "Amber game engine. Based on ECS architecture.",
-  "license": "GPL-3.0-only",
+  "license": "Apache-2.0",
   "readme": "README.md",
   "dependencies": {
     "bitmap-index": "^1.0.9"
