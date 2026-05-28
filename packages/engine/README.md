@@ -273,4 +273,4 @@ Related workspace packages: `@draug/types` (WebSocket `RawData` helper for netwo
 
 ## License
 
-Apache License 2.0 — see [LICENSE](../../LICENSE) for the full text.
+Apache License 2.0 — see [LICENSE](./LICENSE) for the full text.
