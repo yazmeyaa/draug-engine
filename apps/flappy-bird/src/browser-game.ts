@@ -131,7 +131,10 @@ export class BrowserGame {
             ctx.restore();
         }
 
-        drawHitboxes(ctx, world, camera);
+        const settings = world.resources.get(GameSettingsResource);
+        if (settings.showHitboxes) {
+            drawHitboxes(ctx, world, camera);
+        }
         this.drawHud(ctx, camera, gameState);
     }
 

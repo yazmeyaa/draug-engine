@@ -1,4 +1,5 @@
 import type { SystemBase } from "@draug/engine";
+import { mountDebugShell } from "./debug/debug-shell";
 import { BrowserGame } from "./browser-game";
 import { ApplyGravitySystem } from "./systems/gravity";
 import { CollisionSystem } from "./systems/collision";
@@ -16,22 +17,9 @@ import { BIRD_START, resetPipeSpawner } from "./game/reset";
 const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d")!;
 
-const debugPanel = document.getElementById("debug-panel");
-if (!debugPanel) {
-    throw new Error("no debug panel HTML element found!");
-}
+const { logsRoot, entityRoot, settingsRoot } = mountDebugShell();
 
-const entityPanel = document.getElementById("entity-panel");
-if (!entityPanel) {
-    throw new Error("no entity panel HTML element found!");
-}
-
-const settingsPanel = document.getElementById("settings-panel");
-if (!settingsPanel) {
-    throw new Error("no settings panel HTML element found!");
-}
-
-const game = new BrowserGame(ctx, debugPanel, entityPanel, settingsPanel);
+const game = new BrowserGame(ctx, logsRoot, entityRoot, settingsRoot);
 
 const camera = game.world.resources.get(Camera);
 function resizeCanvas() {

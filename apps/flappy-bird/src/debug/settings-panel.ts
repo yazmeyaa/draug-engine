@@ -13,25 +13,39 @@ export class GameSettingsPanel {
         list.className = "settings-list";
         root.appendChild(list);
 
-        const item = document.createElement("li");
-        item.className = "setting-item";
-
-        const label = document.createElement("label");
-        label.className = "setting-label";
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = settings.disableBirdCollision;
-
-        const text = document.createElement("span");
-        text.textContent = "Disable bird collision";
-
-        label.append(checkbox, text);
-        item.appendChild(label);
-        list.appendChild(item);
-
-        checkbox.addEventListener("change", () => {
-            settings.disableBirdCollision = checkbox.checked;
+        addCheckbox(list, settings.disableBirdCollision, "Disable bird collision", checked => {
+            settings.disableBirdCollision = checked;
+        });
+        addCheckbox(list, settings.showHitboxes, "Show hitboxes", checked => {
+            settings.showHitboxes = checked;
         });
     }
+}
+
+function addCheckbox(
+    list: HTMLElement,
+    initial: boolean,
+    labelText: string,
+    onChange: (checked: boolean) => void,
+): void {
+    const item = document.createElement("li");
+    item.className = "setting-item";
+
+    const label = document.createElement("label");
+    label.className = "setting-label";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = initial;
+
+    const text = document.createElement("span");
+    text.textContent = labelText;
+
+    label.append(checkbox, text);
+    item.appendChild(label);
+    list.appendChild(item);
+
+    checkbox.addEventListener("change", () => {
+        onChange(checkbox.checked);
+    });
 }

@@ -2,5 +2,5 @@ import { Resource } from "@draug/engine";
 
 @Resource({ name: "WorldPhysicsResource" })
 export class WorldPhysicsResource {
-    constructor(public worldGravity = 28) {}
+    constructor(public worldGravity = 35) {}
 }

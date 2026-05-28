@@ -4,4 +4,6 @@ import { Resource } from "@draug/engine";
 export class GameSettingsResource {
     /** When true, the bird ignores pipe hits and world bounds. */
     public disableBirdCollision = false;
+    /** When true, collider outlines are drawn over sprites. */
+    public showHitboxes = false;
 }

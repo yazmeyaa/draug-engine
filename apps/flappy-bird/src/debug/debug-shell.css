@@ -1,0 +1,200 @@
+.debug-shell {
+  --debug-width: min(420px, calc(100vw - 56px));
+  --debug-tab-width: 32px;
+  --debug-inset: 12px;
+  --debug-surface: rgba(15, 23, 42, 0.94);
+  --debug-border: rgba(148, 163, 184, 0.28);
+  --debug-muted: #94a3b8;
+  --debug-text: #e2e8f0;
+  --debug-accent: #38bdf8;
+
+  position: fixed;
+  top: var(--debug-inset);
+  right: 0;
+  bottom: var(--debug-inset);
+  width: 0;
+  z-index: 1000;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.debug-shell__rail {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  max-height: 100%;
+  transform: translateX(calc(100% - var(--debug-tab-width)));
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: auto;
+}
+
+.debug-shell.is-open .debug-shell__rail {
+  transform: translateX(0);
+}
+
+.debug-shell__toggle {
+  flex: 0 0 var(--debug-tab-width);
+  align-self: center;
+  margin: 0;
+  padding: 8px 0;
+  border: 1px solid var(--debug-border);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  background: var(--debug-surface);
+  color: var(--debug-muted);
+  font-family: "JetBrains Mono", "Fira Code", "SF Mono", Consolas, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  cursor: pointer;
+  min-height: 80px;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.28);
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.debug-shell__toggle:hover {
+  color: var(--debug-text);
+  background: rgba(30, 41, 59, 0.98);
+  border-color: rgba(148, 163, 184, 0.45);
+}
+
+.debug-shell__toggle:focus-visible {
+  outline: 2px solid var(--debug-accent);
+  outline-offset: 2px;
+}
+
+.debug-shell.is-open .debug-shell__toggle {
+  color: var(--debug-text);
+  border-color: rgba(56, 189, 248, 0.45);
+}
+
+.debug-shell__drawer {
+  flex: 0 0 var(--debug-width);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-left: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+
+.debug-card {
+  flex: 0 0 auto;
+  width: 100%;
+  padding: 14px 16px;
+  font-family: "JetBrains Mono", "Fira Code", "SF Mono", Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--debug-text);
+  background: rgba(0, 0, 0, 0.88);
+  border: 1px solid var(--debug-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.debug-card--logs {
+  height: min(420px, 45vh);
+  overflow: auto;
+  font-size: 11px;
+}
+
+.debug-card--entities {
+  max-height: 140px;
+  overflow: auto;
+}
+
+.debug-card h3 {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--debug-muted);
+}
+
+.debug-card .row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.debug-card .key {
+  color: var(--debug-muted);
+}
+
+.debug-card .val {
+  color: #a5f3fc;
+}
+
+.debug-card .entity-ids {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.debug-card .entity-id {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(148, 163, 184, 0.12);
+  color: #fde68a;
+  font-size: 11px;
+}
+
+.debug-card .entity-id--empty {
+  color: #64748b;
+  background: transparent;
+  padding: 0;
+}
+
+.debug-card .settings-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.debug-card .setting-item {
+  margin: 0;
+}
+
+.debug-card .setting-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  color: #cbd5e1;
+}
+
+.debug-card .setting-label input {
+  accent-color: var(--debug-accent);
+}
+
+.debug-card .log-debug {
+  color: #bbbbbb;
+}
+
+.debug-card .log-info {
+  color: #6b8cff;
+}
+
+.debug-card .log-warn {
+  color: #ffaa00;
+}
+
+.debug-card .log-error {
+  color: #f87171;
+}
