@@ -16,7 +16,7 @@ ECS World implementation
 */
 
 import { type ClassType, type ComponentType } from "../types/class";
-import { EntitiesManager, type EntityID, EntityRef } from "./entity";
+import { EntitiesManager, EntityCompositionIndex, type EntityID } from "./entity";
 import { SystemsManager } from "./system";
 import { ECS_DEFAULTS } from "./constant";
 import { EventBus } from "./events-buffer";
@@ -43,8 +43,8 @@ export class World {
     public readonly queries: QueryManager;
     public readonly plugins: PluginsManager;
     private readonly logger: Logger;
+    private readonly entityIndex: EntityCompositionIndex
 
-    private entityRefs_ = new Map<number, EntityRef>();
     private updatesCount_ = 0;
     public get updatesCount(): number {
         return this.updatesCount_;
@@ -54,57 +54,55 @@ export class World {
         this.entities = new EntitiesManager(params.logger);
         this.components = new ComponentsManager(params.logger, params.maxEntityCount ?? ECS_DEFAULTS.MAX_ENTITY_COUNT);
         this.systems = new SystemsManager(this, params.logger);
-        this.events = new EventBus();
-        this.resources = new ResourcesManager(params.logger);
-        this.commands = new Commands(this, params.logger);
-        this.queries = new QueryManager(this);
         this.plugins = new PluginsManager(params.logger);
+        this.resources = new ResourcesManager(params.logger);
+        this.commands = new Commands(this);
+        this.queries = new QueryManager(this);
+        this.events = new EventBus();
         this.logger = params.logger;
+        this.entityIndex = new EntityCompositionIndex();
     }
 
-    public getEntityRef(id: number): EntityRef {
-        let ref = this.entityRefs_.get(id);
-        if (!ref) {
-            ref = new EntityRef(this, id);
-            this.entityRefs_.set(id, ref);
+    public createEntity(): EntityID {
+        const id = this.entities.create();
+        this.entityIndex.addEntity(id);
+        return id;
+    };
+
+    public destroyEntity(id: EntityID): void {
+        const components = this.entityIndex.getComponents(id);
+        for (const c of components) {
+            this.removeComponent(id, c);
         }
-        return ref;
+        this.entityIndex.removeEntity(id);
+        this.entities.destroy(id);
     }
+
     public query(params: QueryParameters): number[] {
         return this.queries.get(params);
     }
 
-    public removeComponent<T extends object>(ref: EntityRef, component: ComponentType<T>): void;
-    public removeComponent<T extends object>(entity: EntityID, component: ComponentType<T>): void;
     public removeComponent<T extends object>(
-        entity: EntityID | EntityRef,
+        entity: EntityID,
         component: ComponentType<T>
     ): void {
-        const id = typeof entity === 'number' ? entity : entity.id;
-
         const storage = this.components.getStorage(component);
-        storage.remove(id);
+        storage.remove(entity);
 
         this.queries.invalidate(component);
+        this.entityIndex.removeComponent(entity, component);
     }
 
-    public addComponent<T extends object>(id: EntityID, component: ClassType<T>, initFn?: (obj: T) => void): T;
-    public addComponent<T extends object>(id: EntityRef, component: ClassType<T>, initFn?: (obj: T) => void): T
-    public addComponent<T extends object>(entity: EntityID | EntityRef, component: ClassType<T>, initFn?: (obj: T) => void): T {
+    public addComponent<T extends object>(entity: EntityID, component: ClassType<T>, initFn?: (obj: T) => void): T {
         const storage = this.components.getStorage(component);
-        let id: number;
-        if (typeof entity === 'number') {
-            id = entity;
-        } else {
-            id = entity.id;
-        }
-        const c = storage.add(id, (o) => {
+        const c = storage.add(entity, (o) => {
             if (initFn) {
                 initFn(o);
             }
             return o;
         });
         this.queries.invalidate(component);
+        this.entityIndex.addComponent(entity, component);
 
         return c;
     };

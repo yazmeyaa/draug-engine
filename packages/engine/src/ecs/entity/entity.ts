@@ -1,7 +1,7 @@
-import type { Logger } from "../logger";
-import type { ComponentType } from "./components";
-import { getComponentMetadata } from "./components/utils";
-import { World } from "./world";
+import type { Logger } from "../../logger";
+import type { ComponentType } from "../components";
+import { getComponentMetadata } from "../components/utils";
+import { World } from "../world";
 
 export type EntityID = number;
 
@@ -20,6 +20,7 @@ export class EntityMaskNotFoundError extends Error {
 
 export class EntitiesManager {
     private id_: EntityID = 0;
+    private available_: EntityID[] = [];
 
     constructor(private readonly logger: Logger) { }
 
@@ -28,23 +29,12 @@ export class EntitiesManager {
     }
 
     public create(): EntityID {
+        if (this.available_.length > 0)
+            return this.available_.pop()!;
         return this.nextId()
     }
+
+    public destroy(id: EntityID): void {
+        this.available_.push(id);
+    }
 };
-
-export class EntityRef {
-    constructor(
-        private world: World,
-        public id: EntityID,
-    ) { }
-
-    public with<
-        T extends ComponentType[],
-        Result extends { [K in keyof T]: InstanceType<T[K]> }
-    >(...components: T): Result {
-        return components.map(c => {
-            const s = this.world.components.getStorage(c);
-            return s.tryGet(this.id);
-        }) as Result;
-    };
-}

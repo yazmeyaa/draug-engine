@@ -1,6 +1,5 @@
-import type { Logger } from "../logger";
 import type { ComponentType } from "./components";
-import { getComponentMetadata } from "./components/utils";
+import type { EntityID } from "./entity";
 import { World } from "./world";
 
 export type WorldCommand = (world: World) => void;
@@ -22,7 +21,6 @@ export class Commands {
 
     constructor(
         private readonly world: World,
-        private readonly logger: Logger,
     ) { }
 
     public add(cmd: WorldCommand): void {
@@ -33,8 +31,8 @@ export class Commands {
             cmd(world);
         this.commandsQueue_.length = 0;
     }
-    public createEntity(...entries: CreateEntityComponentEntry[]): number {
-        const id = this.world.entities.create();
+    public createEntity(...entries: CreateEntityComponentEntry[]): EntityID {
+        const id = this.world.createEntity();
 
         const cmd = (world: World) => {
             for (const [cls, initFn] of entries) {
@@ -43,5 +41,11 @@ export class Commands {
         }
         this.add(cmd);
         return id;
+    }
+    public destroyEntity(id: EntityID): void {
+        const cmd = (world: World) => {
+            world.destroyEntity(id);            
+        }
+        this.add(cmd);
     }
 };

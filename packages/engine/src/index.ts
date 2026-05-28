@@ -40,7 +40,6 @@ export {
 
 export {
     EntityMaskNotFoundError,
-    EntityRef,
     EntitiesManager,
     UnregisteredComponentStorageError,
     type EntityID,
