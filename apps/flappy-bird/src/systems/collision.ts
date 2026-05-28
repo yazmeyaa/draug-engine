@@ -4,6 +4,7 @@ import { FlappyTag } from "../components/flappy-tag";
 import { PipeTag } from "../components/pipe-tag";
 import { COLLISION_EVENT_KEY, type CollisionEvent } from "../events/collision";
 import { GameStateResource, GameState } from "../resources/game-state";
+import { GameSettingsResource } from "../resources/game-settings";
 import {
     getColliderBox,
     intersectsAABB,
@@ -36,6 +37,7 @@ export class CollisionSystem extends SystemBase {
     private transformStore!: ComponentStorage<Position>;
     private collisionEvents!: EventBuffer<CollisionEvent>;
     private gameState!: GameStateResource;
+    private settings!: GameSettingsResource;
     private camera!: Camera;
     private birdPrevBox: ColliderBox | null = null;
 
@@ -44,6 +46,7 @@ export class CollisionSystem extends SystemBase {
         this.transformStore = world.components.getStorage(Position);
         this.collisionEvents = world.events.getBuffer(COLLISION_EVENT_KEY);
         this.gameState = world.resources.get(GameStateResource);
+        this.settings = world.resources.get(GameSettingsResource);
         this.camera = world.resources.get(Camera);
     }
 
@@ -63,6 +66,11 @@ export class CollisionSystem extends SystemBase {
             this.transformStore.tryGet(birdId),
             this.colliderStore.tryGet(birdId),
         );
+
+        if (this.settings.disableBirdCollision) {
+            this.birdPrevBox = currBox;
+            return;
+        }
 
         if (this.isBirdOutOfBounds(currBox)) {
             this.gameState.state = GameState.GameOver;

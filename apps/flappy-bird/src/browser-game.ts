@@ -22,6 +22,9 @@ import { PipeGapId } from "./components/pipe-gap-id";
 import { GameActions } from "./resources/actions";
 import { PipeSpawnerResource } from "./resources/pipe-spawner";
 import { WorldPhysicsResource } from "./resources/physics";
+import { EntityDebugPanel } from "./debug/entity-panel";
+import { GameSettingsPanel } from "./debug/settings-panel";
+import { GameSettingsResource } from "./resources/game-settings";
 
 class TimeSource implements TS {
     public now(): number {
@@ -32,6 +35,7 @@ class TimeSource implements TS {
 export class BrowserGame {
     private readonly engine_: Engine;
     private readonly renderView: RenderView;
+    private readonly entityPanel_: EntityDebugPanel;
 
     public get world(): World {
         return this.engine_.world;
@@ -44,6 +48,8 @@ export class BrowserGame {
     constructor(
         ctx: CanvasRenderingContext2D,
         logsContainer: HTMLElement,
+        entityPanelRoot: HTMLElement,
+        settingsPanelRoot: HTMLElement,
     ) {
         const clock = new Clock(new TimeSource());
         const loop = new Loop(clock, () => {
@@ -64,6 +70,8 @@ export class BrowserGame {
         const camera = this.world.resources.insert(Camera, new Camera(0, 0, 1.4, 800, 600));
         this.setupWorld();
         this.renderView = new RenderView(this.world, camera);
+        this.entityPanel_ = new EntityDebugPanel(entityPanelRoot);
+        new GameSettingsPanel(settingsPanelRoot, this.world);
     }
 
     private setupWorld(): void {
@@ -76,10 +84,12 @@ export class BrowserGame {
         this.world.resources.insert(GameStateResource, new GameStateResource());
         this.world.resources.insert(PipeSpawnerResource, new PipeSpawnerResource());
         this.world.resources.insert(WorldPhysicsResource, new WorldPhysicsResource());
+        this.world.resources.insert(GameSettingsResource, new GameSettingsResource());
     }
 
     private render(ctx: CanvasRenderingContext2D): void {
         const world = this.world;
+        this.entityPanel_.update(world);
         const renderView = this.renderView;
         const camera = world.resources.get(Camera);
         const gameState = world.resources.get(GameStateResource);

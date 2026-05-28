@@ -78,6 +78,10 @@ export class World {
         this.entities.destroy(id);
     }
 
+    public getActiveEntityIds(): EntityID[] {
+        return this.entityIndex.getEntityIds().sort((a, b) => a - b);
+    }
+
     public query(params: QueryParameters): number[] {
         return this.queries.get(params);
     }

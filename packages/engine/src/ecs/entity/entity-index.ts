@@ -47,4 +47,8 @@ export class EntityCompositionIndex {
     public removeEntity(id: EntityID): void {
         this.entityComponentsMap_.delete(id);
     }
+
+    public getEntityIds(): EntityID[] {
+        return [...this.entityComponentsMap_.keys()];
+    }
 }

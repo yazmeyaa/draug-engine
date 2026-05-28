@@ -5,15 +5,9 @@ import { CollisionSystem } from "./systems/collision";
 import { PipeSpawnerSystem } from "./systems/pipe-spawner";
 import { ScoreSystem } from "./systems/score";
 import { createBird } from "./prefabs/bird";
-import { FlappyTag } from "./components/flappy-tag";
-import { PipeTag } from "./components/pipe-tag";
-import { PipeGapId } from "./components/pipe-gap-id";
-import { Renderable } from "./components/renderable";
 import { Camera } from "./render/types";
 import { GameActions } from "./resources/actions";
 import { GameStateResource } from "./resources/game-state";
-import { PipeSpawnerResource } from "./resources/pipe-spawner";
-import { WorldPhysicsResource } from "./resources/physics";
 import { InputSystem } from "./systems/input";
 import { BindCameraSystem } from "./systems/bind-camera";
 import { ImageAsset } from "./assets/image";
@@ -27,7 +21,17 @@ if (!debugPanel) {
     throw new Error("no debug panel HTML element found!");
 }
 
-const game = new BrowserGame(ctx, debugPanel);
+const entityPanel = document.getElementById("entity-panel");
+if (!entityPanel) {
+    throw new Error("no entity panel HTML element found!");
+}
+
+const settingsPanel = document.getElementById("settings-panel");
+if (!settingsPanel) {
+    throw new Error("no settings panel HTML element found!");
+}
+
+const game = new BrowserGame(ctx, debugPanel, entityPanel, settingsPanel);
 
 const camera = game.world.resources.get(Camera);
 function resizeCanvas() {
