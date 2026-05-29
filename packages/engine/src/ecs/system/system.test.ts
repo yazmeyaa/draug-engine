@@ -7,6 +7,7 @@ import { World } from "../world";
 import {
     ErrMissingSystemMetadata,
     ErrNotASystem,
+    ErrSystemPhaseDependencyViolation,
     getSystemMetadata,
     isSystem,
     System,
@@ -60,11 +61,17 @@ describe("@System decorator", () => {
     });
 
     it("stores query, required components, phase, and name on the constructor", () => {
+        @System({ name: "ComputeAfterDependency", query: {} })
+        class ComputeAfterDependencySystem extends SystemBase {
+            public compute(): void {}
+        }
+
         @System({
             name: "MetaSystem",
             query: { include: [SystemTestPosition], exclude: [SystemTestTag] },
             requiredComponents: [SystemTestVelocity],
-            computeAfter: [],
+            computeAfter: [ComputeAfterDependencySystem],
+            computeBefore: [ComputeAfterDependencySystem],
             phase: SystemPhase.POST,
         })
         class MetaSystem extends SystemBase {
@@ -78,7 +85,8 @@ describe("@System decorator", () => {
         expect(meta.query.include).toEqual([SystemTestPosition]);
         expect(meta.query.exclude).toEqual([SystemTestTag]);
         expect(meta.requiredComponents).toEqual(new Set([SystemTestVelocity]));
-        expect(meta.computeAfter).toEqual(new Set());
+        expect(meta.computeAfter).toEqual(new Set([ComputeAfterDependencySystem]));
+        expect(meta.computeBefore).toEqual(new Set([ComputeAfterDependencySystem]));
     });
 
     it("defaults phase to MAIN when phase is omitted", () => {
@@ -105,6 +113,17 @@ describe("@System decorator", () => {
             @System({ name: "Invalid", query: {} })
             class NotASystem {}
         }).toThrow(ErrNotASystem);
+    });
+
+    it("accepts systems that inherit from SystemBase through an intermediate base class", () => {
+        abstract class AbstractTrackedSystem extends SystemBase {}
+
+        expect(() => {
+            @System({ name: "Tracked", query: {} })
+            class TrackedSystem extends AbstractTrackedSystem {
+                public compute(): void {}
+            }
+        }).not.toThrow();
     });
 });
 
@@ -204,6 +223,55 @@ describe("SystemsManager.update", () => {
         });
     });
 
+    it("calls onInit once per system instance when new systems register after initial build", () => {
+        @System({ name: "first", query: {} })
+        class FirstSystem extends SystemBase {
+            public onInit = vi.fn((_ctx: SystemInitContext) => {});
+            public compute(): void {}
+        }
+
+        @System({ name: "second", query: {} })
+        class SecondSystem extends SystemBase {
+            public onInit = vi.fn((_ctx: SystemInitContext) => {});
+            public compute(): void {}
+        }
+
+        const world = createWorld();
+        const first = new FirstSystem();
+        const second = new SecondSystem();
+
+        world.systems.register(first);
+        world.systems.update(FRAME_TIME);
+
+        world.systems.register(second);
+        world.systems.update(FRAME_TIME);
+
+        expect(first.onInit).toHaveBeenCalledTimes(1);
+        expect(second.onInit).toHaveBeenCalledTimes(1);
+    });
+
+    it("rebuilds execution order after registering systems at runtime", () => {
+        @System({ name: "first", query: {} })
+        class FirstSystem extends SystemBase {
+            public compute = track("first");
+        }
+
+        @System({ name: "second", query: {} })
+        class SecondSystem extends SystemBase {
+            public compute = track("second");
+        }
+
+        const world = createWorld();
+        world.systems.register(new FirstSystem());
+        world.systems.update(FRAME_TIME);
+        expect(executionOrder).toEqual(["first"]);
+
+        executionOrder = [];
+        world.systems.register(new SecondSystem());
+        world.systems.update(FRAME_TIME);
+        expect(executionOrder.sort()).toEqual(["first", "second"]);
+    });
+
     it("passes query-matched entity ids to compute", () => {
         @System({ name: "QueryRunner", query: { include: [SystemTestPosition] } })
         class QueryRunnerSystem extends SystemBase {
@@ -296,6 +364,93 @@ describe("SystemsManager.update", () => {
         expect(executionOrder).toEqual(["first", "second"]);
     });
 
+    it("runs dependencies within PRE phase", () => {
+        @System({ name: "pre-first", query: {}, phase: SystemPhase.PRE })
+        class PreFirstSystem extends SystemBase {
+            public compute = track("pre-first");
+        }
+
+        @System({
+            name: "pre-second",
+            query: {},
+            phase: SystemPhase.PRE,
+            computeAfter: [PreFirstSystem],
+        })
+        class PreSecondSystem extends SystemBase {
+            public compute = track("pre-second");
+        }
+
+        @System({ name: "main", query: {}, phase: SystemPhase.MAIN })
+        class MainSystem extends SystemBase {
+            public compute = track("main");
+        }
+
+        const world = createWorld();
+        world.systems.register(new MainSystem());
+        world.systems.register(new PreSecondSystem());
+        world.systems.register(new PreFirstSystem());
+
+        world.systems.update(FRAME_TIME);
+
+        expect(executionOrder).toEqual(["pre-first", "pre-second", "main"]);
+    });
+
+    it("runs dependencies within POST phase", () => {
+        @System({ name: "main", query: {}, phase: SystemPhase.MAIN })
+        class MainSystem extends SystemBase {
+            public compute = track("main");
+        }
+
+        @System({ name: "post-first", query: {}, phase: SystemPhase.POST })
+        class PostFirstSystem extends SystemBase {
+            public compute = track("post-first");
+        }
+
+        @System({
+            name: "post-second",
+            query: {},
+            phase: SystemPhase.POST,
+            computeAfter: [PostFirstSystem],
+        })
+        class PostSecondSystem extends SystemBase {
+            public compute = track("post-second");
+        }
+
+        const world = createWorld();
+        world.systems.register(new PostSecondSystem());
+        world.systems.register(new MainSystem());
+        world.systems.register(new PostFirstSystem());
+
+        world.systems.update(FRAME_TIME);
+
+        expect(executionOrder).toEqual(["main", "post-first", "post-second"]);
+    });
+
+    it("runs computeBefore dependencies after dependency sources within MAIN phase", () => {
+        @System({ name: "second", query: {}, phase: SystemPhase.MAIN })
+        class SecondSystem extends SystemBase {
+            public compute = track("second");
+        }
+
+        @System({
+            name: "first",
+            query: {},
+            phase: SystemPhase.MAIN,
+            computeBefore: [SecondSystem],
+        })
+        class FirstSystem extends SystemBase {
+            public compute = track("first");
+        }
+
+        const world = createWorld();
+        world.systems.register(new SecondSystem());
+        world.systems.register(new FirstSystem());
+
+        world.systems.update(FRAME_TIME);
+
+        expect(executionOrder).toEqual(["first", "second"]);
+    });
+
     it("throws when a computeAfter dependency was never registered", () => {
         @System({ name: "orphan", query: {}, phase: SystemPhase.MAIN })
         class OrphanSystem extends SystemBase {
@@ -318,6 +473,76 @@ describe("SystemsManager.update", () => {
         expect(() => world.systems.update(FRAME_TIME)).toThrow(
             "Dependency OrphanSystem not registered",
         );
+    });
+
+    it("throws when a computeBefore dependency was never registered", () => {
+        @System({ name: "orphan", query: {}, phase: SystemPhase.MAIN })
+        class OrphanSystem extends SystemBase {
+            public compute(): void {}
+        }
+
+        @System({
+            name: "dependent",
+            query: {},
+            phase: SystemPhase.MAIN,
+            computeBefore: [OrphanSystem],
+        })
+        class DependentSystem extends SystemBase {
+            public compute(): void {}
+        }
+
+        const world = createWorld();
+        world.systems.register(new DependentSystem());
+
+        expect(() => world.systems.update(FRAME_TIME)).toThrow(
+            "Dependency OrphanSystem not registered",
+        );
+    });
+
+    it("throws when computeAfter conflicts with phase ordering", () => {
+        @System({ name: "post", query: {}, phase: SystemPhase.POST })
+        class PostSystem extends SystemBase {
+            public compute(): void {}
+        }
+
+        @System({
+            name: "main",
+            query: {},
+            phase: SystemPhase.MAIN,
+            computeAfter: [PostSystem],
+        })
+        class MainSystem extends SystemBase {
+            public compute(): void {}
+        }
+
+        const world = createWorld();
+        world.systems.register(new MainSystem());
+        world.systems.register(new PostSystem());
+
+        expect(() => world.systems.update(FRAME_TIME)).toThrow(ErrSystemPhaseDependencyViolation);
+    });
+
+    it("throws when computeBefore conflicts with phase ordering", () => {
+        @System({ name: "pre", query: {}, phase: SystemPhase.PRE })
+        class PreSystem extends SystemBase {
+            public compute(): void {}
+        }
+
+        @System({
+            name: "post",
+            query: {},
+            phase: SystemPhase.POST,
+            computeBefore: [PreSystem],
+        })
+        class PostSystem extends SystemBase {
+            public compute(): void {}
+        }
+
+        const world = createWorld();
+        world.systems.register(new PreSystem());
+        world.systems.register(new PostSystem());
+
+        expect(() => world.systems.update(FRAME_TIME)).toThrow(ErrSystemPhaseDependencyViolation);
     });
 
     it("throws when MAIN-phase systems form a dependency cycle", () => {

@@ -22,6 +22,12 @@ export class ErrMissingSystemMetadata extends SystemError {
         this.message = `${this.message}: Missing system metadata! Define system class with @System decorator.`
     }
 };
+export class ErrSystemPhaseDependencyViolation extends SystemError {
+    constructor(target: SystemCtor, relation: "computeAfter" | "computeBefore", dependency: SystemCtor) {
+        super(target);
+        this.message = `${this.message}: ${relation} dependency "${dependency.name}" conflicts with phase ordering for "${target.name}".`;
+    }
+}
 
 export enum SystemPhase {
     PRE,
@@ -55,6 +61,14 @@ export type SystemMetadata = {
      * this instance. Used when {@link SystemsManager.build} computes a topological execution order.
      */
     computeAfter?: Set<SystemCtor>;
+    /**
+     * Systems that must run after this one.
+     *
+     * This is the inverse form of {@link SystemMetadata.computeAfter} and is useful when
+     * expressing ordering from the perspective of the current system (for example,
+     * "run this system before RenderSystem").
+     */
+    computeBefore?: Set<SystemCtor>;
     phase?: SystemPhase;
     name: string;
 };
@@ -62,6 +76,7 @@ export type SystemDecoratorProps = {
     query: SystemMetadata['query'];
     requiredComponents?: ComponentType[];
     computeAfter?: SystemCtor[];
+    computeBefore?: SystemCtor[];
     phase?: SystemPhase;
     name: SystemMetadata['name'];
 };
@@ -72,16 +87,24 @@ export function System(props: SystemDecoratorProps): ClassDecorator {
     return (target: Function) => {
         const systemTarget = target as FunctionWithMetadata;
 
-        if ('__proto__' in systemTarget && systemTarget.__proto__ !== SystemBase) {
+        if (!(target.prototype instanceof SystemBase)) {
             throw new ErrNotASystem(target);
         }
 
         const query = { ...props.query };
         const requiredComponents = new Set(props.requiredComponents);
         const computeAfter = new Set(props.computeAfter);
+        const computeBefore = new Set(props.computeBefore);
         const phase = props.phase ?? SystemPhase.MAIN;
         const name = props.name ?? target.name;
-        const metadata: SystemMetadata = { query, requiredComponents, computeAfter, phase, name };
+        const metadata: SystemMetadata = {
+            query,
+            requiredComponents,
+            computeAfter,
+            computeBefore,
+            phase,
+            name,
+        };
 
         systemTarget[SystemMetadataSymbol] = metadata;
     };
@@ -130,7 +153,7 @@ export type SystemInitContext = {
  *
  * Subclasses declare which components they iterate over (`queryComponents`), which component
  * types must exist in the world for registration (`requiredComponents`), and optional ordering
- * relative to other systems (`computeAfter` / `super(OtherSystem)`).
+ * relative to other systems (`computeAfter` / `computeBefore`).
  */
 export abstract class SystemBase {
     /**
@@ -145,6 +168,7 @@ export class SystemsManager {
     private systems_ = new Map<SystemCtor, SystemBase>();
     private executionOrder_: SystemBase[] = [];
     private requiredComponents_: Set<ComponentType> = new Set();
+    private initializedSystems_ = new Set<SystemBase>();
 
     private dirty_ = true;
 
@@ -163,6 +187,7 @@ export class SystemsManager {
         const { query, requiredComponents } = getSystemMetadata(ctor);
 
         this.systems_.set(ctor, sys);
+        this.dirty_ = true;
 
         const q = query;
 
@@ -185,7 +210,10 @@ export class SystemsManager {
     public build(): void {
         this.buildSystemsArray();
         for (const sys of this.systems_.values()) {
-            sys.onInit?.({ world: this.world, logger: this.logger });
+            if (!this.initializedSystems_.has(sys)) {
+                sys.onInit?.({ world: this.world, logger: this.logger });
+                this.initializedSystems_.add(sys);
+            }
         }
         this.logger.debug(() => `Built ${this.systems_.size} systems`);
         this.dirty_ = false;
@@ -222,47 +250,87 @@ export class SystemsManager {
     }
 
     private buildSystemsArray(): void {
-        const pre: SystemBase[] = [];
-        const main: SystemBase[] = [];
-        const post: SystemBase[] = [];
-        const map = new Map<SystemCtor, DAGNode<SystemBase>>();
+        const phasePriority = new Map<SystemPhase, number>([
+            [SystemPhase.PRE, 0],
+            [SystemPhase.MAIN, 1],
+            [SystemPhase.POST, 2],
+        ]);
+        const preMap = new Map<SystemCtor, DAGNode<SystemBase>>();
+        const mainMap = new Map<SystemCtor, DAGNode<SystemBase>>();
+        const postMap = new Map<SystemCtor, DAGNode<SystemBase>>();
+        const systemPhase = new Map<SystemCtor, SystemPhase>();
+
+        const mapByPhase = (phase: SystemPhase): Map<SystemCtor, DAGNode<SystemBase>> => {
+            switch (phase) {
+                case SystemPhase.PRE:
+                    return preMap;
+                case SystemPhase.MAIN:
+                    return mainMap;
+                case SystemPhase.POST:
+                    return postMap;
+            }
+        };
 
         for (const [ctor, system] of this.systems_.entries()) {
             const meta = getSystemMetadata(ctor);
+            const phase = meta.phase ?? SystemPhase.MAIN;
+            const map = mapByPhase(phase);
 
-            switch (meta.phase) {
-                case SystemPhase.PRE:
-                    pre.push(system);
-                    break;
-
-                case SystemPhase.MAIN:
-                    main.push(system);
-                    map.set(ctor, new DAGNode(system));
-                    break;
-
-                case SystemPhase.POST:
-                    post.push(system);
-                    break;
-            }
+            map.set(ctor, new DAGNode(system));
+            systemPhase.set(ctor, phase);
         }
 
-        for (const ctor of map.keys()) {
-            const currentNode = map.get(ctor)!;
-            const { computeAfter } = getSystemMetadata(ctor);
-            for (const depCtor of computeAfter ?? []) {
-                const depNode = map.get(depCtor);
-                if (!depNode) {
-                    throw new Error(`Dependency ${depCtor.name} not registered`);
+        const phaseMaps = [preMap, mainMap, postMap];
+        for (const phaseMap of phaseMaps) {
+            for (const ctor of phaseMap.keys()) {
+                const currentNode = phaseMap.get(ctor)!;
+                const currentPhase = systemPhase.get(ctor)!;
+                const { computeAfter, computeBefore } = getSystemMetadata(ctor);
+
+                for (const depCtor of computeAfter ?? []) {
+                    const dependencyPhase = systemPhase.get(depCtor);
+                    if (dependencyPhase === undefined) {
+                        throw new Error(`Dependency ${depCtor.name} not registered`);
+                    }
+
+                    const currentPhasePriority = phasePriority.get(currentPhase)!;
+                    const dependencyPhasePriority = phasePriority.get(dependencyPhase)!;
+
+                    if (dependencyPhasePriority > currentPhasePriority) {
+                        throw new ErrSystemPhaseDependencyViolation(ctor, "computeAfter", depCtor);
+                    }
+
+                    if (dependencyPhase === currentPhase) {
+                        const depNode = phaseMap.get(depCtor)!;
+                        depNode.vertices.push(currentNode);
+                    }
                 }
 
-                depNode.vertices.push(currentNode);
+                for (const depCtor of computeBefore ?? []) {
+                    const dependencyPhase = systemPhase.get(depCtor);
+                    if (dependencyPhase === undefined) {
+                        throw new Error(`Dependency ${depCtor.name} not registered`);
+                    }
+
+                    const currentPhasePriority = phasePriority.get(currentPhase)!;
+                    const dependencyPhasePriority = phasePriority.get(dependencyPhase)!;
+
+                    if (dependencyPhasePriority < currentPhasePriority) {
+                        throw new ErrSystemPhaseDependencyViolation(ctor, "computeBefore", depCtor);
+                    }
+
+                    if (dependencyPhase === currentPhase) {
+                        const depNode = phaseMap.get(depCtor)!;
+                        currentNode.vertices.push(depNode);
+                    }
+                }
             }
         }
 
         this.executionOrder_ = [
-            ...pre,
-            ...topologicalSort(map.values()).map(x => x.data),
-            ...post,
+            ...topologicalSort(preMap.values()).map(x => x.data),
+            ...topologicalSort(mainMap.values()).map(x => x.data),
+            ...topologicalSort(postMap.values()).map(x => x.data),
         ];
     }
 }
