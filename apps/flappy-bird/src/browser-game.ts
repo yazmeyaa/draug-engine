@@ -6,6 +6,7 @@ import {
     World,
     type TimeSource as TS,
 } from "@draug/engine";
+import { injectStd } from '@draug/engine/std-utils';
 import { worldSizeToScreen, worldToScreen } from "./render/camera-transform";
 import { drawHitboxes } from "./render/draw-hitboxes";
 import { RenderView } from "./render/renderer";
@@ -66,7 +67,8 @@ export class BrowserGame {
         const engine = new Engine({ loop, maxEntityCount: 2048, logger });
         engineHolder.current = engine;
         this.engine_ = engine;
-        
+        injectStd(this.engine.world);
+
         const camera = this.world.resources.insert(Camera, new Camera(0, 0, 1.4, 800, 600));
         this.setupWorld();
         this.renderView = new RenderView(this.world, camera);

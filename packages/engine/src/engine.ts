@@ -3,7 +3,6 @@ import { ECS_DEFAULTS } from "./ecs/constant";
 import { World } from "./ecs/world";
 import { NoopLogger, type Logger } from "./logger/logger";
 import { Loop, Runtime } from "./runtime";
-import { injectStd } from "./std/utils";
 
 export type EngineConstructor = {
     loop: Loop;
@@ -27,7 +26,6 @@ export class Engine implements TickProvider {
             logger: this.logger,
             maxEntityCount: params.maxEntityCount ?? ECS_DEFAULTS.MAX_ENTITY_COUNT,
         });
-        injectStd(this.world);
     }
     
     public getTick(): number {

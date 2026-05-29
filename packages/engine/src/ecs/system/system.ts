@@ -1,9 +1,9 @@
-import { DAGNode, topologicalSort } from '../core/graph/dag';
-import type { ClassType, ComponentType } from '../types/class'
-import type { World } from "./world";
-import type { QueryParameters } from './query';
-import type { Logger } from '../logger';
-import type { Time } from '../runtime/clock';
+import { DAGNode, topologicalSort } from '../../core/graph/dag';
+import type { ClassType, ComponentType } from '../../types/class'
+import type { World } from "../world";
+import type { QueryParameters } from '../query';
+import type { Logger } from '../../logger';
+import type { Time } from '../../runtime/clock';
 
 
 export class SystemError extends Error {
@@ -236,12 +236,12 @@ export class SystemsManager {
                     break;
 
                 case SystemPhase.MAIN:
-                    post.push(system);
-                    break;
-
-                default:
                     main.push(system);
                     map.set(ctor, new DAGNode(system));
+                    break;
+
+                case SystemPhase.POST:
+                    post.push(system);
                     break;
             }
         }

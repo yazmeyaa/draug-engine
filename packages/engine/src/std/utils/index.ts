@@ -1,0 +1,1 @@
+export { injectStd } from './utils'

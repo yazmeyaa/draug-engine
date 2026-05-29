@@ -6,6 +6,7 @@ export default defineConfig({
     "src/std/components/index.ts",
     "src/std/math/index.ts",
     "src/std/systems/index.ts",
+    "src/std/utils/index.ts",
   ],
   format: ["esm", "cjs"],
   dts: {

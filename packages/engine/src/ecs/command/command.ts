@@ -1,6 +1,6 @@
-import type { ComponentType } from "./components";
-import type { EntityID } from "./entity";
-import { World } from "./world";
+import type { ComponentType } from "../components";
+import type { EntityID } from "../entity";
+import { World } from "../world";
 
 export type WorldCommand = (world: World) => void;
 export type ComponentInitFn<C extends ComponentType> =

@@ -10,7 +10,7 @@ export {
     SystemPhase,
     type SystemComputeContext,
     type SystemInitContext,
-} from './ecs/system';
+} from './ecs/system/system';
 
 export {
     World
@@ -36,7 +36,7 @@ export {
     type CreateEntityComponentEntry,
     type ComponentInitFn,
     type WorldCommand,
-} from './ecs/command';
+} from './ecs/command/command';
 
 export {
     EntityMaskNotFoundError,
@@ -65,7 +65,7 @@ export {
     EventBuffer,
     EventBus,
     createEventKey,
-} from './ecs/events-buffer';
+} from './ecs/events-buffer/events-buffer';
 
 export {
     Clock,

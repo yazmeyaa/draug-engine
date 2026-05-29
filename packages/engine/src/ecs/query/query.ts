@@ -1,6 +1,6 @@
-import type { ComponentType } from "./components";
-import type { EntityID } from "./entity";
-import type { World } from "./world";
+import type { ComponentType } from "../components";
+import type { EntityID } from "../entity";
+import type { World } from "../world";
 import { Bitmap } from "bitmap-index";
 
 export type QueryParameters = {

@@ -1,7 +1,6 @@
 import type { Logger } from "../../logger";
 import type { ComponentType } from "../components";
 import { getComponentMetadata } from "../components/utils";
-import { World } from "../world";
 
 export type EntityID = number;
 
