@@ -36,7 +36,7 @@ export function mountDebugShell(): DebugShellMount {
     shell.append(rail);
     document.body.appendChild(shell);
 
-    new DebugDrawer(shell, toggle);
+    new DebugDrawer(shell, drawer, toggle);
 
     return { logsRoot, entityRoot, settingsRoot };
 }
