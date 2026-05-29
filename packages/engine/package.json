@@ -12,7 +12,7 @@
     "url": "git+https://github.com/yazmeyaa/draug-engine.git",
     "directory": "packages/engine"
   },
-  "description": "Amber game engine. Based on ECS architecture.",
+  "description": "Draug Engine is a TypeScript game engine focused on clear ECS-based architecture and reusable gameplay building blocks.",
   "license": "Apache-2.0",
   "readme": "README.md",
   "dependencies": {

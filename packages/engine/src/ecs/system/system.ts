@@ -83,6 +83,11 @@ export type SystemDecoratorProps = {
 const SystemMetadataSymbol = Symbol("system");
 type FunctionWithMetadata = Function & { [SystemMetadataSymbol]?: SystemMetadata };
 
+/**
+ * Decorates a {@link SystemBase} subclass with execution metadata.
+ *
+ * @throws ErrNotASystem when target does not extend SystemBase.
+ */
 export function System(props: SystemDecoratorProps): ClassDecorator {
     return (target: Function) => {
         const systemTarget = target as FunctionWithMetadata;
@@ -110,6 +115,7 @@ export function System(props: SystemDecoratorProps): ClassDecorator {
     };
 }
 
+/** Returns decorator metadata for a system constructor. */
 export function getSystemMetadata(system: SystemCtor): SystemMetadata {
     if (hasMetadata(system)) {
         return system[SystemMetadataSymbol] as SystemMetadata;
@@ -151,9 +157,8 @@ export type SystemInitContext = {
 /**
  * Base class for ECS systems executed by {@link SystemsManager}.
  *
- * Subclasses declare which components they iterate over (`queryComponents`), which component
- * types must exist in the world for registration (`requiredComponents`), and optional ordering
- * relative to other systems (`computeAfter` / `computeBefore`).
+ * Subclasses declare their query and dependencies with {@link System} metadata,
+ * then implement frame logic in {@link compute}.
  */
 export abstract class SystemBase {
     /**
@@ -164,6 +169,7 @@ export abstract class SystemBase {
     public onInit?(ctx: SystemInitContext): void;
 };
 
+/** Registers systems, computes execution order and runs update passes. */
 export class SystemsManager {
     private systems_ = new Map<SystemCtor, SystemBase>();
     private executionOrder_: SystemBase[] = [];
@@ -177,10 +183,16 @@ export class SystemsManager {
         private readonly logger: Logger,
     ) { }
 
+    /** Returns union of all component types required by registered systems. */
     public getRequiredComponents(): Set<ComponentType> {
         return this.requiredComponents_;
     }
 
+    /**
+     * Registers one system instance.
+     *
+     * @throws Error for duplicate system constructors.
+     */
     public register<T extends SystemBase>(sys: T): void {
         const ctor = sys.constructor as SystemCtor<T>;
         if (this.systems_.has(ctor)) throw new Error("Duplicate system");
@@ -207,6 +219,7 @@ export class SystemsManager {
         this.logger.debug(() => `[Systems]: system "${meta.name}" was registered`);
     }
 
+    /** Builds execution order and runs one-time system initialization hooks. */
     public build(): void {
         this.buildSystemsArray();
         for (const sys of this.systems_.values()) {
@@ -223,6 +236,11 @@ export class SystemsManager {
         this.build();
     };
 
+    /**
+     * Gets a registered system instance by constructor.
+     *
+     * @throws Error when system is not registered.
+     */
     public get<T extends SystemBase>(ctor: SystemCtor<T>): T {
         const s = this.systems_.get(ctor);
 
@@ -231,6 +249,9 @@ export class SystemsManager {
         return s as T;
     }
 
+    /**
+     * Executes all systems in build order for one frame.
+     */
     public update(time: Time): void {
         if (this.dirty_)
             this.rebuild();

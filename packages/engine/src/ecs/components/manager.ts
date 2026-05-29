@@ -30,6 +30,11 @@ export class ComponentsManager {
         private maxEntityCount: number = ECS_DEFAULTS.MAX_ENTITY_COUNT
     ) { }
 
+    /**
+     * Registers a component storage if not registered yet.
+     *
+     * Returns existing storage when called repeatedly with the same component type.
+     */
     public register<T extends object>(
         component: ComponentType<T>,
         opts?: RegisterComponentOptions<T>
@@ -53,6 +58,11 @@ export class ComponentsManager {
     }
 
 
+    /**
+     * Returns storage for a component type.
+     *
+     * @throws UnregisteredComponentStorageError when the storage does not exist.
+     */
     public getStorage<T extends object>(component: ComponentType<T>): ComponentStorage<T> {
         const store = this.storages_.get(component);
         if (store === undefined)
@@ -61,6 +71,7 @@ export class ComponentsManager {
         return store;
     }
 
+    /** Returns component type id assigned by the decorator registry. */
     public getComponentId(ctor: ComponentType): number {
         return getComponentId(ctor);
     }

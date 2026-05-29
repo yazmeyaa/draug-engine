@@ -7,6 +7,7 @@ import type { Logger } from "../../logger";
 export type PluginID = string;
 export type PluginConstructor = ClassType<PluginBase>;
 
+/** Declares plugin-level runtime dependencies. */
 export type PluginDependencies = {
     components?: ComponentType[];
     resources?: ClassType<any>[];
@@ -14,6 +15,7 @@ export type PluginDependencies = {
     plugins?: Array<{ plugin: PluginConstructor; version?: string }>;
 }
 
+/** Metadata attached by the {@link Plugin} decorator. */
 export interface PluginMetadata {
     id?: PluginID;
     version: string;
@@ -23,6 +25,11 @@ export interface PluginMetadata {
 
 const PluginMetadataSymbol = Symbol("plugin");
 
+/**
+ * Decorates a class as a plugin.
+ *
+ * @throws ErrNotAPlugin when target does not directly extend PluginBase.
+ */
 export function Plugin(metadata: PluginMetadata): ClassDecorator {
     return (target: Function) => {
         if ('__proto__' in target && target.__proto__ !== PluginBase)
@@ -32,6 +39,7 @@ export function Plugin(metadata: PluginMetadata): ClassDecorator {
     };
 }
 
+/** Returns metadata from a plugin constructor. */
 export function getPluginMetadata(plugin: PluginConstructor): PluginMetadata {
     if (hasMetadata(plugin)) {
         return plugin[PluginMetadataSymbol] as PluginMetadata;
@@ -49,6 +57,7 @@ export function isPlugin(ctor: Function): boolean {
     return hasMetadata(ctor);
 }
 
+/** Base class for world plugins. */
 export abstract class PluginBase {
     public onPluginLoad?: () => void;
     public onPluginUnload?: (world: World) => void;
@@ -107,11 +116,18 @@ export class ErrDAGCycleDetectedPlugin extends Error {
     }
 }
 
+/**
+ * Installs and initializes plugins in dependency order.
+ */
 export class PluginsManager {
     private plugins_: Map<PluginConstructor, PluginManagerInternalPluginStorageItem> = new Map();
     private isInitiated_ = false;
     constructor(private readonly logger: Logger) { }
 
+    /**
+     * Registers a plugin constructor and optional constructor args.
+     * Duplicate installs are ignored.
+     */
     public install<T extends PluginConstructor>(plugin: T, ...constructorProps: ConstructorParameters<T>): void {
         if (!isPlugin(plugin))
             throw new ErrMissingPluginMetadata(plugin);
@@ -131,6 +147,12 @@ export class PluginsManager {
         this.logger.debug(() => `[Plugins]: Installed plugin ${metadata.name} (${metadata.version})`);
     }
 
+    /**
+     * Instantiates plugins in topological dependency order and runs `onPluginLoad`.
+     *
+     * @throws ErrMissingPluginDependency when declared dependency is not installed.
+     * @throws ErrDAGCycleDetectedPlugin when plugin dependencies contain a cycle.
+     */
     public build(): void {
         if (this.plugins_.size === 0) {
             return;
@@ -185,12 +207,19 @@ export class PluginsManager {
 
     }
 
+    /** Returns metadata for an installed plugin. */
     public getPluginMetadata(plugin: PluginConstructor): PluginMetadata {
         const entry = this.plugins_.get(plugin);
         if (!entry) throw new ErrUnknownPlugin(plugin);
         return entry.metadata;
     }
 
+    /**
+     * Returns initialized plugin instance.
+     *
+     * @throws ErrUnknownPlugin when plugin was not installed.
+     * @throws ErrPluginNotInit when plugins are not built yet.
+     */
     public getPluginInstance<T extends PluginBase>(plugin: ClassType<T>): T {
         const entry = this.plugins_.get(plugin);
         if (!entry) throw new ErrUnknownPlugin(plugin);

@@ -3,7 +3,7 @@
 ![NPM Version](https://img.shields.io/npm/v/%40draug%2Fengine?style=flat)
 [![Socket Badge](https://badge.socket.dev/npm/package/@draug/engine/1.0.6)](https://badge.socket.dev/npm/package/@draug/engine/1.0.6)
 
-Small ECS-first game skeleton for TypeScript: a `World` holds entities, components (plain data), systems (per-frame logic), double-buffered events, typed resources, and optional plugins. A thin `Runtime` plus `GameLoop` / `Clock` help you step simulation on a steady timer instead of growing everything inside one giant class.
+Small ECS-first game skeleton for TypeScript: a `World` holds entities, components (plain data), systems (per-frame logic), double-buffered events, typed resources, and optional plugins. A thin `Runtime` plus `Loop` / `Clock` help you step simulation on a steady timer instead of growing everything inside one giant class.
 
 ## Features
 
@@ -36,11 +36,12 @@ Enable legacy decorators in `tsconfig.json` (the library uses `experimentalDecor
 }
 ```
 
-Minimal world: register every component type once, register systems, call `systems.build()`, spawn entities, then step with `world.update(dt)`.
+Minimal world: register every component type once, register systems, call `systems.build()`, spawn entities, then step with `world.update(clock)`.
 
 ```typescript
 import {
   World,
+  Clock,
   Component,
   System,
   SystemBase,
@@ -48,31 +49,42 @@ import {
   type SystemComputeContext,
 } from '@draug/engine';
 
-@Component()
+@Component({ name: 'Position' })
 class Position {
   x = 0;
   y = 0;
 }
 
-@System({ query: { include: [Position] } })
+@System({
+  name: 'GravitySystem',
+  query: { include: [Position] },
+})
 class GravitySystem extends SystemBase {
-  compute({ entities, world, dt }: SystemComputeContext): void {
+  compute({ entities, world, time }: SystemComputeContext): void {
     const positions = world.components.getStorage(Position);
     for (const id of entities) {
       const p = positions.get(id);
-      if (p) p.y += 20 * dt;
+      if (p) p.y += 20 * time.delta;
     }
   }
 }
 
-const world = new World();
+const world = new World({
+  logger: {
+    debug: () => {},
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+  },
+});
+const clock = new Clock({ now: () => performance.now() });
 
 world.components.register(Position);
 world.systems.register(new GravitySystem());
 world.systems.build();
 
 // Same-frame visibility: create entity, then attach components immediately.
-const player = world.entities.create();
+const player = world.createEntity();
 world.addComponent(player, Position, (p) => {
   p.x = 0;
   p.y = 0;
@@ -86,8 +98,10 @@ world.commands.createEntity(
   }),
 );
 
-world.update(1 / 60);
-world.update(1 / 60);
+clock.tick();
+world.update(clock);
+clock.tick();
+world.update(clock);
 ```
 
 **Note:** `world.update` runs systems first, then flushes the command queue. Anything created with `commands.createEntity` only gets components after that flush, so it will not appear in queries until the *next* `update` unless you attach components synchronously.
@@ -100,18 +114,18 @@ world.update(1 / 60);
 
 - **`world.query(params)`** — bitmask-backed query; supports `include`, `exclude`, `anyOf`, `excludeEntitiesIds`, and `filter`.
 - **`world.addComponent(id, ComponentClass, init?)` / `removeComponent`** — structural changes; queries are invalidated for you.
-- **`world.update(dt)`** — `events.swapAll()`, run systems in order, then `commands.flush`.
+- **`world.update(clock)`** — run systems in order, then `commands.flush`.
 
 ### Components
 
-Mark data classes with `@Component()` so the ECS can assign stable type ids:
+Mark data classes with `@Component({ name })` so the ECS can assign stable type ids:
 
 ```typescript
-import { Component, ComponentStorageType } from '@draug/engine';
+import { Component } from '@draug/engine';
 
 // `world` is your World instance from the quick start.
 
-@Component()
+@Component({ name: 'Health' })
 class Health {
   current = 100;
   max = 100;
@@ -120,21 +134,16 @@ class Health {
 world.components.register(Health);
 ```
 
-Optional **singleton** storage (one instance, not per-entity):
+You can optionally override the instance factory used by a storage:
 
 ```typescript
-import { Component, ComponentStorageType } from '@draug/engine';
-
-@Component()
-class GlobalRNG {
-  next() {
-    return Math.random();
-  }
+@Component({ name: 'Projectile' })
+class Projectile {
+  speed = 600;
 }
 
-world.components.register(GlobalRNG, {
-  storageType: ComponentStorageType.SINGLETON_STORAGE,
-  factory: () => new GlobalRNG(),
+world.components.register(Projectile, {
+  factory: () => new Projectile(),
 });
 ```
 
@@ -172,7 +181,7 @@ Call **`world.systems.build()`** after you finish registering systems so `onInit
 import { entry } from '@draug/engine';
 
 world.commands.add((w) => {
-  const id = w.entities.create();
+  const id = w.createEntity();
   w.addComponent(id, Health, (h) => {
     h.current = 50;
   });
@@ -222,21 +231,30 @@ After `world.build()`, resolve instances with `world.plugins.getPluginInstance(A
 
 ### Game loop
 
-`Clock` measures delta time from a `TimeSource`; `GameLoop` invokes your step function and asks the host for the next frame (`requestAnimationFrame`, `queueMicrotask` in tests, etc.).
+`Clock` measures delta time from a `TimeSource`; `Loop` invokes your step function and asks the host for the next frame (`requestAnimationFrame`, `queueMicrotask` in tests, etc.).
 
 ```typescript
-import { Clock, GameLoop, World } from '@draug/engine';
+import { Clock, Loop, World } from '@draug/engine';
 
-const world = new World();
+const world = new World({
+  logger: {
+    debug: () => {},
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+  },
+});
 const clock = new Clock({ now: () => performance.now() });
 
-const loop = new GameLoop(clock, (dt) => {
-  world.update(dt);
-});
+const loop = new Loop(
+  clock,
+  (_dt, worldRef) => {
+    worldRef.update(clock);
+  },
+  (cb) => requestAnimationFrame(cb),
+);
 
-loop.start((cb) => {
-  requestAnimationFrame(cb);
-});
+loop.start(world);
 
 // loop.stop() when shutting down
 ```
@@ -245,21 +263,58 @@ In Node, `performance.now()` is available on modern versions; otherwise pass `{ 
 
 ### Runtime (optional)
 
-`Runtime` is a tiny wrapper: `update(dt)` forwards to `world.update(dt)`. In the Amber workspace it is usually constructed together with `AssetsManager` from this package for loading textures and similar; for a headless server or a toy sim you can ignore `Runtime` and call `world.update` directly from your own driver.
+`Runtime` is a tiny wrapper over `Loop`: `runtime.run(world)` starts the configured loop. In the Amber workspace it is usually constructed together with `AssetsManager` from this package for loading textures and similar; for a headless server or a toy sim you can ignore `Runtime` and drive `world.update(clock)` directly from your own driver.
+
+### Standard library entry points
+
+Besides the root entry (`@draug/engine`), the package also publishes focused stdlib entry points:
+
+```typescript
+import { Position, Velocity, Rotation } from '@draug/engine/std-components';
+import { MovementSystem } from '@draug/engine/std-systems';
+import { Vector2, Vector3, Vector4 } from '@draug/engine/std-math';
+import { injectStd } from '@draug/engine/std-utils';
+```
 
 ## Configuration
 
 | Area | What you can tune |
 |------|---------------------|
-| **World** | `new World(maxEntityCount?)` — caps sparse sets / bitmaps (default is large; lower for fixed small games if you care about memory). |
-| **Components** | `components.register(Type, { factory })` for pooled defaults; `ComponentStorageType.SINGLETON_STORAGE` + `factory` for global state. |
+| **World** | `new World({ logger, maxEntityCount? })` — caps sparse sets / bitmaps (default is large; lower for fixed small games if you care about memory). |
+| **Components** | `components.register(Type, { factory })` for custom instance factories. |
 | **Systems** | `@System({ query, requiredComponents, computeAfter })` for selection, extra storages, and ordering. |
 | **Clock / loop** | Inject any `TimeSource`; drive the loop with the scheduling primitive your platform gives you. |
 
 ## Best practices
 
-1. **Register components before first `getStorage`** — registration is explicit; the world will throw if a system touches an unknown component type.
-2. **Treat commands as “end of frame”** — if something must exist in the same system pass, use `addComponent` / `entities.create` directly (or split into a later system).
+1. **Default to deferred structural changes via `world.commands`** — for spawning/despawning and similar graph mutations, prefer command-queue flow so structural changes happen after systems finish the frame.
+2. **Treat direct `world.createEntity` / `world.addComponent` in runtime systems as a rare exception** — it is allowed, but reserve it for deliberate same-frame requirements; otherwise keep mutations deferred to avoid mid-frame state shape changes.
+3. **Register component storages before system execution starts** — registration is explicit; touching an unknown component storage at runtime throws. A common pattern is: register components -> register systems -> `world.systems.build()` -> spawn initial entities.
+4. **Call `world.systems.build()` once after registration and before the first tick** — this computes system order and runs `onInit` hooks exactly once per system instance.
+5. **Treat events as frame-delayed messages** — write to buffers during frame N, read them on frame N+1 after buffer swap. Design gameplay logic around that one-frame latency to avoid hidden ordering bugs.
+6. **Keep systems data-oriented and side-effect-light** — put mutable game data in components/resources; keep `compute` focused on deterministic state transitions over `ctx.entities`.
+7. **Cache storages/resources in `onInit` when possible** — resolve storages/resources once and reuse references in `compute` to reduce repeated lookups and make intent explicit.
+8. **Express ordering explicitly (`computeAfter` / `computeBefore` + phase)** — if one system consumes another system's output, encode that dependency in metadata instead of relying on registration order.
+9. **Use `resources.getOrInsert` for singleton-like services/state** — this keeps ownership explicit and avoids ad-hoc globals leaking into gameplay code.
+10. **Prefer stable `filter` predicates in queries** — keep predicates pure and cheap; if filtering depends on frequent mutable state, consider encoding it as components to leverage bitmap cache effectiveness.
+11. **Use `world.commands.createEntity(entry(...))` as the ergonomic default for spawning** — this helper is just sugar over command queue behavior, but it keeps spawn code concise and type-safe.
+
+### Rule of thumb for entity creation
+
+- **Default:** use command queue for spawning (usually `world.commands.createEntity(...)` with `entry(...)`).
+- **Use immediate creation (`world.createEntity` + `world.addComponent`) only when:**
+  - you are in world/bootstrap setup before the loop starts, or
+  - the entity must be visible to systems in the same frame by design.
+- **In runtime systems, immediate creation is a rare exception.**
+- **If unsure, choose deferred creation.** It tends to produce safer frame boundaries and fewer ordering surprises.
+
+### Anti-patterns
+
+- **Do not mutate system metadata at runtime** — avoid changing `query` / `requiredComponents` / dependency sets after registration; treat `@System(...)` metadata as immutable configuration.
+- **Do not call `world.systems.build()` every frame** — build once for setup (or after explicit dynamic system graph changes), not inside regular gameplay ticks.
+- **Do not rely on registration order for correctness** — encode ordering through `computeAfter` / `computeBefore` / `phase` so behavior stays explicit and stable.
+- **Do not expect same-frame visibility from deferred commands** — entities/components created via command queue become visible after flush; if you need immediate visibility, use direct APIs intentionally.
+- **Do not perform structural mutations through internal managers in game logic** — prefer `World` facade and commands (`world.createEntity`, `world.addComponent`, `world.commands.*`) over mixing direct manager internals in gameplay code.
 
 ## Contributing
 

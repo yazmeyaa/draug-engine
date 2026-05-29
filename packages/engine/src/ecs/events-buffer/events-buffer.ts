@@ -1,3 +1,6 @@
+/**
+ * Double-buffered event stream for one event type.
+ */
 export class EventBuffer<T extends unknown> {
     private readBuf: T[] = [];
     private writeBuf: T[] = [];
@@ -15,8 +18,8 @@ export class EventBuffer<T extends unknown> {
      *   to collect events for the next frame.
      *
      * After calling this method:
-     * - `get()` will return a stable snapshot of events produced in the previous frame.
-     * - `add()` will write into an empty buffer for the current frame.
+     * - `read()` returns a stable snapshot of events produced in the previous frame.
+     * - `write()` appends to an empty buffer for the current frame.
      *
      * Guarantees:
      * - No events written during the current frame are visible until the next `swap()`.
@@ -41,16 +44,20 @@ export class EventBuffer<T extends unknown> {
 
 type EventKey<T> = symbol & { __type?: T };
 
+/** Creates a typed event key for {@link EventBus.getBuffer}. */
 export function createEventKey<T>(description?: string): EventKey<T> {
     return Symbol(description) as EventKey<T>;
 }
 
+/** Map of typed event buffers keyed by symbol. */
 export class EventBus {
     private storage: Map<symbol, EventBuffer<any>> = new Map();
+    /** Swaps all registered buffers to advance events by one frame. */
     public swapAll(): void {
         this.storage.forEach(s => s.swap());
     }
 
+    /** Returns (and lazily creates) a buffer for a typed event key. */
     public getBuffer<T>(key: EventKey<T>): EventBuffer<T> {
         let buf = this.storage.get(key);
         if (!buf) {

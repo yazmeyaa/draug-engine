@@ -1,3 +1,4 @@
+/** Mutable 2D vector helper. */
 export class Vector2 {
     constructor(
         public x = 0,
@@ -72,6 +73,7 @@ export class Vector2 {
         return this.clone().normalize();
     };
 };
+/** Mutable 3D vector helper. */
 export class Vector3 {
     constructor(
         public x = 0,
@@ -156,6 +158,7 @@ export class Vector3 {
         return this.clone().normalize();
     };
 };
+/** Mutable 4D vector helper. */
 export class Vector4 {
     constructor(
         public x = 0,
@@ -250,12 +253,14 @@ export class Vector4 {
     };
 };
 
+/** Copies xy from `Vector2` into `Vector3` and sets z. */
 export function vec2toVec3(vec: Vector2, out: Vector3, z = 0): Vector3 {
     out.x = vec.x;
     out.y = vec.y;
     out.z = z;
     return out;
 };
+/** Copies xy from `Vector2` into `Vector4` and sets z/w. */
 export function vec2toVec4(vec: Vector2, out: Vector4, z = 0, w = 0): Vector4 {
     out.x = vec.x;
     out.y = vec.y;
@@ -263,11 +268,13 @@ export function vec2toVec4(vec: Vector2, out: Vector4, z = 0, w = 0): Vector4 {
     out.w = w;
     return out;
 };
+/** Copies xyz from `Vector3` into `Vector2` (drops z). */
 export function vec3toVec2(vec: Vector3, out: Vector2): Vector2 {
     out.x = vec.x;
     out.y = vec.y;
     return out;
 };
+/** Copies xyz from `Vector3` into `Vector4` and sets w. */
 export function vec3toVec4(vec: Vector3, out: Vector4, w = 0): Vector4 {
     out.x = vec.x;
     out.y = vec.y;
@@ -275,11 +282,13 @@ export function vec3toVec4(vec: Vector3, out: Vector4, w = 0): Vector4 {
     out.w = w;
     return out;
 };
+/** Copies xy from `Vector4` into `Vector2` (drops z/w). */
 export function vec4toVec2(vec: Vector4, out: Vector2): Vector2 {
     out.x = vec.x;
     out.y = vec.y;
     return out;
 };
+/** Copies xyz from `Vector4` into `Vector3` (drops w). */
 export function vec4toVec3(vec: Vector4, out: Vector3): Vector3 {
     out.x = vec.x;
     out.y = vec.y;

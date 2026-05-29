@@ -1,3 +1,6 @@
+/**
+ * Simple object pool for reusable object instances.
+ */
 export class ObjectPool<T extends object> {
     private pool_: T[];
     private factory_: () => T;
@@ -9,6 +12,7 @@ export class ObjectPool<T extends object> {
         this.cursor_ = initialSize - 1;
     }
 
+    /** Gets an object from pool or creates a new one. */
     acquire(): T {
         if (this.cursor_ >= 0) {
             return this.pool_[this.cursor_--]!;
@@ -16,6 +20,7 @@ export class ObjectPool<T extends object> {
         return this.factory_();
     }
 
+    /** Returns an object back into the pool. */
     release(obj: T) {
         this.pool_[++this.cursor_] = obj;
     }

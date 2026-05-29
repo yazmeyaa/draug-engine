@@ -1,5 +1,6 @@
 import type { ClassType } from "../types/class";
 
+/** Lifecycle status for an asset instance. */
 export enum AssetState {
     NOT_READY = 1,
     LOADING = 2,
@@ -8,6 +9,7 @@ export enum AssetState {
 export type AssetLoader<T> = (url: string) => Promise<T>;
 export type AssetDisposer<T> = (r: T) => void | Promise<void>;
 
+/** Single loadable/disposable asset instance. */
 export class Asset<TData> {
     private data_: TData | null = null;
     private state_ = AssetState.NOT_READY;
@@ -21,6 +23,9 @@ export class Asset<TData> {
         private readonly disposer: AssetDisposer<TData>,
     ) { }
 
+    /**
+     * Loads asset data once and reuses in-flight promise while loading.
+     */
     public async load(): Promise<TData> {
         if (this.state_ === AssetState.READY)
             return this.data_!;
@@ -53,6 +58,7 @@ export class Asset<TData> {
         this.state_ = AssetState.NOT_READY;
     }
 
+    /** Disposes loaded data and resets state. */
     public async dispose(): Promise<void> {
         this.disposed_ = true;
 
@@ -62,6 +68,11 @@ export class Asset<TData> {
         this.reset();
     }
 
+    /**
+     * Returns loaded data.
+     *
+     * @throws Error when asset is not in READY state.
+     */
     public getData(): TData {
         if (this.state_ !== AssetState.READY)
             throw new Error("Data is not loaded yet!");
@@ -71,6 +82,7 @@ export class Asset<TData> {
 
 export type AssetID = number;
 export type AssetIDGenerator = () => AssetID;
+/** Stores and manages assets of one logical type. */
 export class AssetStorage<TData> {
     private readonly items_ = new Map<AssetID, Asset<TData>>();
     constructor(
@@ -84,6 +96,7 @@ export class AssetStorage<TData> {
         return new Asset(id, url, loader, disposer);
     }
 
+    /** Adds an asset using storage default loader/disposer. */
     public add(url: string): Asset<TData> {
         const id = this.nextIdFn_();
         const rs = this.newAsset(id, url, this.defaultLoader_, this.defaultDisposer_);
@@ -92,6 +105,7 @@ export class AssetStorage<TData> {
         return rs;
     };
 
+    /** Adds an asset with custom loader/disposer pair. */
     public addCustom(url: string, customLoader: AssetLoader<TData>, customDisposer: AssetDisposer<TData>): Asset<TData> {
         const id = this.nextIdFn_();
         const rs = this.newAsset(id, url, customLoader, customDisposer);
@@ -100,11 +114,17 @@ export class AssetStorage<TData> {
         return rs;
     }
 
+    /** Gets asset or `null` when missing. */
     public get(id: AssetID): Asset<TData> | null {
         const item = this.items_.get(id);
         return item ?? null;
     }
 
+    /**
+     * Gets asset by id.
+     *
+     * @throws Error when missing.
+     */
     public tryGet(id: AssetID): Asset<TData> {
         const item = this.items_.get(id);
         if (!item)
@@ -113,6 +133,7 @@ export class AssetStorage<TData> {
         return item;
     }
 
+    /** Disposes and removes one asset. */
     public async remove(id: AssetID): Promise<void> {
         const item = this.items_.get(id);
         if (!item) return;
@@ -121,12 +142,14 @@ export class AssetStorage<TData> {
         this.items_.delete(id);
     }
 
+    /** Loads all currently registered assets. */
     public async loadAll(): Promise<void> {
         await Promise.all(
             Array.from(this.items_.values(), r => r.load())
         );
     }
 
+    /** Disposes and clears all assets. */
     public async clearAll(): Promise<void> {
         await Promise.all(
             Array.from(this.items_.values(), r => r.dispose())
@@ -136,12 +159,16 @@ export class AssetStorage<TData> {
 }
 
 const NOOP_DISPOSER: AssetDisposer<any> = async () => { };
+/** Registry of typed asset storages. */
 export class AssetsManager {
     private readonly storages_ = new Map<ClassType<Asset<any>>, AssetStorage<any>>();
     private currId = 0;
     private nextIdFn = () => {
         return ++this.currId;
     }
+    /**
+     * Registers a storage for a typed asset constructor.
+     */
     public register<T>(
         res: ClassType<Asset<T>>,
         defaultLoader: AssetLoader<T>,
@@ -157,10 +184,16 @@ export class AssetsManager {
         return storage;
     }
 
+    /** Gets storage or `null` when not registered. */
     public getStorage<T>(res: ClassType<Asset<T>>): AssetStorage<T> | null {
         return this.storages_.get(res) ?? null;
     }
 
+    /**
+     * Gets storage by constructor.
+     *
+     * @throws Error when storage was not registered.
+     */
     public tryGetStorage<T>(res: ClassType<Asset<T>>): AssetStorage<T> {
         const s = this.storages_.get(res);
         if (!s)
@@ -169,10 +202,12 @@ export class AssetsManager {
         return s;
     }
 
+    /** Loads assets across all registered storages. */
     public async loadAll(): Promise<void> {
         await Promise.all(Array.from(this.storages_.values(), (s) => s.loadAll()));
     }
 
+    /** Disposes assets in all registered storages. */
     public disposeAll(): void {
         Array.from(this.storages_.values(), (s) => s.clearAll())
     }

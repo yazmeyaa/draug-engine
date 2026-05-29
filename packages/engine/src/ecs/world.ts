@@ -29,10 +29,18 @@ import type { Logger } from "../logger";
 import type { Clock } from "../runtime";
 
 export type WorldConstructor = {
+    /** Maximum number of entities addressable by bitmaps/sparse sets. */
     maxEntityCount?: number;
+    /** Logger implementation used by internal managers. */
     logger: Logger;
 };
 
+/**
+ * Main ECS façade.
+ *
+ * Exposes managers for entities/components/systems/events/resources/commands/plugins
+ * and provides convenience methods for common structural mutations.
+ */
 export class World {
     public readonly entities: EntitiesManager;
     public readonly components: ComponentsManager;
@@ -50,6 +58,9 @@ export class World {
         return this.updatesCount_;
     }
 
+    /**
+     * Creates a new world instance and wires all managers.
+     */
     constructor(params: WorldConstructor) {
         this.entities = new EntitiesManager(params.logger);
         this.components = new ComponentsManager(params.logger, params.maxEntityCount ?? ECS_DEFAULTS.MAX_ENTITY_COUNT);
@@ -63,12 +74,18 @@ export class World {
         this.entityIndex = new EntityCompositionIndex();
     }
 
+    /**
+     * Creates an entity and registers it in the composition index.
+     */
     public createEntity(): EntityID {
         const id = this.entities.create();
         this.entityIndex.addEntity(id);
         return id;
     };
 
+    /**
+     * Destroys an entity and removes all attached components first.
+     */
     public destroyEntity(id: EntityID): void {
         const components = this.entityIndex.getComponents(id);
         for (const c of components) {
@@ -78,10 +95,16 @@ export class World {
         this.entities.destroy(id);
     }
 
+    /**
+     * Returns sorted IDs of currently active entities.
+     */
     public getActiveEntityIds(): EntityID[] {
         return this.entityIndex.getEntityIds().sort((a, b) => a - b);
     }
 
+    /**
+     * Executes a cached query and returns matching entity IDs.
+     */
     public query(params: QueryParameters): number[] {
         return this.queries.get(params);
     }
@@ -97,6 +120,9 @@ export class World {
         this.entityIndex.removeComponent(entity, component);
     }
 
+    /**
+     * Adds a component instance to an entity, optionally initializing it.
+     */
     public addComponent<T extends object>(entity: EntityID, component: ClassType<T>, initFn?: (obj: T) => void): T {
         const storage = this.components.getStorage(component);
         const c = storage.add(entity, (o) => {
@@ -111,12 +137,22 @@ export class World {
         return c;
     };
 
+    /**
+     * Executes one simulation tick.
+     *
+     * Order:
+     * 1) systems update (which swaps event buffers before running systems)
+     * 2) command queue flush
+     */
     public update(clock: Clock): void {
         this.systems.update(clock.getTime());
         this.commands.flush(this);
         this.updatesCount_++;
     }
 
+    /**
+     * Finalizes world-level bootstrap (currently plugin initialization).
+     */
     public build(): void {
         this.plugins.build();
         this.logger.debug(() => "World was built successfully");

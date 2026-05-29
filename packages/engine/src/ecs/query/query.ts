@@ -4,10 +4,15 @@ import type { World } from "../world";
 import { Bitmap } from "bitmap-index";
 
 export type QueryParameters = {
+    /** Entity must contain all listed components. */
     include?: ComponentType[];
+    /** Entity must not contain any listed components. */
     exclude?: ComponentType[];
+    /** Entity must contain at least one listed component. */
     anyOf?: ComponentType[];
+    /** Extra entity ids to exclude dynamically without cache invalidation. */
     excludeEntitiesIds?: number[];
+    /** Final predicate applied to resulting ids. */
     filter?: (id: number) => boolean;
 };
 
@@ -18,6 +23,9 @@ type CachedQuery = {
     deps: Set<ComponentType>;
 };
 
+/**
+ * Cached bitmap query engine over component storages.
+ */
 export class QueryManager {
     private cache = new Map<string, CachedQuery>();
 
@@ -25,6 +33,9 @@ export class QueryManager {
         private readonly world: World,
     ) { }
 
+    /**
+     * Returns matching entity IDs for given query parameters.
+     */
     public get(params: QueryParameters): EntityID[] {
         const key = this.getKey(params);
         let entry = this.cache.get(key);
@@ -67,6 +78,9 @@ export class QueryManager {
         return this.extractIds(targetBitmap);
     }
 
+    /**
+     * Marks cached queries dependent on a component as dirty.
+     */
     public invalidate(component: ComponentType): void {
         for (const entry of this.cache.values()) {
             if (entry.deps.has(component)) {

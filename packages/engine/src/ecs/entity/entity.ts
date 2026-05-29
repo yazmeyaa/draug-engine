@@ -17,6 +17,9 @@ export class EntityMaskNotFoundError extends Error {
     }
 }
 
+/**
+ * Allocates and recycles entity ids.
+ */
 export class EntitiesManager {
     private id_: EntityID = 0;
     private available_: EntityID[] = [];
@@ -27,12 +30,14 @@ export class EntitiesManager {
         return ++this.id_;
     }
 
+    /** Creates a new entity id (or reuses a freed one). */
     public create(): EntityID {
         if (this.available_.length > 0)
             return this.available_.pop()!;
         return this.nextId()
     }
 
+    /** Marks an entity id as reusable. */
     public destroy(id: EntityID): void {
         this.available_.push(id);
     }

@@ -15,23 +15,36 @@ export class ComponentStorage
     private size_: number = 0;
     private cls: ClassType<T>
 
+    /**
+     * @param cap bitmap capacity (max entity id that can be represented).
+     * @param factory component instance factory.
+     * @param cls component class for diagnostics.
+     */
     constructor(cap = ECS_DEFAULTS.MAX_ENTITY_COUNT, factory: () => T, cls: ClassType<T>) {
         this.bits_ = new Bitmap(cap);
         this.pool_ = new ObjectPool(factory, 0);
         this.cls = cls;
     }
+    /** Returns bitmap of entity IDs that currently have this component. */
     public bitmap(): Bitmap {
         return this.bits_;
     }
 
+    /** Internal numeric component storage id. */
     public get id(): number {
         return this.id_;
     }
 
+    /** @internal Assigned by {@link ComponentsManager}. */
     public _internalSetId(id: number): number {
         return this.id_ = id;
     }
 
+    /**
+     * Adds component for an entity.
+     *
+     * @throws Error if entity already has this component.
+     */
     public add(id: number, initFn?: (obj: T) => T): T {
         if (this.indexMap_.has(id)) {
             throw new Error(`[ComponentStorage "${this.cls.name}"]: Entity ${id} already has this component`);
@@ -51,6 +64,7 @@ export class ComponentStorage
         return obj;
     }
 
+    /** Removes component from an entity. No-op if absent. */
     public remove(id: number): void {
         const index = this.indexMap_.get(id);
         if (index === undefined) return;
@@ -75,11 +89,17 @@ export class ComponentStorage
         this.size_--;
     }
 
+    /** Gets component by entity id or `null` if absent. */
     public get(id: number): T | null {
         const index = this.indexMap_.get(id);
         return index !== undefined ? this.data_[index]! : null;
     }
 
+    /**
+     * Gets component by entity id.
+     *
+     * @throws Error when component is absent for the entity.
+     */
     public tryGet(id: number): T {
         const index = this.indexMap_.get(id);
         if (index === undefined)
@@ -87,6 +107,10 @@ export class ComponentStorage
         return this.data_[index]!;
     }
 
+    /**
+     * Writes components for provided entity ids into `out`.
+     * Returns number of written elements.
+     */
     public writeComponentsToBuf(ids: ReadonlyArray<number>, out: T[]): number {
         let len = 0;
         for (const id of ids) {
@@ -96,15 +120,18 @@ export class ComponentStorage
         return len;
     }
 
+    /** Checks whether entity currently has this component. */
     public has(id: number): boolean {
         return this.bits_.contains(id);
     }
 
 
+    /** Current number of stored components. */
     public size(): number {
         return this.size_;
     }
 
+    /** Iterates over entity IDs that own this component. */
     public forEach(cb: (id: number) => void): void {
         for (const id of this.entityIds_) {
             cb(id);

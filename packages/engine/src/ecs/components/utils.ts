@@ -1,6 +1,7 @@
 const registry = new Map<Function, number>();
 let id = 0;
 
+/** Metadata attached by the {@link Component} decorator. */
 export type ComponentMetadata = {
     name: string;
     id: number;
@@ -11,6 +12,12 @@ type FunctionWithMetadata = Function & { [ComponentMetadataSymbol]: ComponentMet
 export type ComponentOptions = {
     name: string;
 };
+
+/**
+ * Decorates a class as an ECS component type.
+ *
+ * Assigns a stable numeric type id used by query bitmasks.
+ */
 export function Component(options: ComponentOptions): ClassDecorator {
     return (target: Function) => {
         const metadata: ComponentMetadata = {
@@ -23,6 +30,11 @@ export function Component(options: ComponentOptions): ClassDecorator {
     }
 };
 
+/**
+ * Returns the numeric type id assigned to a component constructor.
+ *
+ * @throws Error when the class was not decorated with {@link Component}.
+ */
 export function getComponentId(ctor: Function): number {
     const id = registry.get(ctor);
     if (id === undefined) {
@@ -36,6 +48,9 @@ class ErrNotComponent extends Error {
     }
 }
 
+/**
+ * Returns component decorator metadata.
+ */
 export function getComponentMetadata(component: Function): ComponentMetadata {
     if (isComponent(component)) {
         return component[ComponentMetadataSymbol] as ComponentMetadata;
